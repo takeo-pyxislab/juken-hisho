@@ -146,8 +146,15 @@ export default function SimulatorPage() {
   }, [uniMap, keyword, region, pref, facCategory, ougan, kyotsuu, month])
 
   useEffect(() => {
-    setFilteredUnis(getFiltered())
-  }, [getFiltered])
+    const params: Record<string,string> = {}
+    if (keyword) params.keyword = keyword
+    if (pref) params.prefecture = pref
+    if (facCategory) params.category = facCategory
+    if (ougan) params.app_type = ougan
+    if (kyotsuu) params.kyotsuu = kyotsuu
+    const timer = setTimeout(() => loadData(params), 300)
+    return () => clearTimeout(timer)
+  }, [keyword, pref, facCategory, ougan, kyotsuu])
 
   const toggleSelect = (name: string) => {
     setSelected(prev => {
