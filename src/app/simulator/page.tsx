@@ -65,7 +65,7 @@ function fmt(n: number) { return n.toLocaleString("ja-JP") }
 
 export default function SimulatorPage() {
   const [uniNames, setUniNames] = useState<UniName[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [simData, setSimData] = useState<UniGroup[]>([])
   const [simLoading, setSimLoading] = useState(false)
@@ -94,9 +94,16 @@ export default function SimulatorPage() {
   }, [keyword, pref, facCategory, ougan, kyotsuu])
 
   useEffect(() => {
+    // 検索条件が何もない場合は初期ロードしない
+    const hasCondition = keyword || pref || facCategory || ougan || kyotsuu
+    if (!hasCondition) {
+      setLoading(false)
+      setUniNames([])
+      return
+    }
     const t = setTimeout(fetchNames, 300)
     return () => clearTimeout(t)
-  }, [fetchNames])
+  }, [fetchNames, keyword, pref, facCategory, ougan, kyotsuu])
 
   const toggleSelect = (name: string) => {
     setSelected(prev => {
