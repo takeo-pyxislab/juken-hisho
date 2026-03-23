@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const kyotsuu = searchParams.get("kyotsuu") || ""
     const app_type = searchParams.get("app_type") || ""
     const page = parseInt(searchParams.get("page") || "1")
-    const limit = 20
+    const limit = parseInt(searchParams.get("limit") || "20")
 
     let query = supabase
       .from("universities_db")

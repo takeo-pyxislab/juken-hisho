@@ -94,7 +94,7 @@ export default function Home() {
             background:'var(--surface)', color:'var(--ink)',
             fontSize:'15px', fontWeight:700, textDecoration:'none', display:'inline-block'
           }}>
-            🔍 無料シミュレーター
+            🔍 無料で試す（登録不要）
           </Link>
           <Link href="/signup" style={{
             padding:'15px 36px', borderRadius:'12px', border:'none',
@@ -103,7 +103,7 @@ export default function Home() {
             textDecoration:'none', display:'inline-block',
             boxShadow:'0 8px 24px rgba(26,23,20,.2)'
           }}>
-            ✦ 無料で始める
+            ✦ プレミアムで始める
           </Link>
         </div>
 
