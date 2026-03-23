@@ -89,7 +89,7 @@ export default function SimulatorPage() {
     if (kyotsuu) params.set("kyotsuu", kyotsuu)
     const res = await fetch(`/api/university-names?${params}`)
     const data = await res.json()
-    setUniNames(data.data || [])
+    setUniNames(data.empty ? [] : (data.data || []))
     setLoading(false)
   }, [keyword, pref, facCategory, ougan, kyotsuu])
 
@@ -240,10 +240,13 @@ export default function SimulatorPage() {
                 <span style={{fontSize:"11px", color:"var(--ink3)"}}>読み込み中...</span>
               </div>
             ) : uniNames.length === 0 ? (
-              <div style={{padding:"20px 14px", textAlign:"center", color:"var(--ink3)"}}>
-                <div style={{fontSize:"24px", marginBottom:"8px"}}>🔍</div>
-                <div style={{fontSize:"12px", fontWeight:700, color:"var(--ink2)", marginBottom:"4px"}}>大学名で検索してください</div>
-                <div style={{fontSize:"11px", lineHeight:1.6}}>例：「早稲田」「看護」「東京」</div>
+              <div style={{padding:"30px 14px", textAlign:"center", color:"var(--ink3)"}}>
+                <div style={{fontSize:"32px", marginBottom:"10px"}}>🔍</div>
+                <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink2)", marginBottom:"6px"}}>大学名で検索してください</div>
+                <div style={{fontSize:"11px", lineHeight:1.8, color:"var(--ink3)"}}>
+                  例：「早稲田」「看護」「東京」<br/>
+                  「医療」「国際」など
+                </div>
               </div>
             ) : (
               uniNames.map(u => {
