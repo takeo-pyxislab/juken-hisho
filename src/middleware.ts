@@ -23,11 +23,20 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // 未ログインは/loginにリダイレクト（/login, /signup, /は除く）
-  if (!user && !request.nextUrl.pathname.startsWith('/login') && 
-      !request.nextUrl.pathname.startsWith('/signup') &&
-      request.nextUrl.pathname !== '/') {
+  const pathname = request.nextUrl.pathname
+
+  // ログイン不要のページ
+  const publicPaths = ['/', '/login', '/signup', '/simulator']
+  const isPublic = publicPaths.some(p => pathname === p || pathname.startsWith('/simulator'))
+
+  // 未ログインは/loginにリダイレクト
+  if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  // ログイン済みで/loginや/signupにアクセスしたらマイページへ
+  if (user && (pathname === '/login' || pathname === '/signup')) {
+    return NextResponse.redirect(new URL('/mypage', request.url))
   }
 
   return supabaseResponse

@@ -1,3 +1,29 @@
+
+/* ══ 受験秘書 デザイントークン ══ */
+@import url('https://fonts.googleapis.com/css2?family=Kaisei+Opti:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:#f8f7f4; --surface:#fff; --surface2:#f3f1ec; --surface3:#ebe8e1;
+  --border:#e4e0d8; --border2:#d5d0c6;
+  --ink:#1a1714; --ink2:#46413a; --ink3:#9c9488; --ink4:#c5bfb5;
+  --teal:#0d9488; --teal2:#0f766e; --teal3:#134e4a; --teal-bg:#f0fdfa; --teal-border:#99f6e4;
+  --amber:#d97706; --amber-bg:#fffbeb; --amber-border:#fcd34d;
+  --rose:#e11d48; --rose-bg:#fff1f2; --rose-border:#fecdd3;
+  --blue:#2563eb; --blue-bg:#eff6ff; --blue-border:#bfdbfe;
+  --gold:#b45309;
+  --premium:#1c1917; --premium2:#292524;
+  --sh-sm:0 1px 4px rgba(26,23,20,.06),0 1px 2px rgba(26,23,20,.04);
+  --sh:0 4px 16px rgba(26,23,20,.08),0 2px 6px rgba(26,23,20,.04);
+  --sh-lg:0 12px 40px rgba(26,23,20,.12),0 4px 12px rgba(26,23,20,.06);
+  --r:14px; --r-lg:20px; --r-sm:8px;
+}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.font-display { font-family: 'Kaisei Opti', serif; }
+.font-mono { font-family: 'DM Mono', monospace; }
 @import "tailwindcss";
 
 :root {

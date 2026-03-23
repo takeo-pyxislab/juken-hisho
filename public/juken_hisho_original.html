@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>受験秘書 — 総合型選抜ナビ</title>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+Opti:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════ */
+:root {
+  --bg:#f8f7f4; --surface:#fff; --surface2:#f3f1ec; --surface3:#ebe8e1;
+  --border:#e4e0d8; --border2:#d5d0c6;
+  --ink:#1a1714; --ink2:#46413a; --ink3:#9c9488; --ink4:#c5bfb5;
+  --teal:#0d9488; --teal2:#0f766e; --teal3:#134e4a; --teal-bg:#f0fdfa; --teal-border:#99f6e4;
+  --amber:#d97706; --amber-bg:#fffbeb; --amber-border:#fcd34d;
+  --rose:#e11d48; --rose-bg:#fff1f2; --rose-border:#fecdd3;
+  --blue:#2563eb; --blue-bg:#eff6ff; --blue-border:#bfdbfe;
+  --gold:#b45309;
+  --premium:#1c1917; --premium2:#292524;
+  --sh-sm:0 1px 4px rgba(26,23,20,.06),0 1px 2px rgba(26,23,20,.04);
+  --sh:0 4px 16px rgba(26,23,20,.08),0 2px 6px rgba(26,23,20,.04);
+  --sh-lg:0 12px 40px rgba(26,23,20,.12),0 4px 12px rgba(26,23,20,.06);
+  --sh-xl:0 24px 64px rgba(26,23,20,.16),0 8px 20px rgba(26,23,20,.08);
+  --r:14px; --r-lg:20px; --r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Noto Sans JP',sans-serif;font-size:14px;line-height:1.6;overflow-x:hidden}
+
+/* ── TYPOGRAPHY ── */
+.font-display{font-family:'Kaisei Opti',serif}
+.font-mono{font-family:'DM Mono',monospace}
+
+/* ── TRANSITIONS ── */
+.page{display:none;animation:fadeIn .35s ease both}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══════════════════════════════════════
+   GLOBAL NAV
+══════════════════════════════════════ */
+.gnav{
+  position:sticky;top:0;z-index:300;
+  height:58px;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(248,247,244,.94);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.gnav-logo{display:flex;align-items:center;gap:9px;cursor:pointer;text-decoration:none}
+.gnav-logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--teal),#06b6d4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.gnav-logo-text{font-family:'Kaisei Opti',serif;font-size:16px;font-weight:700;color:var(--ink)}
+.gnav-logo-sub{font-size:10px;color:var(--ink3);font-family:'Noto Sans JP',sans-serif;font-weight:400}
+.gnav-links{display:flex;align-items:center;gap:4px}
+.gnav-link{padding:6px 12px;border-radius:8px;border:none;background:transparent;color:var(--ink2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s;letter-spacing:.02em}
+.gnav-link:hover,.gnav-link.on{background:rgba(13,148,136,.08);color:var(--teal)}
+.gnav-btn-premium{padding:7px 16px;border-radius:8px;border:none;background:var(--premium);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;letter-spacing:.03em}
+.gnav-btn-premium:hover{background:var(--teal);box-shadow:0 4px 14px rgba(13,148,136,.3)}
+.gnav-user{display:flex;align-items:center;gap:8px}
+.gnav-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--teal),#06b6d4);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer}
+
+/* ══════════════════════════════════════
+   ① LANDING PAGE
+══════════════════════════════════════ */
+/* HERO */
+.lp-hero{
+  min-height:calc(100vh - 58px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 24px 80px;
+  position:relative;overflow:hidden;text-align:center;
+}
+.lp-hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 30% 40%, rgba(13,148,136,.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 70% 60%, rgba(6,182,212,.05) 0%, transparent 60%);
+  pointer-events:none;
+}
+.lp-hero-lines{
+  position:absolute;inset:0;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 27px,rgba(26,23,20,.025) 27px,rgba(26,23,20,.025) 28px);
+  pointer-events:none;
+}
+.lp-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--teal-bg);border:1px solid var(--teal-border);
+  border-radius:20px;padding:5px 14px;
+  font-size:11px;font-weight:700;color:var(--teal2);letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:24px;position:relative;z-index:1;
+}
+.lp-title{
+  font-family:'Kaisei Opti',serif;
+  font-size:clamp(36px,5vw,64px);font-weight:700;
+  color:var(--ink);line-height:1.2;
+  margin-bottom:20px;position:relative;z-index:1;
+}
+.lp-title .accent{
+  background:linear-gradient(135deg,var(--teal),#06b6d4);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.lp-desc{font-size:17px;color:var(--ink2);line-height:1.9;max-width:560px;margin:0 auto 40px;position:relative;z-index:1}
+.lp-hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1;margin-bottom:60px}
+.btn-hero-free{
+  padding:15px 32px;border-radius:12px;border:2px solid var(--border2);
+  background:var(--surface);color:var(--ink);font-size:15px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:.2s;
+}
+.btn-hero-free:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg)}
+.btn-hero-premium{
+  padding:15px 36px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--premium),#3d3530);
+  color:#fff;font-size:15px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:.2s;
+  box-shadow:0 8px 24px rgba(26,23,20,.2);
+}
+.btn-hero-premium:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(26,23,20,.28)}
+
+/* STATS ROW */
+.lp-stats{
+  display:flex;gap:0;border:1px solid var(--border);border-radius:var(--r-lg);
+  background:var(--surface);overflow:hidden;position:relative;z-index:1;
+  box-shadow:var(--sh);
+}
+.lp-stat{padding:20px 32px;text-align:center;border-right:1px solid var(--border)}
+.lp-stat:last-child{border-right:none}
+.lp-stat-num{font-size:28px;font-weight:900;font-family:'DM Mono',monospace;color:var(--teal)}
+.lp-stat-label{font-size:11px;color:var(--ink3);margin-top:3px;font-weight:600;letter-spacing:.05em}
+
+/* SECTION */
+.lp-section{padding:80px 24px;max-width:1100px;margin:0 auto}
+.lp-section-center{text-align:center}
+.lp-section-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.lp-section-title{font-family:'Kaisei Opti',serif;font-size:clamp(26px,3vw,36px);font-weight:700;color:var(--ink);line-height:1.3;margin-bottom:16px}
+.lp-section-desc{font-size:15px;color:var(--ink2);line-height:1.8;max-width:560px;margin:0 auto}
+
+/* FREE FEATURES */
+.free-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+.free-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:28px 24px;box-shadow:var(--sh-sm);transition:.2s}
+.free-card:hover{box-shadow:var(--sh);transform:translateY(-2px);border-color:var(--teal-border)}
+.free-card-icon{font-size:36px;margin-bottom:14px}
+.free-card-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.free-card-desc{font-size:13px;color:var(--ink2);line-height:1.7}
+.free-badge{display:inline-block;background:var(--teal-bg);border:1px solid var(--teal-border);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--teal2);margin-bottom:10px;letter-spacing:.06em;text-transform:uppercase}
+
+/* PREMIUM SECTION */
+.premium-section{
+  background:linear-gradient(135deg,var(--premium) 0%,#2d2825 50%,var(--teal3) 100%);
+  padding:80px 24px;position:relative;overflow:hidden;
+}
+.premium-section::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,rgba(255,255,255,.02) 0,rgba(255,255,255,.02) 1px,transparent 1px,transparent 8px);
+}
+.premium-section-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.premium-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:12px}
+.premium-title{font-family:'Kaisei Opti',serif;font-size:clamp(28px,3vw,42px);font-weight:700;color:#fff;line-height:1.3;margin-bottom:16px}
+.premium-title span{color:#5eead4}
+.premium-desc{font-size:15px;color:rgba(255,255,255,.7);line-height:1.8;max-width:560px;margin-bottom:48px}
+.premium-features-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:48px}
+.pf-card{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--r);padding:20px 20px;
+  display:flex;gap:14px;align-items:flex-start;
+  transition:.2s;
+}
+.pf-card:hover{background:rgba(255,255,255,.1);border-color:rgba(94,234,212,.3)}
+.pf-icon{font-size:24px;min-width:32px;margin-top:2px}
+.pf-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px}
+.pf-desc{font-size:12px;color:rgba(255,255,255,.6);line-height:1.6}
+.premium-cta-box{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  border-radius:var(--r-lg);padding:32px;display:flex;
+  align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+}
+.premium-cta-left{}
+.premium-cta-price{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:4px}
+.premium-cta-amount{font-family:'DM Mono',monospace;font-size:40px;font-weight:700;color:#fff}
+.premium-cta-amount span{font-size:16px;font-weight:400;color:rgba(255,255,255,.5)}
+.premium-cta-note{font-size:12px;color:rgba(255,255,255,.4);margin-top:4px}
+.premium-cta-right{display:flex;flex-direction:column;gap:10px}
+.btn-premium-cta{
+  padding:14px 36px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--teal),#06b6d4);
+  color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:.2s;white-space:nowrap;
+}
+.btn-premium-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(13,148,136,.4)}
+.btn-demo{
+  padding:12px 36px;border-radius:10px;border:1px solid rgba(255,255,255,.2);
+  background:transparent;color:rgba(255,255,255,.8);font-size:14px;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:.2s;text-align:center;
+}
+.btn-demo:hover{background:rgba(255,255,255,.08)}
+
+/* TESTIMONIAL */
+.testimonial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+.tcard{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:24px;box-shadow:var(--sh-sm)}
+.tcard-quote{font-size:24px;color:var(--teal);margin-bottom:10px}
+.tcard-text{font-size:13px;color:var(--ink2);line-height:1.8;margin-bottom:14px}
+.tcard-person{display:flex;align-items:center;gap:10px}
+.tcard-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px}
+.tcard-name{font-size:12px;font-weight:700;color:var(--ink)}
+.tcard-role{font-size:11px;color:var(--ink3)}
+
+/* FLOW */
+.flow-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:48px;position:relative}
+.flow-steps::before{content:'';position:absolute;top:28px;left:calc(12.5%);right:calc(12.5%);height:2px;background:linear-gradient(90deg,var(--teal),#06b6d4);z-index:0}
+.flow-step{text-align:center;position:relative;z-index:1;padding:0 16px}
+.flow-step-num{width:56px;height:56px;border-radius:50%;border:3px solid var(--teal);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 16px;box-shadow:var(--sh)}
+.flow-step-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.flow-step-desc{font-size:12px;color:var(--ink3);line-height:1.5}
+.flow-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;margin-bottom:6px}
+.flow-badge-free{background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border)}
+.flow-badge-paid{background:var(--premium);color:#fff}
+
+/* LP FOOTER */
+.lp-footer{background:var(--premium);padding:48px 24px 32px;text-align:center}
+.lp-footer-logo{font-family:'Kaisei Opti',serif;font-size:22px;color:#fff;margin-bottom:8px}
+.lp-footer-desc{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:24px}
+.lp-footer-links{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+.lp-footer-link{font-size:12px;color:rgba(255,255,255,.4);cursor:pointer;transition:.15s}
+.lp-footer-link:hover{color:rgba(255,255,255,.8)}
+.lp-footer-copy{font-size:11px;color:rgba(255,255,255,.25)}
+
+/* ══════════════════════════════════════
+   ② FREE SIMULATOR (existing reimported)
+══════════════════════════════════════ */
+.sim-wrap{max-width:1280px;margin:0 auto;padding:0}
+.sim-shell{display:flex;height:calc(100vh - 58px)}
+.sim-sidebar{width:300px;min-width:300px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sim-stabs{display:flex;border-bottom:1px solid var(--border)}
+.sim-stab{flex:1;padding:11px 4px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;color:var(--ink3);border-bottom:2px solid transparent;transition:.15s;letter-spacing:.04em}
+.sim-stab.on{color:var(--teal);border-bottom-color:var(--teal)}
+.sim-fpane{padding:12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.sim-flabel{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px}
+.sim-finput{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--ink);font-size:12px;font-family:inherit;outline:none;width:100%;transition:.15s}
+.sim-finput:focus{border-color:var(--teal)}
+.sim-chips{display:flex;flex-wrap:wrap;gap:4px}
+.sim-chip{padding:3px 9px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--ink3);font-size:10px;cursor:pointer;font-family:inherit;transition:.15s;font-weight:600}
+.sim-chip:hover,.sim-chip.on{background:rgba(13,148,136,.08);border-color:var(--teal);color:var(--teal)}
+.sim-ulist{flex:1;overflow-y:auto;padding:6px}
+.sim-ulist::-webkit-scrollbar{width:3px}
+.sim-ulist::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.sim-uitem{padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s;border:1.5px solid transparent;margin-bottom:2px}
+.sim-uitem:hover{background:var(--surface2)}
+.sim-uitem.sel{background:rgba(13,148,136,.06);border-color:rgba(13,148,136,.22)}
+.sim-uck{width:18px;height:18px;min-width:18px;border-radius:5px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;transition:.15s}
+.sim-uitem.sel .sim-uck{background:var(--teal);border-color:var(--teal);color:#fff}
+.sim-uinfo{flex:1;min-width:0}
+.sim-uname{font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sim-umeta{font-size:10px;color:var(--ink3);display:flex;gap:4px;margin-top:1px;flex-wrap:wrap}
+.sim-mtag{padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700}
+.sim-tr{background:rgba(239,68,68,.1);color:#e11d48}
+.sim-tg{background:rgba(13,148,136,.1);color:var(--teal2)}
+.sim-ty{background:var(--surface2);color:var(--ink3)}
+.sim-sfooter{padding:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:7px}
+.sim-selrow{display:flex;align-items:center;justify-content:space-between}
+.sim-selnum{font-size:20px;font-weight:900;color:var(--teal);font-family:'DM Mono',monospace}
+.sim-content{flex:1;overflow-y:auto;background:var(--bg)}
+.sim-content::-webkit-scrollbar{width:5px}
+.sim-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.sim-rbar{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:100;box-shadow:var(--sh-sm)}
+.sim-rtabs{display:flex;gap:3px;background:var(--surface2);border-radius:9px;padding:3px}
+.sim-rtab{padding:6px 12px;border-radius:7px;border:none;background:transparent;color:var(--ink2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap;letter-spacing:.02em}
+.sim-rtab.on{background:var(--surface);color:var(--teal);box-shadow:var(--sh-sm)}
+.sim-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 20px}
+.sim-kpi{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden}
+.sim-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sim-kpi.cb::before{background:linear-gradient(90deg,var(--blue),#818cf8)}
+.sim-kpi.cr::before{background:linear-gradient(90deg,#e11d48,#ec4899)}
+.sim-kpi.cg::before{background:linear-gradient(90deg,var(--teal),#06b6d4)}
+.sim-kpi.ca::before{background:linear-gradient(90deg,var(--amber),#f97316)}
+.sim-kpi-lbl{font-size:9px;color:var(--ink3);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.sim-kpi-val{font-size:26px;font-weight:900;font-family:'DM Mono',monospace;line-height:1}
+.sim-kpi.cb .sim-kpi-val{color:var(--blue)}
+.sim-kpi.cr .sim-kpi-val{color:#e11d48}
+.sim-kpi.cg .sim-kpi-val{color:var(--teal)}
+.sim-kpi.ca .sim-kpi-val{color:var(--amber)}
+.sim-kpi-sub{font-size:10px;color:var(--ink3);margin-top:3px}
+.sim-tc{padding:0 20px 28px}
+
+/* Sim cards */
+.sim-ucard{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden;box-shadow:var(--sh-sm)}
+.sim-uchead{padding:12px 16px;background:linear-gradient(135deg,rgba(13,148,136,.03),rgba(6,182,212,.03));border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sim-ucname{font-size:14px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sbadge{font-size:9px;padding:2px 7px;border-radius:20px;font-weight:700}
+.sb-r{background:rgba(225,29,72,.08);color:#e11d48;border:1px solid rgba(225,29,72,.15)}
+.sb-g{background:rgba(13,148,136,.08);color:var(--teal2);border:1px solid rgba(13,148,136,.15)}
+.sb-y{background:var(--surface2);color:var(--ink3);border:1px solid var(--border)}
+.sb-b{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.sim-dtable{width:100%;border-collapse:collapse}
+.sim-dtable th{padding:7px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);background:var(--surface2);border-bottom:1px solid var(--border)}
+.sim-dtable td{padding:10px 12px;font-size:11px;color:var(--ink2);border-bottom:1px solid rgba(0,0,0,.04);vertical-align:top}
+.sim-dtable tr:last-child td{border-bottom:none}
+.sim-dtable tr:hover td{background:rgba(13,148,136,.02)}
+.sim-dname{font-weight:600;color:var(--ink);font-size:12px}
+.sim-dsub{font-size:10px;color:var(--ink3);margin-top:1px}
+.sim-ddate{line-height:1.6;white-space:pre-line}
+.sim-dcost{font-family:'DM Mono',monospace;font-size:10px;white-space:pre-line;line-height:1.7}
+.sim-nodata{color:var(--ink4);font-style:italic}
+
+/* Timeline */
+.sim-tl{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px}
+.sim-tl-legend{display:flex;gap:14px;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap}
+.sim-tl-li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink2)}
+.sim-tl-dot{width:18px;height:7px;border-radius:4px}
+.sim-tl-row{display:flex;align-items:center;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.03)}
+.sim-tl-row:last-child{border-bottom:none}
+.sim-tl-lbl{width:120px;min-width:120px;padding:0 10px;overflow:hidden}
+.sim-tl-n{font-size:10px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sim-tl-d{font-size:9px;color:var(--ink3)}
+.sim-tl-bars{flex:1;position:relative;height:24px}
+.sim-tl-bar{position:absolute;height:8px;border-radius:4px}
+.sim-tl-today{position:absolute;top:0;bottom:0;width:2px;background:#e11d48;z-index:5;opacity:.7}
+
+/* Cost table */
+.sim-ctable{width:100%;border-collapse:collapse;background:var(--surface);border-radius:14px;overflow:hidden;border:1.5px solid var(--border)}
+.sim-ctable th{padding:9px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);background:var(--surface2);border-bottom:1px solid var(--border)}
+.sim-ctable td{padding:10px 12px;font-size:12px;color:var(--ink2);border-bottom:1px solid rgba(0,0,0,.04)}
+.sim-ctable tr:last-child td{border-bottom:none}
+.sim-ctable tr:hover td{background:rgba(13,148,136,.02)}
+.sim-cnum{font-family:'DM Mono',monospace;color:var(--ink);font-weight:600}
+.sim-ctotal td{background:rgba(13,148,136,.04);font-weight:700;border-top:2px solid rgba(13,148,136,.15)}
+.sim-ptabs{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+.sim-ptab{padding:5px 12px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink2);font-size:11px;cursor:pointer;font-family:inherit;font-weight:600;transition:.15s}
+.sim-ptab:hover,.sim-ptab.on{border-color:var(--teal);color:var(--teal);background:var(--teal-bg)}
+
+/* Alert */
+.abox{border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.abox-d{background:rgba(225,29,72,.05);border:1.5px solid rgba(225,29,72,.15)}
+.abox-s{background:rgba(13,148,136,.05);border:1.5px solid rgba(13,148,136,.15)}
+.abox-w{background:var(--amber-bg);border:1.5px solid var(--amber-border)}
+.abox-i{background:var(--blue-bg);border:1.5px solid var(--blue-border)}
+.abox-title{font-size:13px;font-weight:700;margin-bottom:6px}
+.abox-d .abox-title{color:#e11d48}
+.abox-s .abox-title{color:var(--teal2)}
+.abox-w .abox-title{color:var(--amber)}
+.abox-i .abox-title{color:var(--blue)}
+.abox-body{font-size:12px;color:var(--ink2);line-height:1.7}
+.taglist{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.titem{padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600}
+
+/* Sim CTA */
+.sim-premium-cta{
+  background:linear-gradient(135deg,var(--premium),#2d2825);
+  border-radius:16px;padding:24px;margin:16px 0;
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+}
+.sim-cta-text{}
+.sim-cta-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:4px}
+.sim-cta-desc{font-size:12px;color:rgba(255,255,255,.6);line-height:1.6}
+.sim-cta-btn{flex-shrink:0;padding:11px 24px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--teal),#06b6d4);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;white-space:nowrap}
+.sim-cta-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(13,148,136,.35)}
+
+/* Buttons */
+.btn-main{width:100%;background:linear-gradient(135deg,var(--teal),#06b6d4);border:none;border-radius:10px;padding:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s}
+.btn-main:hover{opacity:.9;box-shadow:var(--sh)}
+.btn-main:disabled{opacity:.4;cursor:not-allowed}
+.btn-sub{width:100%;background:transparent;border:1.5px solid var(--border);border-radius:8px;padding:8px;color:var(--ink3);font-size:12px;cursor:pointer;font-family:inherit;transition:.15s}
+.btn-sub:hover{border-color:#e11d48;color:#e11d48}
+
+/* Empty */
+.sim-empty{display:flex;align-items:center;justify-content:center;height:100%;padding:40px}
+.sim-empty-box{text-align:center;max-width:440px}
+.sim-empty-icon{font-size:52px;margin-bottom:16px;opacity:.6}
+.sim-empty-title{font-size:20px;font-weight:800;color:var(--ink);margin-bottom:8px;font-family:'Kaisei Opti',serif}
+.sim-empty-desc{font-size:13px;color:var(--ink2);line-height:1.8;margin-bottom:20px}
+
+/* Loading */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;gap:12px}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══════════════════════════════════════
+   ③ AUTH (Login / Register)
+══════════════════════════════════════ */
+.auth-wrap{min-height:calc(100vh - 58px);display:flex;align-items:center;justify-content:center;padding:40px 24px;background:var(--bg)}
+.auth-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:40px;width:100%;max-width:440px;box-shadow:var(--sh-lg)}
+.auth-logo{text-align:center;margin-bottom:28px}
+.auth-logo-mark{width:52px;height:52px;background:linear-gradient(135deg,var(--premium),#3d3530);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px}
+.auth-title{font-family:'Kaisei Opti',serif;font-size:22px;font-weight:700;color:var(--ink);text-align:center;margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--ink3);text-align:center;margin-bottom:28px;line-height:1.6}
+.auth-plan-badge{
+  background:linear-gradient(135deg,var(--premium),#3d3530);
+  border-radius:10px;padding:14px 16px;margin-bottom:24px;
+  display:flex;align-items:center;gap:12px;
+}
+.auth-plan-icon{font-size:20px}
+.auth-plan-title{font-size:13px;font-weight:700;color:#fff}
+.auth-plan-price{font-size:11px;color:rgba(255,255,255,.6);margin-top:1px}
+.auth-form{display:flex;flex-direction:column;gap:14px}
+.auth-field{}
+.auth-label{font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:5px;display:block}
+.auth-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface2);color:var(--ink);font-size:13px;font-family:inherit;outline:none;transition:.15s}
+.auth-input:focus{border-color:var(--teal);background:var(--surface)}
+.auth-btn{width:100%;padding:13px;border-radius:10px;border:none;background:var(--premium);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;margin-top:6px}
+.auth-btn:hover{background:var(--teal);box-shadow:0 6px 18px rgba(13,148,136,.3)}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:8px 0}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.auth-divider span{font-size:11px;color:var(--ink3)}
+.auth-switch{font-size:12px;color:var(--ink3);text-align:center}
+.auth-switch a{color:var(--teal);cursor:pointer;font-weight:600;text-decoration:underline}
+.auth-benefits{background:var(--teal-bg);border:1px solid var(--teal-border);border-radius:10px;padding:14px;margin-bottom:20px}
+.auth-benefit{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);margin-bottom:6px}
+.auth-benefit:last-child{margin-bottom:0}
+.auth-benefit-icon{color:var(--teal);font-size:13px;min-width:16px}
+
+/* ══════════════════════════════════════
+   ④ QUESTIONNAIRE (Premium)
+══════════════════════════════════════ */
+.q-wrap{max-width:680px;margin:0 auto;padding:32px 24px 80px;position:relative;z-index:1}
+.q-progress-wrap{padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:58px;z-index:200}
+.q-progress-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:0}
+.q-pstep{display:flex;align-items:center;gap:0;flex:1}
+.q-pstep-line{flex:1;height:2px;background:var(--border);margin:0 3px;transition:background .3s}
+.q-pstep-dot{width:26px;height:26px;min-width:26px;border-radius:50%;border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--ink3);transition:all .3s;position:relative;z-index:2}
+.q-pstep.done .q-pstep-dot{background:var(--teal);border-color:var(--teal);color:#fff}
+.q-pstep.active .q-pstep-dot{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 0 0 4px rgba(13,148,136,.18)}
+.q-pstep.done .q-pstep-line,.q-pstep.done+.q-pstep .q-pstep-line{background:var(--teal)}
+
+.qcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:32px;box-shadow:var(--sh);animation:slideUp .35s cubic-bezier(.16,1,.3,1) both}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.q-eyebrow{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:9px}
+.q-eyebrow-dot{width:5px;height:5px;border-radius:50%;background:var(--teal)}
+.q-title{font-family:'Kaisei Opti',serif;font-size:24px;font-weight:700;color:var(--ink);line-height:1.3;margin-bottom:7px}
+.q-title .hl{color:var(--teal)}
+.q-desc{font-size:13px;color:var(--ink2);line-height:1.8;margin-bottom:24px}
+.q-multi-hint{font-size:11px;color:var(--ink3);margin-bottom:10px}
+.cgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.cgrid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cgrid-1{display:grid;grid-template-columns:1fr;gap:7px}
+.cbtn{border:2px solid var(--border);border-radius:11px;padding:12px 14px;background:var(--surface2);cursor:pointer;text-align:left;transition:all .16s;display:flex;align-items:flex-start;gap:9px;font-family:inherit}
+.cbtn:hover{border-color:var(--teal);background:var(--teal-bg)}
+.cbtn.on{border-color:var(--teal);background:var(--teal-bg)}
+.cb-ico{font-size:20px;min-width:26px}
+.cb-lbl{font-size:12px;font-weight:700;color:var(--ink);line-height:1.3}
+.cb-sub{font-size:10px;color:var(--ink3);margin-top:2px;line-height:1.4}
+.cb-ck{width:17px;height:17px;min-width:17px;border-radius:5px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .16s;background:#fff;margin-left:auto;margin-top:2px}
+.cbtn.on .cb-ck{background:var(--teal);border-color:var(--teal);color:#fff}
+.cbtn-red.on{border-color:#e11d48;background:var(--rose-bg)}
+.cbtn-red.on .cb-ck{background:#e11d48;border-color:#e11d48;color:#fff}
+.q-scdiv{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:20px 0 12px;display:flex;align-items:center;gap:7px}
+.q-scdiv::after{content:'';flex:1;height:1px;background:var(--border)}
+.q-scalelbl{display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-bottom:6px}
+.q-scalebtns{display:flex;gap:5px;margin-bottom:4px}
+.q-scbtn{flex:1;height:40px;border:2px solid var(--border);border-radius:9px;background:var(--surface2);cursor:pointer;font-size:12px;font-weight:700;color:var(--ink3);transition:.15s;font-family:inherit}
+.q-scbtn:hover{border-color:var(--teal);color:var(--teal)}
+.q-scbtn.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.q-scalequestion{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:7px;margin-top:14px}
+.tinput{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:11px;background:var(--surface2);color:var(--ink);font-size:13px;font-family:inherit;outline:none;resize:vertical;min-height:72px;transition:border-color .2s;line-height:1.7}
+.tinput:focus{border-color:var(--teal);background:var(--surface)}
+.tinput::placeholder{color:var(--ink4)}
+.tag-area-q{display:flex;flex-wrap:wrap;gap:7px;padding:10px;border:2px solid var(--border);border-radius:11px;background:var(--surface2);min-height:50px;cursor:text;transition:.2s}
+.tag-area-q:focus-within{border-color:var(--teal);background:var(--surface)}
+.tagchip{display:flex;align-items:center;gap:3px;background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal2);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
+.tagchip-x{cursor:pointer;font-size:13px;opacity:.6}
+.tagchip-x:hover{opacity:1}
+.taginput-el{border:none;outline:none;background:transparent;font-size:12px;font-family:inherit;color:var(--ink);min-width:100px;flex:1}
+.tag-sugs{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tag-sug{padding:3px 10px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:11px;color:var(--ink2);cursor:pointer;transition:.15s}
+.tag-sug:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg)}
+.q-nav{display:flex;gap:10px;margin-top:28px;justify-content:flex-end}
+.q-btn-back{padding:11px 22px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface2);color:var(--ink2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+.q-btn-back:hover{border-color:var(--ink3);color:var(--ink)}
+.q-btn-next{padding:11px 28px;border-radius:9px;border:none;background:var(--ink);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s}
+.q-btn-next:hover{background:var(--teal);box-shadow:0 5px 16px rgba(13,148,136,.3)}
+.q-btn-next:disabled{opacity:.4;cursor:not-allowed}
+.q-btn-final{background:linear-gradient(135deg,var(--teal),#06b6d4);font-size:14px;padding:13px 32px}
+.q-btn-final:hover{box-shadow:0 7px 22px rgba(13,148,136,.35)}
+
+/* ══════════════════════════════════════
+   ⑤ RESULTS / MYPAGE (Premium)
+══════════════════════════════════════ */
+.mypage-wrap{max-width:900px;margin:0 auto;padding:28px 24px 64px}
+.mypage-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.mypage-title{font-family:'Kaisei Opti',serif;font-size:24px;font-weight:700}
+.mypage-tabs{display:flex;gap:3px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:3px}
+.mypage-tab{padding:7px 16px;border-radius:8px;border:none;background:transparent;color:var(--ink2);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;letter-spacing:.02em}
+.mypage-tab.on{background:var(--surface);color:var(--teal);box-shadow:var(--sh-sm)}
+.mypage-content{animation:fadeIn .3s ease both}
+
+/* Result hero */
+.res-hero{background:linear-gradient(135deg,var(--teal3),var(--teal2),#0d9488);border-radius:var(--r-lg);padding:32px;color:#fff;text-align:center;margin-bottom:20px;position:relative;overflow:hidden}
+.res-hero::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent 8px)}
+.res-hero-emoji{font-size:48px;margin-bottom:10px;position:relative;z-index:1}
+.res-hero-title{font-family:'Kaisei Opti',serif;font-size:26px;font-weight:700;margin-bottom:8px;position:relative;z-index:1}
+.res-hero-sub{font-size:14px;opacity:.85;line-height:1.7;position:relative;z-index:1}
+
+/* Profile badges */
+.pbadges{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px}
+.pbadge{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid}
+.pb-t{background:var(--teal-bg);color:var(--teal2);border-color:rgba(13,148,136,.25)}
+.pb-a{background:var(--amber-bg);color:var(--amber);border-color:rgba(217,119,6,.25)}
+.pb-b{background:var(--blue-bg);color:var(--blue);border-color:rgba(37,99,235,.25)}
+.pb-r{background:var(--rose-bg);color:#e11d48;border-color:rgba(225,29,72,.25)}
+
+/* AI cards */
+.ai-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:var(--sh-sm)}
+.ai-card-hd{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.ai-card-ico{width:33px;height:33px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.ai-card-title{font-size:14px;font-weight:700;color:var(--ink)}
+.ai-card-body{font-size:13px;color:var(--ink2);line-height:1.8}
+
+/* Score */
+.score-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.score-label{font-size:12px;color:var(--ink2);width:110px;min-width:110px}
+.score-bar-w{flex:1;height:7px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.score-bar-f{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+.score-num{font-size:11px;font-weight:700;width:36px;text-align:right;font-family:'DM Mono',monospace}
+
+/* Suggest card */
+.sug-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:var(--sh-sm);transition:box-shadow .2s}
+.sug-card:hover{box-shadow:var(--sh)}
+.sug-card-head{padding:14px 18px;display:flex;align-items:flex-start;gap:11px;border-bottom:1px solid var(--border)}
+.sug-rank{width:30px;height:30px;min-width:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff}
+.rank-g{background:linear-gradient(135deg,#d97706,#f59e0b)}
+.rank-s{background:linear-gradient(135deg,#6b7280,#9ca3af)}
+.rank-b{background:linear-gradient(135deg,#92400e,#b45309)}
+.rank-n{background:var(--surface3);color:var(--ink3)}
+.sug-uni-name{font-size:15px;font-weight:800;color:var(--ink);margin-bottom:2px}
+.sug-dept{font-size:12px;color:var(--ink2);margin-bottom:5px}
+.sug-tags{display:flex;flex-wrap:wrap;gap:4px}
+.sug-tag{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid}
+.st-m{background:var(--teal-bg);color:var(--teal2);border-color:rgba(13,148,136,.25)}
+.st-w{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.st-i{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.st-h{background:var(--rose-bg);color:#e11d48;border-color:var(--rose-border)}
+.sug-card-body{padding:12px 18px}
+.sug-reason{font-size:12px;color:var(--ink2);line-height:1.7}
+.sug-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.sml{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+.smv{font-size:11px;color:var(--ink2);line-height:1.4}
+.sug-score-badge{font-size:22px;font-weight:900;font-family:'DM Mono',monospace;min-width:52px;text-align:right}
+
+/*穴場 badge */
+.anaba-badge{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700}
+.popular-badge{display:inline-flex;align-items:center;gap:5px;background:var(--rose-bg);color:#e11d48;border:1px solid var(--rose-border);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700}
+
+/* Schedule */
+.schedule-wrap{}
+.sch-month{margin-bottom:20px}
+.sch-month-title{font-size:14px;font-weight:800;color:var(--ink);padding:8px 12px;background:var(--surface2);border-radius:8px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.sch-month-dot{width:10px;height:10px;border-radius:50%;background:var(--teal)}
+.sch-item{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;box-shadow:var(--sh-sm)}
+.sch-item-type{width:6px;min-width:6px;border-radius:3px;align-self:stretch}
+.sch-type-ougan{background:linear-gradient(180deg,#2563eb,#818cf8)}
+.sch-type-shiken{background:linear-gradient(180deg,var(--amber),#f97316)}
+.sch-type-kekka{background:linear-gradient(180deg,var(--teal),#06b6d4)}
+.sch-type-teguzuki{background:linear-gradient(180deg,#e11d48,#ec4899)}
+.sch-item-content{flex:1}
+.sch-item-uni{font-size:12px;font-weight:700;color:var(--ink)}
+.sch-item-detail{font-size:11px;color:var(--ink3);margin-top:1px}
+.sch-item-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--ink3);margin-left:auto;white-space:nowrap}
+
+/* Actions */
+.action-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+.action-item:last-child{border-bottom:none}
+.action-num{width:22px;height:22px;min-width:22px;background:var(--teal);color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+
+/* Notice */
+.notice{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:11px;color:var(--ink3);line-height:1.7;margin-top:20px}
+
+/* Loading */
+.ai-loading{text-align:center;padding:52px 20px}
+.ai-loading-icon{font-size:44px;margin-bottom:16px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:.7}}
+.ai-loading-title{font-family:'Kaisei Opti',serif;font-size:20px;color:var(--ink);margin-bottom:6px}
+.ai-ldots{display:flex;gap:5px;justify-content:center;margin-top:14px}
+.ai-ldot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:bounce .8s ease-in-out infinite}
+.ai-ldot:nth-child(2){animation-delay:.15s}
+.ai-ldot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.ai-lsteps{margin-top:20px;display:flex;flex-direction:column;gap:6px;max-width:300px;margin-left:auto;margin-right:auto}
+.ai-lstep{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink3);padding:7px 12px;border-radius:7px;background:var(--surface2)}
+.ai-lstep.done{color:var(--teal);background:var(--teal-bg)}
+
+/* UTIL */
+.mt4{margin-top:16px} .mb2{margin-bottom:8px} .mb3{margin-bottom:12px}
+@media(max-width:860px){
+  .free-grid,.premium-features-grid,.testimonial-grid{grid-template-columns:1fr}
+  .flow-steps{grid-template-columns:repeat(2,1fr)}
+  .flow-steps::before{display:none}
+  .sim-shell{flex-direction:column}.sim-sidebar{width:100%;min-width:0;height:280px}
+  .sim-kpi-row{grid-template-columns:repeat(2,1fr)}
+  .lp-stats{flex-direction:column}.lp-stat{border-right:none;border-bottom:1px solid var(--border)}
+  .lp-stat:last-child{border-bottom:none}
+  .premium-cta-box{flex-direction:column;text-align:center}
+  .cgrid,.cgrid-3{grid-template-columns:1fr}
+  .sug-meta{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════ GLOBAL NAV ════════ -->
+<nav class="gnav">
+  <div class="gnav-logo" onclick="goTo('lp')">
+    <div class="gnav-logo-mark">📖</div>
+    <div>
+      <div class="gnav-logo-text font-display">受験秘書</div>
+      <div class="gnav-logo-sub">総合型選抜ナビ</div>
+    </div>
+  </div>
+  <div class="gnav-links" id="gnav-links">
+    <button class="gnav-link" onclick="goTo('sim')">🔍 無料シミュレーター</button>
+    <button class="gnav-link" id="gnav-mypage" style="display:none" onclick="goTo('mypage')">📊 マイページ</button>
+    <div id="gnav-auth-area">
+      <button class="gnav-btn-premium" onclick="goTo('auth')">✦ プレミアム登録</button>
+    </div>
+    <div id="gnav-user-area" style="display:none">
+      <div class="gnav-user">
+        <div class="gnav-avatar" onclick="goTo('mypage')">👤</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════ ① LANDING PAGE ════════ -->
+<div class="page active" id="page-lp">
+
+  <!-- HERO -->
+  <section class="lp-hero">
+    <div class="lp-hero-bg"></div>
+    <div class="lp-hero-lines"></div>
+    <div class="lp-eyebrow">✦ 2026年度 総合型選抜対応</div>
+    <h1 class="lp-title font-display">
+      受験のすべてを、<br><span class="accent">あなただけの秘書</span>が<br>サポートする。
+    </h1>
+    <p class="lp-desc">
+      522大学・7,980学科の最新データと AIが、出願日程・費用・併願可否の整理から、あなたに合った大学のサジェストまで、ひとつのツールで完結させます。
+    </p>
+    <div class="lp-hero-btns">
+      <button class="btn-hero-free" onclick="goTo('sim')">🔍 無料で試す（登録不要）</button>
+      <button class="btn-hero-premium" onclick="goTo('auth')">✦ プレミアムで始める</button>
+    </div>
+    <div class="lp-stats">
+      <div class="lp-stat"><div class="lp-stat-num font-mono">522</div><div class="lp-stat-label">収録大学数</div></div>
+      <div class="lp-stat"><div class="lp-stat-num font-mono">7,980</div><div class="lp-stat-label">学科・専攻数</div></div>
+      <div class="lp-stat"><div class="lp-stat-num font-mono">2026</div><div class="lp-stat-label">年度対応済み</div></div>
+      <div class="lp-stat"><div class="lp-stat-num font-mono">AI</div><div class="lp-stat-label">マッチング診断</div></div>
+    </div>
+  </section>
+
+  <!-- FLOW -->
+  <section class="lp-section lp-section-center">
+    <div class="lp-section-eyebrow">使い方</div>
+    <h2 class="lp-section-title font-display">4ステップで、受験計画が完成する</h2>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">🔍</div>
+        <div class="flow-badge flow-badge-free">無料</div>
+        <div class="flow-step-title">大学を検索・比較</div>
+        <div class="flow-step-desc">日程・費用・併願可否を一覧で比較。登録不要ですぐ使える。</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">💡</div>
+        <div class="flow-badge flow-badge-free">無料</div>
+        <div class="flow-step-title">「もっと知りたい」が芽生える</div>
+        <div class="flow-step-desc">「で、自分はどこを受ければいいの？」という問いが自然に浮かぶ。</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">✦</div>
+        <div class="flow-badge flow-badge-paid">プレミアム</div>
+        <div class="flow-step-title">AI問診でプロフィール作成</div>
+        <div class="flow-step-desc">強み・活動実績・得意科目・志望から、あなた専用の分析を生成。</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">📅</div>
+        <div class="flow-badge flow-badge-paid">プレミアム</div>
+        <div class="flow-step-title">受験秘書が動き出す</div>
+        <div class="flow-step-desc">合格率データ・穴場発掘・スケジュール自動生成・レポート出力。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FREE FEATURES -->
+  <section class="lp-section" style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);max-width:100%;padding:60px 24px">
+    <div style="max-width:1100px;margin:0 auto">
+      <div class="lp-section-center">
+        <div class="lp-section-eyebrow">無料でできること</div>
+        <h2 class="lp-section-title font-display">こんなのが<span style="color:var(--teal)">無料</span>でいいの？</h2>
+        <p class="lp-section-desc">受験生が何時間もかけて調べていた情報を、ボタン一つで比較できます。</p>
+      </div>
+      <div class="free-grid">
+        <div class="free-card">
+          <div class="free-badge">FREE</div>
+          <div class="free-card-icon">📅</div>
+          <div class="free-card-title">日程タイムライン</div>
+          <div class="free-card-desc">選んだ大学の出願期間・試験日を4月〜3月のガントチャートで一覧表示。重複が一目でわかる。</div>
+        </div>
+        <div class="free-card">
+          <div class="free-badge">FREE</div>
+          <div class="free-card-icon">⚡</div>
+          <div class="free-card-title">併願チェック</div>
+          <div class="free-card-desc">専願のみの大学を自動検出・警告。出願期間の重複を月単位で可視化。受験計画の抜け漏れを防ぐ。</div>
+        </div>
+        <div class="free-card">
+          <div class="free-badge">FREE</div>
+          <div class="free-card-icon">💰</div>
+          <div class="free-card-title">費用シミュレーション</div>
+          <div class="free-card-desc">受験料・入学金・授業料を横並び比較。受験パターンを変えると合計額がリアルタイムで変わる。</div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:32px">
+        <button class="btn-hero-free" style="font-size:14px" onclick="goTo('sim')">今すぐ無料で試す →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PREMIUM FEATURES -->
+  <section class="premium-section">
+    <div class="premium-section-inner">
+      <div class="premium-eyebrow">プレミアムプラン</div>
+      <h2 class="premium-title font-display">「自分だけの<span>受験秘書</span>」を<br>持ってみませんか。</h2>
+      <p class="premium-desc">無料版は「情報を調べる」ツール。プレミアムは「自分に合った答えを出す」ツールです。</p>
+      <div class="premium-features-grid">
+        <div class="pf-card">
+          <div class="pf-icon">🧠</div>
+          <div><div class="pf-title">AI問診 × マッチング診断</div><div class="pf-desc">得意科目・活動実績・パーソナリティから、最適な大学・学部・選抜方法を診断。</div></div>
+        </div>
+        <div class="pf-card">
+          <div class="pf-icon">📈</div>
+          <div><div class="pf-title">穴場スコア・倍率データ</div><div class="pf-desc">募集人数・応募者数・合格率データと照合。「実はここ穴場！」「ここは激戦注意」を表示。</div></div>
+        </div>
+        <div class="pf-card">
+          <div class="pf-icon">📅</div>
+          <div><div class="pf-title">出願スケジュール自動生成</div><div class="pf-desc">志望校を選ぶだけで、逆算した出願カレンダーを自動生成。締切リマインドも。</div></div>
+        </div>
+        <div class="pf-card">
+          <div class="pf-icon">📄</div>
+          <div><div class="pf-title">保護者向けレポートPDF出力</div><div class="pf-desc">診断結果・費用・日程を1枚のレポートに。保護者・担任の先生への共有に最適。</div></div>
+        </div>
+        <div class="pf-card">
+          <div class="pf-icon">🔄</div>
+          <div><div class="pf-title">条件変更で何度でも診断</div><div class="pf-desc">「エリアを変えたら？」「費用重視にしたら？」パターンを変えて比較できる。</div></div>
+        </div>
+        <div class="pf-card">
+          <div class="pf-icon">✍️</div>
+          <div><div class="pf-title">志望理由書 AIアドバイス</div><div class="pf-desc">あなたのプロフィールをもとに「この選抜でこの活動をこうアピールすると強い」を提案。</div></div>
+        </div>
+      </div>
+      <div class="premium-cta-box">
+        <div class="premium-cta-left">
+          <div class="premium-cta-price">プレミアムプラン</div>
+          <div class="premium-cta-amount font-mono">¥980<span> / 月</span></div>
+          <div class="premium-cta-note">※ いつでも解約可能 · 初月無料キャンペーン準備中</div>
+        </div>
+        <div class="premium-cta-right">
+          <button class="btn-premium-cta" onclick="goTo('auth')">✦ 今すぐ始める</button>
+          <button class="btn-demo" onclick="goTo('questionnaire')">診断を体験してみる（デモ）</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="lp-section lp-section-center">
+    <div class="lp-section-eyebrow">利用者の声</div>
+    <h2 class="lp-section-title font-display">受験生・保護者から届いた声</h2>
+    <div class="testimonial-grid">
+      <div class="tcard">
+        <div class="tcard-quote">"</div>
+        <div class="tcard-text">専願かどうかが一目でわかったのが一番助かった。自分で調べていたときは気づかなかった大学を3校も見逃していました。</div>
+        <div class="tcard-person">
+          <div class="tcard-avatar">📚</div>
+          <div><div class="tcard-name">高校3年生（私立）</div><div class="tcard-role">関東在住 · 経営学部志望</div></div>
+        </div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-quote">"</div>
+        <div class="tcard-text">受験料の合計がこんなに見やすく出るとは思わなかった。3パターン比較して、予算の組み方が全然変わりました。</div>
+        <div class="tcard-person">
+          <div class="tcard-avatar">👩</div>
+          <div><div class="tcard-name">保護者（お母様）</div><div class="tcard-role">子ども：高校2年生</div></div>
+        </div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-quote">"</div>
+        <div class="tcard-text">面接が得意と診断されて、面接重視の大学を優先的に見せてもらえた。自分では気づかなかったアプローチでした。</div>
+        <div class="tcard-person">
+          <div class="tcard-avatar">🌱</div>
+          <div><div class="tcard-name">高校2年生</div><div class="tcard-role">近畿在住 · 国際学部志望</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="lp-footer">
+    <div class="lp-footer-logo font-display">受験秘書</div>
+    <div class="lp-footer-desc">総合型選抜ナビ · 2026年度対応</div>
+    <div class="lp-footer-links">
+      <span class="lp-footer-link">利用規約</span>
+      <span class="lp-footer-link">プライバシーポリシー</span>
+      <span class="lp-footer-link">免責事項</span>
+      <span class="lp-footer-link">お問い合わせ</span>
+    </div>
+    <div class="lp-footer-copy">© 2026 受験秘書. All rights reserved. · 本サービスの診断結果はAIによる参考情報です。</div>
+  </footer>
+</div>
+
+<!-- ════════ ② FREE SIMULATOR ════════ -->
+<div class="page" id="page-sim">
+<div class="sim-wrap">
+<div class="sim-shell">
+  <div class="sim-sidebar">
+    <div class="sim-stabs">
+      <div class="sim-stab on" id="ss-s" onclick="simSwSTab('s')">🔍 検索</div>
+      <div class="sim-stab" id="ss-f" onclick="simSwSTab('f')">⚙ 絞込</div>
+    </div>
+    <div id="sim-sp-s" class="sim-fpane" style="border-bottom:none;flex:none">
+      <input type="text" class="sim-finput" id="sim-usearch" placeholder="🔍 大学名・学部名で検索..." oninput="simRenderList()">
+    </div>
+    <div id="sim-sp-f" class="sim-fpane" style="display:none">
+      <div><div class="sim-flabel">地域</div>
+        <select class="sim-finput" id="sim-f-region" onchange="simOnRegion()">
+          <option value="">すべての地域</option>
+          <option value="北海道・東北">北海道・東北</option>
+          <option value="関東">関東</option>
+          <option value="中部">中部</option>
+          <option value="近畿">近畿</option>
+          <option value="中国・四国">中国・四国</option>
+          <option value="九州・沖縄">九州・沖縄</option>
+        </select>
+      </div>
+      <div><div class="sim-flabel">都道府県</div>
+        <select class="sim-finput" id="sim-f-pref" onchange="simRenderList()"><option value="">すべて</option></select>
+      </div>
+      <div><div class="sim-flabel">学部系統</div>
+        <div class="sim-chips" id="sim-cg-fac">
+          <button class="sim-chip on" data-v="">すべて</button>
+          <button class="sim-chip" data-v="文系">文系</button>
+          <button class="sim-chip" data-v="理系">理系</button>
+          <button class="sim-chip" data-v="医療・保健">医療</button>
+          <button class="sim-chip" data-v="教育">教育</button>
+          <button class="sim-chip" data-v="芸術・スポーツ">芸術</button>
+          <button class="sim-chip" data-v="農・食">農食</button>
+        </div>
+      </div>
+      <div><div class="sim-flabel">出願区分</div>
+        <div class="sim-chips" id="sim-cg-ougan">
+          <button class="sim-chip on" data-v="">すべて</button>
+          <button class="sim-chip" data-v="専願">専願のみ</button>
+          <button class="sim-chip" data-v="併願">併願可</button>
+        </div>
+      </div>
+      <div><div class="sim-flabel">共通テスト</div>
+        <div class="sim-chips" id="sim-cg-kyo">
+          <button class="sim-chip on" data-v="">すべて</button>
+          <button class="sim-chip" data-v="あり">あり</button>
+          <button class="sim-chip" data-v="なし">なし</button>
+        </div>
+      </div>
+      <div><div class="sim-flabel">出願月</div>
+        <select class="sim-finput" id="sim-f-month" onchange="simRenderList()">
+          <option value="">すべての時期</option>
+          <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+          <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+          <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+          <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+        </select>
+      </div>
+    </div>
+    <div class="sim-ulist" id="sim-ulist">
+      <div class="loading-wrap"><div class="spinner"></div><span style="font-size:11px;color:var(--ink3)">読み込み中...</span></div>
+    </div>
+    <div class="sim-sfooter">
+      <div class="sim-selrow">
+        <span style="font-size:11px;color:var(--ink2)">選択中</span>
+        <div><span class="sim-selnum" id="sim-scnt">0</span><span style="font-size:11px;color:var(--ink3)"> 校</span></div>
+      </div>
+      <button class="btn-main" id="sim-bsim" onclick="simRunSim()" disabled style="font-size:12px;padding:10px">シミュレーション開始 →</button>
+      <button class="btn-sub" onclick="simClearSel()" style="font-size:11px;padding:7px">選択をクリア</button>
+    </div>
+  </div>
+  <div class="sim-content">
+    <div id="sim-cin">
+      <div class="sim-empty">
+        <div class="sim-empty-box">
+          <div class="sim-empty-icon">🗺️</div>
+          <div class="sim-empty-title">志望大学を選んでシミュレーション</div>
+          <div class="sim-empty-desc">左のリストから大学を選択して「シミュレーション開始」を押すと、日程・費用・併願可否を一覧比較できます。</div>
+          <button class="btn-main" style="width:auto;padding:10px 22px;font-size:12px" onclick="goTo('lp')">← ホームに戻る</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ════════ ③ AUTH ════════ -->
+<div class="page" id="page-auth">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-logo-mark">✦</div>
+        <div class="auth-title font-display" id="auth-title">プレミアム登録</div>
+        <div class="auth-sub" id="auth-sub">自分だけの受験秘書を作りましょう</div>
+      </div>
+      <div class="auth-plan-badge" id="auth-plan-area">
+        <div class="auth-plan-icon">👑</div>
+        <div>
+          <div class="auth-plan-title">プレミアムプラン</div>
+          <div class="auth-plan-price">月額 ¥980 · いつでも解約可能</div>
+        </div>
+      </div>
+      <div class="auth-benefits" id="auth-benefits-area">
+        <div class="auth-benefit"><span class="auth-benefit-icon">✦</span>AI問診 · マッチング診断</div>
+        <div class="auth-benefit"><span class="auth-benefit-icon">✦</span>穴場スコア・倍率データ（近日追加）</div>
+        <div class="auth-benefit"><span class="auth-benefit-icon">✦</span>出願スケジュール自動生成</div>
+        <div class="auth-benefit"><span class="auth-benefit-icon">✦</span>保護者向けレポートPDF出力</div>
+      </div>
+      <div class="auth-form" id="auth-form">
+        <div class="auth-field" id="auth-name-field">
+          <label class="auth-label">お名前</label>
+          <input type="text" class="auth-input" id="auth-name" placeholder="山田 太郎">
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">メールアドレス</label>
+          <input type="email" class="auth-input" id="auth-email" placeholder="example@email.com">
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">パスワード</label>
+          <input type="password" class="auth-input" id="auth-pass" placeholder="8文字以上">
+        </div>
+        <button class="auth-btn" onclick="authSubmit()" id="auth-submit-btn">登録してAI診断を始める →</button>
+        <div class="auth-divider"><span>または</span></div>
+        <div class="auth-switch" id="auth-switch-text">
+          すでにアカウントをお持ちですか？ <a onclick="switchAuthMode()">ログイン</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ④ QUESTIONNAIRE ════════ -->
+<div class="page" id="page-questionnaire">
+  <div class="q-progress-wrap" id="q-prog-wrap">
+    <div class="q-progress-inner" id="q-prog-inner"></div>
+  </div>
+  <div class="q-wrap">
+    <div id="q-step-container"></div>
+  </div>
+</div>
+
+<!-- ════════ ⑤ MYPAGE / RESULTS ════════ -->
+<div class="page" id="page-mypage">
+  <div class="mypage-wrap">
+    <div class="mypage-header">
+      <div class="mypage-title font-display">📊 マイページ</div>
+      <div class="mypage-tabs">
+        <button class="mypage-tab on" id="mt-result" onclick="swMyTab('result')">✨ 診断結果</button>
+        <button class="mypage-tab" id="mt-schedule" onclick="swMyTab('schedule')">📅 スケジュール</button>
+        <button class="mypage-tab" id="mt-sim" onclick="swMyTab('sim')">🔍 シミュレーター</button>
+      </div>
+    </div>
+    <div id="mypage-content"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// GLOBAL STATE
+// ══════════════════════════════════════════════════
+const G = {
+  isLoggedIn: false,
+  userName: '',
+  currentPage: 'lp',
+  simData: [], simMap: {}, simSel: new Set(),
+  simFac:'', simOugan:'', simKyo:'',
+  simCurTab: 'detail',
+  qStep: 0, qAnswers: {},
+  aiResult: null,
+};
+
+const PREFS = {
+  '北海道・東北':['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県'],
+  '関東':['茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県'],
+  '中部':['新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県'],
+  '近畿':['滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県'],
+  '中国・四国':['鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県'],
+  '九州・沖縄':['福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'],
+};
+const MN = ['4月','5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月'];
+const MI = {'4':0,'5':1,'6':2,'7':3,'8':4,'9':5,'10':6,'11':7,'12':8,'1':9,'2':10,'3':11};
+
+// ══════════════════════════════════════════════════
+// PAGE ROUTING
+// ══════════════════════════════════════════════════
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  G.currentPage = page;
+  document.querySelectorAll('.gnav-link').forEach(b => b.classList.remove('on'));
+  if (page === 'sim') document.querySelector('.gnav-link')?.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if (page === 'sim' && !G.simData.length) loadSimData();
+  if (page === 'mypage') renderMypage();
+  if (page === 'questionnaire') { G.qStep = 0; G.qAnswers = {}; renderQStep(0); }
+}
+
+// ══════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════
+let authMode = 'register'; // 'register' | 'login'
+
+function switchAuthMode() {
+  authMode = authMode === 'register' ? 'login' : 'register';
+  const isReg = authMode === 'register';
+  document.getElementById('auth-title').textContent = isReg ? 'プレミアム登録' : 'ログイン';
+  document.getElementById('auth-sub').textContent = isReg ? '自分だけの受験秘書を作りましょう' : 'おかえりなさい';
+  document.getElementById('auth-plan-area').style.display = isReg ? '' : 'none';
+  document.getElementById('auth-benefits-area').style.display = isReg ? '' : 'none';
+  document.getElementById('auth-name-field').style.display = isReg ? '' : 'none';
+  document.getElementById('auth-submit-btn').textContent = isReg ? '登録してAI診断を始める →' : 'ログインする →';
+  document.getElementById('auth-switch-text').innerHTML = isReg
+    ? 'すでにアカウントをお持ちですか？ <a onclick="switchAuthMode()">ログイン</a>'
+    : 'アカウントをお持ちでないですか？ <a onclick="switchAuthMode()">新規登録</a>';
+}
+
+function authSubmit() {
+  const email = document.getElementById('auth-email').value;
+  const name = authMode === 'register' ? document.getElementById('auth-name').value : 'ユーザー';
+  if (!email) { alert('メールアドレスを入力してください'); return; }
+  // Demo: simulate login
+  G.isLoggedIn = true;
+  G.userName = name || email.split('@')[0];
+  document.getElementById('gnav-auth-area').style.display = 'none';
+  document.getElementById('gnav-user-area').style.display = '';
+  document.getElementById('gnav-mypage').style.display = '';
+  goTo('questionnaire');
+}
+
+// ══════════════════════════════════════════════════
+// SIMULATOR DATA
+// ══════════════════════════════════════════════════
+async function loadSimData() {
+  try {
+    const r = await fetch('university_data.json');
+    G.simData = await r.json();
+    buildSimMap();
+    simPopulatePrefs();
+    simRenderList();
+  } catch(e) {
+    document.getElementById('sim-ulist').innerHTML = '<div style="padding:14px;color:var(--rose);font-size:11px">university_data.json が見つかりません。<br>HTMLと同じフォルダに置いてください。</div>';
+  }
+}
+
+function buildSimMap() {
+  G.simMap = {};
+  for (const r of G.simData) {
+    if (!G.simMap[r['大学名']]) G.simMap[r['大学名']] = [];
+    G.simMap[r['大学名']].push(r);
+  }
+}
+
+function simPopulatePrefs() {
+  const ps = [...new Set(G.simData.map(r=>r['都道府県']).filter(p=>p&&p!=='no data'))].sort((a,b)=>a.localeCompare(b,'ja'));
+  const s = document.getElementById('sim-f-pref');
+  ps.forEach(p => { const o = document.createElement('option'); o.value=p; o.textContent=p; s.appendChild(o); });
+}
+
+// Sim chips
+['sim-cg-fac','sim-cg-ougan','sim-cg-kyo'].forEach(id => {
+  document.getElementById(id)?.querySelectorAll('.sim-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById(id).querySelectorAll('.sim-chip').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      if(id==='sim-cg-fac') G.simFac=btn.dataset.v;
+      if(id==='sim-cg-ougan') G.simOugan=btn.dataset.v;
+      if(id==='sim-cg-kyo') G.simKyo=btn.dataset.v;
+      simRenderList();
+    });
+  });
+});
+
+function simSwSTab(t) {
+  document.getElementById('sim-sp-s').style.display = t==='s'?'':'none';
+  document.getElementById('sim-sp-f').style.display = t==='f'?'':'none';
+  document.getElementById('ss-s').classList.toggle('on',t==='s');
+  document.getElementById('ss-f').classList.toggle('on',t==='f');
+}
+
+function simOnRegion() {
+  const reg = document.getElementById('sim-f-region').value;
+  const ps = document.getElementById('sim-f-pref');
+  const ok = reg ? PREFS[reg]||[] : null;
+  Array.from(ps.options).forEach(o=>{o.style.display=(!ok||ok.includes(o.value)||o.value==='')?'':'none';});
+  ps.value=''; simRenderList();
+}
+
+function simGetFiltered() {
+  const q = (document.getElementById('sim-usearch')?.value||'').trim();
+  const pref = document.getElementById('sim-f-pref')?.value||'';
+  const month = document.getElementById('sim-f-month')?.value||'';
+  const region = document.getElementById('sim-f-region')?.value||'';
+  return Object.keys(G.simMap).sort((a,b)=>a.localeCompare(b,'ja')).filter(name => {
+    const rs = G.simMap[name];
+    if(q && !name.includes(q) && !rs.some(r=>(r['学部名']||'').includes(q)||(r['学科名']||'').includes(q))) return false;
+    const ok = region ? PREFS[region]||[] : null;
+    if(pref && !rs.some(r=>r['都道府県']===pref)) return false;
+    if(ok && !pref && !rs.some(r=>ok.includes(r['都道府県']))) return false;
+    if(G.simFac && !rs.some(r=>r['学部カテゴリ']===G.simFac)) return false;
+    if(G.simOugan && !rs.some(r=>r['出願区分']===G.simOugan)) return false;
+    if(G.simKyo && !rs.some(r=>r['共通テスト有無']===G.simKyo)) return false;
+    if(month){const mi=MI[month];if(!rs.some(r=>{const rg=mRange(r['出願期間']);return rg&&mi>=rg.s&&mi<=rg.e;}))return false;}
+    return true;
+  });
+}
+
+function simRenderList() {
+  if(!Object.keys(G.simMap).length) return;
+  const unis = simGetFiltered();
+  const el = document.getElementById('sim-ulist');
+  if(!unis.length){el.innerHTML='<div style="padding:14px;text-align:center;color:var(--ink3);font-size:11px">条件に一致する大学がありません</div>';return;}
+  el.innerHTML = unis.map(name => {
+    const rs=G.simMap[name]; const sel=G.simSel.has(name);
+    const hH=rs.some(r=>r['出願区分']==='併願');
+    const hS=rs.some(r=>r['出願区分']==='専願');
+    const tag=(!hH&&hS)?`<span class="sim-mtag sim-tr">専願</span>`:hH?`<span class="sim-mtag sim-tg">併願可</span>`:`<span class="sim-mtag sim-ty">要確認</span>`;
+    const cats=[...new Set(rs.map(r=>r['学部カテゴリ']).filter(c=>c&&c!=='no data'))].slice(0,2).join('・');
+    return `<div class="sim-uitem ${sel?'sel':''}" onclick="simTog('${esc(name)}')">
+      <div class="sim-uck">${sel?'✓':''}</div>
+      <div class="sim-uinfo">
+        <div class="sim-uname">${h(name)}</div>
+        <div class="sim-umeta">${tag}<span class="sim-mtag sim-ty">${h(cats||rs.length+'学科')}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function simTog(name){G.simSel.has(name)?G.simSel.delete(name):G.simSel.add(name);simUpdateCnt();simRenderList();}
+function simClearSel(){G.simSel.clear();simUpdateCnt();simRenderList();document.getElementById('sim-cin').innerHTML=`<div class="sim-empty"><div class="sim-empty-box"><div class="sim-empty-icon">🗺️</div><div class="sim-empty-title">志望大学を選んでシミュレーション</div></div></div>`;}
+function simUpdateCnt(){
+  const n=G.simSel.size;
+  document.getElementById('sim-scnt').textContent=n;
+  document.getElementById('sim-bsim').disabled=n===0;
+}
+
+function simRunSim() {
+  const data=[...G.simSel].map(name=>({name,records:G.simMap[name]}));
+  const ci=document.getElementById('sim-cin');
+  const totD=data.reduce((s,u)=>s+u.records.length,0);
+  const sOnly=data.filter(u=>u.records.every(r=>r['出願区分']==='専願')).length;
+  const hOk=data.filter(u=>u.records.some(r=>r['出願区分']==='併願')).length;
+  let eSum=0,eN=0;
+  for(const {records} of data){const c=parseCost(records[0]['費用']);if(c.exam>0){eSum+=c.exam;eN++;}}
+  ci.innerHTML=`
+    <div class="sim-rbar">
+      <div style="font-size:13px;font-weight:700;margin-right:auto">📊 ${data.length}大学 / ${totD}学科</div>
+      <div class="sim-rtabs">
+        <button class="sim-rtab on" id="sr-detail" onclick="simSwRT('detail')">📋 詳細</button>
+        <button class="sim-rtab" id="sr-timeline" onclick="simSwRT('timeline')">📅 日程</button>
+        <button class="sim-rtab" id="sr-cost" onclick="simSwRT('cost')">💰 費用</button>
+        <button class="sim-rtab" id="sr-heigan" onclick="simSwRT('heigan')">⚡ 併願</button>
+        <button class="sim-rtab" id="sr-parent" onclick="simSwRT('parent')">👨‍👩‍👧 保護者</button>
+      </div>
+    </div>
+    <div class="sim-kpi-row">
+      <div class="sim-kpi cb"><div class="sim-kpi-lbl">選択大学</div><div class="sim-kpi-val">${data.length}</div><div class="sim-kpi-sub">校</div></div>
+      <div class="sim-kpi cr"><div class="sim-kpi-lbl">専願のみ</div><div class="sim-kpi-val">${sOnly}</div><div class="sim-kpi-sub">校（要注意）</div></div>
+      <div class="sim-kpi cg"><div class="sim-kpi-lbl">併願可能</div><div class="sim-kpi-val">${hOk}</div><div class="sim-kpi-sub">校</div></div>
+      <div class="sim-kpi ca"><div class="sim-kpi-lbl">受験料目安</div><div class="sim-kpi-val">${eN>0?Math.round(eSum/10000):'—'}</div><div class="sim-kpi-sub">${eN>0?'万円':'データなし'}</div></div>
+    </div>
+    <div class="sim-tc" id="sim-tc"></div>
+    <div style="padding:0 20px 20px">
+      <div class="sim-premium-cta">
+        <div class="sim-cta-text">
+          <div class="sim-cta-title">✦ 「自分はどこを受ければいいの？」を解決しませんか？</div>
+          <div class="sim-cta-desc">AI問診でプロフィールを作成すると、あなたに合った大学・選抜方法・穴場校をサジェストします。</div>
+        </div>
+        <button class="sim-cta-btn" onclick="goTo('auth')">プレミアムで診断する →</button>
+      </div>
+    </div>`;
+  simSwRT(G.simCurTab);
+}
+
+function simSwRT(tab){
+  G.simCurTab=tab;
+  ['detail','timeline','cost','heigan','parent'].forEach(t=>{
+    document.getElementById('sr-'+t)?.classList.toggle('on',t===tab);
+  });
+  const data=[...G.simSel].map(name=>({name,records:G.simMap[name]}));
+  const el=document.getElementById('sim-tc');
+  if(!el)return;
+  if(tab==='detail')el.innerHTML=simDetail(data);
+  else if(tab==='timeline')el.innerHTML=simTimeline(data);
+  else if(tab==='cost')el.innerHTML=simCost(data);
+  else if(tab==='heigan')el.innerHTML=simHeigan(data);
+  else if(tab==='parent')el.innerHTML=simParent(data);
+}
+
+function simDetail(data){
+  return data.map(({name,records})=>{
+    const hH=records.some(r=>r['出願区分']==='併願');
+    const hS=records.some(r=>r['出願区分']==='専願');
+    const b=(!hH&&hS)?`<span class="sbadge sb-r">⚠ 専願のみ</span>`:hH?`<span class="sbadge sb-g">✓ 併願可</span>`:`<span class="sbadge sb-y">要確認</span>`;
+    const pref=[...new Set(records.map(r=>r['都道府県']).filter(p=>p&&p!=='no data'))].join('・');
+    return `<div class="sim-ucard">
+      <div class="sim-uchead">
+        <div class="sim-ucname">🏫 ${h(name)} ${b}${pref?`<span class="sbadge sb-b">${h(pref)}</span>`:''}</div>
+        <div style="font-size:11px;color:var(--ink3)">${records.length}学科</div>
+      </div>
+      <table class="sim-dtable">
+        <thead><tr><th>学部・学科</th><th>区分</th><th>出願期間</th><th>試験日程</th><th>結果発表</th><th>費用概算</th></tr></thead>
+        <tbody>${records.map(r=>{
+          const ou=r['出願区分']||'';
+          const ob=ou==='専願'?`<span class="sbadge sb-r">専願</span>`:ou==='併願'?`<span class="sbadge sb-g">併願</span>`:`<span class="sbadge sb-y">${h(ou)}</span>`;
+          const c=parseCost(r['費用']);
+          const cs=c.exam>0?`受験料 ${fmt(c.exam)}円\n${c.nyuugaku>0?'入学金 '+fmt(c.nyuugaku)+'円':'入学金 —'}`:shortCost(r['費用']);
+          return `<tr>
+            <td><div class="sim-dname">${h(r['学部名']||'')} ${h(r['学科名']||'')}</div><div class="sim-dsub">${h(r['入試方式']||'')}</div></td>
+            <td>${ob}</td>
+            <td><div class="sim-ddate ${r['出願期間']==='no data'?'sim-nodata':''}">${h(fd(r['出願期間']))}</div></td>
+            <td><div class="sim-ddate">${h(fd(r['試験日程']))}</div></td>
+            <td><div class="sim-ddate">${h(fd(r['結果発表日']))}</div></td>
+            <td><div class="sim-dcost">${h(cs)}</div></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+function simTimeline(data){
+  const rows=[];
+  for(const {name,records} of data){
+    const seen=new Set();
+    for(const r of records){
+      const key=r['出願期間']+'|'+r['試験日程'];
+      if(seen.has(key))continue;seen.add(key);
+      rows.push({name,dept:`${r['学部名']||''} ${r['学科名']||''}`.trim(),ougan:mRange(r['出願期間']),shiken:mRange(r['試験日程'])});
+    }
+  }
+  const now=new Date();const cm=now.getMonth()+1;const ci=MI[String(cm)]??-1;const n=MN.length;
+  const hdr=MN.map(m=>`<div style="flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--ink3)">${m}</div>`).join('');
+  const brs=rows.map(row=>{
+    const os=row.ougan?`left:${(row.ougan.s/n*100).toFixed(1)}%;width:${Math.max((row.ougan.e-row.ougan.s+1)/n*100,2).toFixed(1)}%`:null;
+    const ss=row.shiken?`left:${(row.shiken.s/n*100).toFixed(1)}%;width:${Math.max((row.shiken.e-row.shiken.s+1)/n*100,2).toFixed(1)}%`:null;
+    return `<div class="sim-tl-row">
+      <div class="sim-tl-lbl"><div class="sim-tl-n" title="${h(row.name)}">${h(row.name)}</div><div class="sim-tl-d">${h(row.dept.slice(0,14))}</div></div>
+      <div class="sim-tl-bars">
+        ${ci>=0?`<div class="sim-tl-today" style="left:${((ci+.5)/n*100).toFixed(1)}%"></div>`:''}
+        ${os?`<div class="sim-tl-bar" style="${os};background:linear-gradient(90deg,var(--blue),#818cf8);top:2px" title="出願期間"></div>`:''}
+        ${ss?`<div class="sim-tl-bar" style="${ss};background:linear-gradient(90deg,var(--amber),#f97316);top:14px" title="試験日程"></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="sim-tl">
+    <div class="sim-tl-legend">
+      <span class="sim-tl-li"><span class="sim-tl-dot" style="background:linear-gradient(90deg,var(--blue),#818cf8)"></span>出願期間</span>
+      <span class="sim-tl-li"><span class="sim-tl-dot" style="background:linear-gradient(90deg,var(--amber),#f97316)"></span>試験日程</span>
+      <span class="sim-tl-li" style="color:#e11d48;font-size:11px">｜今月</span>
+    </div>
+    <div style="padding:10px 0 0">
+      <div style="display:flex;padding-left:120px;margin-bottom:6px">${hdr}</div>
+      ${brs||'<div style="padding:16px;text-align:center;color:var(--ink3);font-size:12px">日程データなし</div>'}
+    </div>
+  </div>`;
+}
+
+function simCost(data){
+  return `<div style="margin-bottom:12px"><div class="abox abox-i"><div class="abox-title">💡 費用シミュレーション</div><div class="abox-body">データは各大学の募集要項に基づきます。必ず公式サイトでご確認ください。</div></div></div>
+  <div class="sim-ptabs" id="sim-ptabs">
+    <button class="sim-ptab on" onclick="simSwPat('all',this)">全校受験</button>
+    ${data.slice(0,4).map((u,i)=>`<button class="sim-ptab" onclick="simSwPat('ex${i}',this)">「${h(u.name.slice(0,5))}」を除く</button>`).join('')}
+  </div>
+  <div id="sim-pcontent">${simCostTable(data)}</div>`;
+}
+
+function simSwPat(mode,btn){
+  document.querySelectorAll('.sim-ptab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  const data=[...G.simSel].map(name=>({name,records:G.simMap[name]}));
+  const sub=mode.startsWith('ex')?data.filter((_,i)=>i!==parseInt(mode.slice(2))):data;
+  document.getElementById('sim-pcontent').innerHTML=simCostTable(sub);
+}
+
+function simCostTable(data){
+  let eSum=0,nSum=0,rows=[];
+  for(const {name,records} of data){
+    const c=parseCost(records[0]['費用']);
+    eSum+=c.exam||0;if(c.nyuugaku>0)nSum+=c.nyuugaku;
+    rows.push({name,...c,raw:records[0]['費用']});
+  }
+  const fy=rows.reduce((s,r)=>s+(r.exam||0)+(r.nyuugaku||0)+(r.jugyou||0)+(r.other||0),0);
+  return `<table class="sim-ctable">
+    <thead><tr><th>大学名</th><th>受験料</th><th>入学金</th><th>授業料（年額）</th><th>詳細</th></tr></thead>
+    <tbody>
+      ${rows.map(r=>`<tr>
+        <td style="font-weight:700;color:var(--ink);font-size:12px">${h(r.name)}</td>
+        <td class="sim-cnum">${r.exam>0?fmt(r.exam)+'円':'—'}</td>
+        <td class="sim-cnum">${r.nyuugaku>0?fmt(r.nyuugaku)+'円':'—'}</td>
+        <td class="sim-cnum">${r.jugyou>0?fmt(r.jugyou)+'円':'—'}</td>
+        <td style="font-size:10px;color:var(--ink3);white-space:pre-line;line-height:1.5">${h(String(r.raw).replace(/\\n/g,'\n').slice(0,100))}</td>
+      </tr>`).join('')}
+      <tr class="sim-ctotal">
+        <td>合計（全校受験）</td>
+        <td class="sim-cnum" style="color:var(--amber)">${eSum>0?fmt(eSum)+'円':'—'}</td>
+        <td class="sim-cnum">${nSum>0?fmt(nSum)+'円':'—'}</td>
+        <td colspan="2" style="font-size:10px;color:var(--ink3)">初年度目安: ${fy>0?'〜'+fmt(fy)+'円':''}</td>
+      </tr>
+    </tbody>
+  </table>`;
+}
+
+function simHeigan(data){
+  const sOnly=data.filter(u=>u.records.every(r=>r['出願区分']==='専願'));
+  const hOk=data.filter(u=>u.records.some(r=>r['出願区分']==='併願'));
+  const unk=data.filter(u=>!sOnly.includes(u)&&!hOk.includes(u));
+  const conf=conflicts(data);
+  let html='';
+  if(sOnly.length)html+=`<div class="abox abox-d"><div class="abox-title">⚠️ 専願のみ — ${sOnly.length}校</div><div class="abox-body">合格後は必ず入学する意思が必要です。</div><div class="taglist">${sOnly.map(u=>`<span class="titem" style="background:rgba(225,29,72,.08);color:#e11d48;border:1px solid rgba(225,29,72,.18)">🏫 ${h(u.name)}</span>`).join('')}</div></div>`;
+  if(hOk.length)html+=`<div class="abox abox-s"><div class="abox-title">✅ 併願可能 — ${hOk.length}校</div><div class="taglist">${hOk.map(u=>`<span class="titem" style="background:rgba(13,148,136,.08);color:var(--teal2);border:1px solid rgba(13,148,136,.18)">🏫 ${h(u.name)}</span>`).join('')}</div></div>`;
+  if(unk.length)html+=`<div class="abox abox-w"><div class="abox-title">❓ 要確認 — ${unk.length}校</div><div class="taglist">${unk.map(u=>`<span class="titem" style="background:var(--surface2);color:var(--ink3)">🏫 ${h(u.name)}</span>`).join('')}</div></div>`;
+  html+=`<div class="abox abox-i"><div class="abox-title">📅 出願重複チェック</div><div class="abox-body">`;
+  if(!conf.length)html+='✅ 出願期間の重複は検出されませんでした。';
+  else html+=`<strong style="color:#e11d48">${conf.length}件の重複</strong><br><br>`+conf.map(c=>`<div style="padding:7px 10px;background:rgba(225,29,72,.04);border:1px solid rgba(225,29,72,.12);border-radius:7px;margin-bottom:5px;font-size:12px"><strong>${h(c.a)}</strong> ↔ <strong>${h(c.b)}</strong>：<span style="color:#e11d48">${c.months.join('・')}</span></div>`).join('');
+  html+='</div></div>';
+  return html;
+}
+
+function simParent(data){
+  const sOnly=data.filter(u=>u.records.every(r=>r['出願区分']==='専願'));
+  const conf=conflicts(data);
+  let eSum=0;for(const {records} of data){const c=parseCost(records[0]['費用']);eSum+=c.exam||0;}
+  let html=`<div class="abox abox-i" style="margin-bottom:16px">
+    <div class="abox-title">👨‍👩‍👧 保護者の方へ</div>
+    <div class="abox-body">
+      総合型選抜は出願時期・選考内容が大学によって大きく異なります。早めの情報収集と、お子さんとの定期的な確認が合格への鍵です。
+    </div>
+  </div>`;
+  if(sOnly.length)html+=`<div class="abox abox-d"><div class="abox-title">⚠️ 専願のみ（${sOnly.length}校） — 重要</div><div class="abox-body">${sOnly.map(u=>u.name).join('、')}は専願です。合格後に辞退すると高校の推薦枠に影響する可能性があります。事前にお子さんとよく話し合ってください。</div></div>`;
+  if(conf.length)html+=`<div class="abox abox-w"><div class="abox-title">📌 出願時期の重複（${conf.length}件）</div><div class="abox-body">同じ時期に複数の出願書類を準備する必要があります。郵送締切・振込期限の管理はご家庭でも確認しましょう。</div></div>`;
+  if(eSum>0)html+=`<div class="abox abox-i"><div class="abox-title">💰 受験料目安: ${fmt(eSum)}円（${data.length}校分）</div><div class="abox-body">交通費・宿泊費・書類郵送費・参考書代は含まれていません。余裕を持った資金計画を。</div></div>`;
+  html+=`<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-top:8px">
+    <div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;font-weight:700">大学別 重要日程サマリー</div>
+    <table class="sim-dtable">
+      <thead><tr><th>大学名</th><th>区分</th><th>出願締切</th><th>試験日</th><th>結果発表</th><th>手続締切</th></tr></thead>
+      <tbody>${data.map(({name,records})=>{
+        const r=records[0];const ou=r['出願区分']||'—';
+        const ob=ou==='専願'?`<span class="sbadge sb-r">専願</span>`:ou==='併願'?`<span class="sbadge sb-g">併願</span>`:`<span class="sbadge sb-y">${h(ou)}</span>`;
+        return `<tr><td style="font-weight:700;color:var(--ink);font-size:11px">${h(name)}</td><td>${ob}</td>
+          <td style="font-size:10px;white-space:pre-line;line-height:1.5">${h(fd(r['出願期間']))}</td>
+          <td style="font-size:10px;white-space:pre-line;line-height:1.5">${h(fd(r['試験日程']))}</td>
+          <td style="font-size:10px;white-space:pre-line;line-height:1.5">${h(fd(r['結果発表日']))}</td>
+          <td style="font-size:10px;white-space:pre-line;line-height:1.5">${h(fd(r['入学手続締切日']))}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+  </div>`;
+  return html;
+}
+
+// ══════════════════════════════════════════════════
+// QUESTIONNAIRE
+// ══════════════════════════════════════════════════
+const Q_STEPS = [
+  {id:'user_type',short:'対象'},
+  {id:'direction',short:'方向性'},
+  {id:'subjects',short:'科目'},
+  {id:'activities',short:'活動'},
+  {id:'personality',short:'強み'},
+  {id:'conditions',short:'条件'},
+];
+
+function renderQProgress() {
+  const cur = G.qStep;
+  document.getElementById('q-prog-inner').innerHTML = Q_STEPS.map((s,i)=>{
+    const done=i<cur,active=i===cur;
+    return `<div class="q-pstep ${done?'done':''} ${active?'active':''}">
+      ${i>0?`<div class="q-pstep-line"></div>`:''}
+      <div class="q-pstep-dot">${done?'✓':i+1}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('q-prog-wrap').style.display = cur>=Q_STEPS.length?'none':'';
+}
+
+function renderQStep(idx) {
+  renderQProgress();
+  const el = document.getElementById('q-step-container');
+  el.innerHTML = '';
+  const renderers = [qStep0, qStep1, qStep2, qStep3, qStep4, qStep5];
+  renderers[idx]?.(el);
+}
+
+function qStep0(el) {
+  el.innerHTML = `<div class="qcard">
+    <div class="q-eyebrow"><div class="q-eyebrow-dot"></div>Step 1 of 6</div>
+    <div class="q-title">あなたは<span class="hl">誰ですか</span>？</div>
+    <div class="q-desc">入力する方を選んでください。回答内容を最適化します。</div>
+    <div class="cgrid-3">
+      ${[{id:'student_hs',e:'📚',l:'高校生',s:'高1〜高3'},{id:'student_ms',e:'🌱',l:'中学生',s:'早めに考えたい'},{id:'parent',e:'👨‍👩‍👧',l:'保護者',s:'子どものために'}].map(t=>`
+        <div class="cbtn ${G.qAnswers.userType===t.id?'on':''}" onclick="qSet('userType','${t.id}');renderQStep(0)" style="flex-direction:column;text-align:center;padding:16px 12px;align-items:center">
+          <div style="font-size:30px;margin-bottom:8px">${t.e}</div>
+          <div class="cb-lbl">${t.l}</div>
+          <div class="cb-sub">${t.s}</div>
+        </div>`).join('')}
+    </div>
+    <div class="q-nav">
+      <button class="q-btn-next" onclick="qNext()" ${!G.qAnswers.userType?'disabled':''}>次へ →</button>
+    </div>
+  </div>`;
+}
+
+function qStep1(el) {
+  const dirs=[
+    {id:'science',e:'🔬',l:'理系・自然科学',s:'数学・物理・化学・情報'},
+    {id:'humanities',e:'📖',l:'文系・社会科学',s:'文学・法・経済・政治'},
+    {id:'medical',e:'🏥',l:'医療・福祉・保健',s:'医・看護・薬・リハビリ'},
+    {id:'education',e:'🎒',l:'教育・保育',s:'教員・保育士・心理士'},
+    {id:'art',e:'🎨',l:'芸術・デザイン',s:'美術・音楽・建築'},
+    {id:'business',e:'💼',l:'経営・商学・国際',s:'マーケ・経営・国際ビジネス'},
+    {id:'it',e:'💻',l:'IT・AI・データ',s:'プログラミング・データ科学'},
+    {id:'sports',e:'⚽',l:'スポーツ・体育',s:'スポーツ科学・体育教育'},
+    {id:'food',e:'🌾',l:'農・食・環境',s:'農業・食品・栄養・環境'},
+    {id:'undecided',e:'🌀',l:'まだ決まっていない',s:'色々な可能性を探りたい'},
+  ];
+  const sel=G.qAnswers.directions||[];
+  el.innerHTML = `<div class="qcard">
+    <div class="q-eyebrow"><div class="q-eyebrow-dot"></div>Step 2 of 6</div>
+    <div class="q-title">興味がある<span class="hl">分野</span>は？</div>
+    <div class="q-desc">将来やりたいこと、興味がある方向性を選んでください。</div>
+    <div class="q-multi-hint">複数選択できます</div>
+    <div class="cgrid">${dirs.map(d=>`
+      <div class="cbtn ${sel.includes(d.id)?'on':''}" onclick="qTogArr('directions','${d.id}',${d.id==='undecided'});renderQStep(1)">
+        <span class="cb-ico">${d.e}</span>
+        <div class="cb-text"><div class="cb-lbl">${d.l}</div><div class="cb-sub">${d.s}</div></div>
+        <div class="cb-ck">${sel.includes(d.id)?'✓':''}</div>
+      </div>`).join('')}
+    </div>
+    <div class="q-scdiv">具体的に（任意）</div>
+    <textarea class="tinput" id="qi-dream" placeholder="例：医師になりたい、海外で働きたい、ゲームを作りたい" rows="2">${G.qAnswers.dreamText||''}</textarea>
+    <div class="q-nav">
+      <button class="q-btn-back" onclick="qBack()">← 戻る</button>
+      <button class="q-btn-next" onclick="qNext()" ${sel.length===0?'disabled':''}>次へ →</button>
+    </div>
+  </div>`;
+  document.getElementById('qi-dream')?.addEventListener('input',e=>G.qAnswers.dreamText=e.target.value);
+}
+
+function qStep2(el) {
+  const subs=[{id:'math',l:'数学'},{id:'english',l:'英語'},{id:'japanese',l:'国語'},{id:'science_p',l:'物理'},{id:'science_c',l:'化学'},{id:'science_b',l:'生物'},{id:'history',l:'歴史・地理'},{id:'society',l:'公民'},{id:'art_s',l:'芸術・音楽'},{id:'pe',l:'体育'},{id:'it_s',l:'情報'},{id:'home',l:'家庭科'}];
+  const good=G.qAnswers.goodSubjects||[];const bad=G.qAnswers.badSubjects||[];
+  el.innerHTML = `<div class="qcard">
+    <div class="q-eyebrow"><div class="q-eyebrow-dot"></div>Step 3 of 6</div>
+    <div class="q-title"><span class="hl">得意</span>・<span class="hl">苦手</span>な科目</div>
+    <div class="q-desc">選抜方法との相性判定に使います。正直に選んでください。</div>
+    <div class="q-scdiv">✅ 得意な科目（複数可）</div>
+    <div class="cgrid-3">${subs.map(s=>`
+      <div class="cbtn ${good.includes(s.id)?'on':''}" onclick="qTogSubj('good','${s.id}')" style="padding:8px 10px">
+        <div class="cb-text"><div class="cb-lbl" style="font-size:11px">${s.l}</div></div>
+        <div class="cb-ck" style="width:15px;height:15px;font-size:8px">${good.includes(s.id)?'✓':''}</div>
+      </div>`).join('')}
+    </div>
+    <div class="q-scdiv">❌ 苦手な科目（複数可）</div>
+    <div class="cgrid-3">${subs.map(s=>`
+      <div class="cbtn ${bad.includes(s.id)?'on cbtn-red':''}" onclick="qTogSubj('bad','${s.id}')" style="padding:8px 10px">
+        <div class="cb-text"><div class="cb-lbl" style="font-size:11px">${s.l}</div></div>
+        <div class="cb-ck" style="width:15px;height:15px;font-size:8px;${bad.includes(s.id)?'background:#e11d48;border-color:#e11d48;color:#fff':''}">${bad.includes(s.id)?'✓':''}</div>
+      </div>`).join('')}
+    </div>
+    <div class="q-nav">
+      <button class="q-btn-back" onclick="qBack()">← 戻る</button>
+      <button class="q-btn-next" onclick="qNext()">次へ →</button>
+    </div>
+  </div>`;
+}
+
+const ACT_SUGS=['生徒会','部活（運動系）','部活（文化系）','ボランティア','海外経験','資格・検定','研究・論文','起業・ビジネス','芸術・音楽活動','プログラミング','スポーツ大会','コンテスト受賞','地域活動','探究学習'];
+
+function qStep3(el) {
+  const tags=G.qAnswers.activities||[];
+  el.innerHTML = `<div class="qcard">
+    <div class="q-eyebrow"><div class="q-eyebrow-dot"></div>Step 4 of 6</div>
+    <div class="q-title">部活・<span class="hl">課外活動</span>・実績</div>
+    <div class="q-desc">これまでの活動・実績を教えてください。総合型選抜の選考材料になります。</div>
+    <div class="tag-area-q" id="q-tag-area" onclick="document.getElementById('q-tag-inp').focus()">
+      ${tags.map(t=>`<span class="tagchip">${h(t)}<span class="tagchip-x" onclick="qRemTag('${esc(t)}')">×</span></span>`).join('')}
+      <input type="text" class="taginput-el" id="q-tag-inp" placeholder="${tags.length===0?'例：サッカー部キャプテン、全国大会出場':'+'}" onkeydown="qTagKd(event)" autocomplete="off">
+    </div>
+    <div style="font-size:11px;color:var(--ink3);margin-top:5px">Enterキーで追加</div>
+    <div class="tag-sugs">${ACT_SUGS.map(s=>`<span class="tag-sug" onclick="qAddTag('${esc(s)}')">${h(s)}</span>`).join('')}</div>
+    <div class="q-scdiv">特に力を入れたこと（任意）</div>
+    <textarea class="tinput" id="qi-actd" placeholder="例：3年間サッカー部でキャプテンを務め、県大会ベスト8に導いた。" rows="3">${G.qAnswers.activityDetail||''}</textarea>
+    <div class="q-nav">
+      <button class="q-btn-back" onclick="qBack()">← 戻る</button>
+      <button class="q-btn-next" onclick="qNext()">次へ →</button>
+    </div>
+  </div>`;
+  document.getElementById('qi-actd')?.addEventListener('input',e=>G.qAnswers.activityDetail=e.target.value);
+}
+
+function qStep4(el) {
+  const scales=[
+    {id:'talk',q:'人と話すのは得意ですか？',l:'苦手',r:'大得意'},
+    {id:'write',q:'文章を書くのは得意ですか？',l:'苦手',r:'大得意'},
+    {id:'present',q:'プレゼン・発表は得意ですか？',l:'苦手',r:'大得意'},
+    {id:'logic',q:'論理的に考えるのは得意ですか？',l:'苦手',r:'大得意'},
+    {id:'creative',q:'アイデアを出すのは得意ですか？',l:'苦手',r:'大得意'},
+    {id:'leader',q:'リーダーシップを発揮できますか？',l:'サポート側',r:'積極的にリード'},
+  ];
+  el.innerHTML = `<div class="qcard">
+    <div class="q-eyebrow"><div class="q-eyebrow-dot"></div>Step 5 of 6</div>
+    <div class="q-title">あなたの<span class="hl">強み</span>・パーソナリティ</div>
+    <div class="q-desc">選抜方法との相性を診断します。正直に答えてください。</div>
+    ${scales.map(s=>`
+      <div class="q-scalequestion">${s.q}</div>
+      <div class="q-scalelbl"><span>${s.l}</span><span>${s.r}</span></div>
+      <div class="q-scalebtns">
+        ${[1,2,3,4,5].map(v=>`<button class="q-scbtn ${(G.qAnswers.scales||{})[s.id]===v?'on':''}" onclick="qSetScale('${s.id}',${v})">${v}</button>`).join('')}
+      </div>`).join('')}
+    <div class="q-scdiv">自由記述（任意）</div>
+    <textarea class="tinput" id="qi-str" placeholder="自分の強みや特技を自由に書いてください。" rows="2">${G.qAnswers.strengthText||''}</textarea>
+    <div class="q-nav">
+      <button class="q-btn-back" onclick="qBack()">← 戻る</button>
+      <button class="q-btn-next" onclick="qNext()">次へ →</button>
+    </div>
+  </div>`;
+  document.getElementById('qi-str')?.addEventListener('input',e=>G.qAnswers.strengthText=e.target.value);
+}
+
+function qStep5(el) {
+  const regs=[{id:'north',l:'北海道・東北'},{id:'kanto',l:'関東（東京周辺）'},{id:'chubu',l:'中部・東海'},{id:'kinki',l:'近畿（大阪・京都）'},{id:'chugoku',l:'中国・四国'},{id:'kyushu',l:'九州・沖縄'},{id:'any',l:'どこでも可'}];
+  const selR=G.qAnswers.regions||[];
+  el.innerHTML = `<div class="qcard">
+    <div class="q-eyebrow"><div class="q-eyebrow-dot"></div>Step 6 of 6</div>
+    <div class="q-title">受験の<span class="hl">条件</span>・希望</div>
+    <div class="q-desc">最後に、現実的な受験条件を教えてください。</div>
+    <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px">希望するエリア（複数可）</div>
+    <div class="cgrid">${regs.map(r=>`
+      <div class="cbtn ${selR.includes(r.id)?'on':''}" onclick="qTogArr('regions','${r.id}',false);renderQStep(5)" style="padding:9px 12px">
+        <div class="cb-text"><div class="cb-lbl">${r.l}</div></div>
+        <div class="cb-ck">${selR.includes(r.id)?'✓':''}</div>
+      </div>`).join('')}
+    </div>
+    <div class="q-scdiv">費用の優先度</div>
+    <div class="cgrid-1">${[{id:'low',l:'なるべく安く',s:'国公立・奨学金重視'},{id:'mid',l:'一般的な範囲',s:'私立大学も検討'},{id:'high',l:'費用より内容重視',s:'授業料が高くてもOK'}].map(c=>`
+      <div class="cbtn ${G.qAnswers.costPref===c.id?'on':''}" onclick="qSet('costPref','${c.id}');renderQStep(5)">
+        <div class="cb-text"><div class="cb-lbl">${c.l}</div><div class="cb-sub">${c.s}</div></div>
+        <div class="cb-ck">${G.qAnswers.costPref===c.id?'✓':''}</div>
+      </div>`).join('')}
+    </div>
+    <div class="q-scdiv">共通テスト</div>
+    <div class="cgrid-1">${[{id:'yes',l:'受ける予定'},{id:'no',l:'受けない予定'},{id:'unsure',l:'まだ決めていない'}].map(c=>`
+      <div class="cbtn ${G.qAnswers.kyotsuu===c.id?'on':''}" onclick="qSet('kyotsuu','${c.id}');renderQStep(5)">
+        <div class="cb-text"><div class="cb-lbl">${c.l}</div></div>
+        <div class="cb-ck">${G.qAnswers.kyotsuu===c.id?'✓':''}</div>
+      </div>`).join('')}
+    </div>
+    <div class="q-scdiv">その他（任意）</div>
+    <textarea class="tinput" id="qi-other" placeholder="気になる大学名・不安なこと・条件など、なんでも。" rows="2">${G.qAnswers.otherText||''}</textarea>
+    <div class="q-nav">
+      <button class="q-btn-back" onclick="qBack()">← 戻る</button>
+      <button class="q-btn-next q-btn-final" onclick="qSubmit()" ${selR.length===0?'disabled':''}>✦ AI診断スタート</button>
+    </div>
+  </div>`;
+  document.getElementById('qi-other')?.addEventListener('input',e=>G.qAnswers.otherText=e.target.value);
+}
+
+function qNext(){if(G.qStep<Q_STEPS.length-1){G.qStep++;renderQStep(G.qStep);window.scrollTo({top:0,behavior:'smooth'});}}
+function qBack(){if(G.qStep>0){G.qStep--;renderQStep(G.qStep);window.scrollTo({top:0,behavior:'smooth'});}}
+function qSet(k,v){G.qAnswers[k]=v;}
+function qTogArr(k,v,excl){
+  if(!G.qAnswers[k])G.qAnswers[k]=[];
+  if(excl){G.qAnswers[k]=G.qAnswers[k].includes(v)?[]:[v];}
+  else{if(G.qAnswers[k].includes(v))G.qAnswers[k]=G.qAnswers[k].filter(x=>x!==v);else{G.qAnswers[k]=G.qAnswers[k].filter(x=>x!=='undecided');G.qAnswers[k].push(v);}}
+}
+function qTogSubj(type,id){
+  const k=type==='good'?'goodSubjects':'badSubjects';
+  const opp=type==='good'?'badSubjects':'goodSubjects';
+  if(!G.qAnswers[k])G.qAnswers[k]=[];
+  if(!G.qAnswers[opp])G.qAnswers[opp]=[];
+  G.qAnswers[opp]=G.qAnswers[opp].filter(x=>x!==id);
+  if(G.qAnswers[k].includes(id))G.qAnswers[k]=G.qAnswers[k].filter(x=>x!==id);
+  else G.qAnswers[k].push(id);
+  renderQStep(2);
+}
+function qSetScale(id,v){if(!G.qAnswers.scales)G.qAnswers.scales={};G.qAnswers.scales[id]=v;renderQStep(4);}
+function qTagKd(e){if(e.key==='Enter'||e.key===','){e.preventDefault();const v=e.target.value.trim();if(v)qAddTag(v);e.target.value='';}}
+function qAddTag(v){if(!G.qAnswers.activities)G.qAnswers.activities=[];if(!G.qAnswers.activities.includes(v))G.qAnswers.activities.push(v);renderQStep(3);setTimeout(()=>document.getElementById('q-tag-inp')?.focus(),50);}
+function qRemTag(v){G.qAnswers.activities=(G.qAnswers.activities||[]).filter(t=>t!==v);renderQStep(3);}
+
+// ══════════════════════════════════════════════════
+// AI SUBMIT & RESULT
+// ══════════════════════════════════════════════════
+async function qSubmit() {
+  goTo('mypage');
+  document.getElementById('mypage-content').innerHTML = `
+    <div class="ai-loading">
+      <div class="ai-loading-icon">🔍</div>
+      <div class="ai-loading-title font-display">あなたに合う大学を分析中...</div>
+      <div style="font-size:12px;color:var(--ink3);margin-top:5px">AIがプロフィールを分析しています</div>
+      <div class="ai-ldots"><div class="ai-ldot"></div><div class="ai-ldot"></div><div class="ai-ldot"></div></div>
+      <div class="ai-lsteps">
+        <div class="ai-lstep" id="al-1"><span>📊</span>プロフィールを解析中...</div>
+        <div class="ai-lstep" id="al-2"><span>🧠</span>学部・学科の適性を判定中...</div>
+        <div class="ai-lstep" id="al-3"><span>🎯</span>選抜方法との相性を確認中...</div>
+        <div class="ai-lstep" id="al-4"><span>✨</span>おすすめ大学を選定中...</div>
+      </div>
+    </div>`;
+  [800,1600,2400,3200].forEach((d,i)=>setTimeout(()=>document.getElementById(`al-${i+1}`)?.classList.add('done'),d));
+
+  const a = G.qAnswers;
+  const sl={math:'数学',english:'英語',japanese:'国語',science_p:'物理',science_c:'化学',science_b:'生物',history:'歴史・地理',society:'公民',art_s:'芸術',pe:'体育',it_s:'情報',home:'家庭科'};
+  const dl={science:'理系・自然科学',humanities:'文系・社会科学',medical:'医療・福祉',education:'教育・保育',art:'芸術・デザイン',business:'経営・商学',it:'IT・AI',sports:'スポーツ',food:'農・食・環境',undecided:'未決定'};
+  const sc=a.scales||{};
+  const prompt = `あなたは総合型選抜（AO入試）の専門アドバイザーです。以下の生徒プロフィールを分析して、JSONのみを返答してください。
+
+【プロフィール】
+ユーザー種別: ${a.userType==='student_hs'?'高校生':a.userType==='student_ms'?'中学生':'保護者'}
+興味分野: ${(a.directions||[]).map(d=>dl[d]).join('、')||'未指定'}
+夢・やりたいこと: ${a.dreamText||'未記入'}
+得意科目: ${(a.goodSubjects||[]).map(s=>sl[s]).join('、')||'未指定'}
+苦手科目: ${(a.badSubjects||[]).map(s=>sl[s]).join('、')||'未指定'}
+課外活動: ${(a.activities||[]).join('、')||'特になし'}
+活動詳細: ${a.activityDetail||'未記入'}
+パーソナリティ: 対人${sc.talk||'?'}/5 文章${sc.write||'?'}/5 プレゼン${sc.present||'?'}/5 論理${sc.logic||'?'}/5 創造${sc.creative||'?'}/5 リーダー${sc.leader||'?'}/5
+強み: ${a.strengthText||'未記入'}
+希望エリア: ${(a.regions||[]).join('、')||'未指定'}
+費用: ${a.costPref||'未指定'} 共通テスト: ${a.kyotsuu||'未指定'}
+その他: ${a.otherText||''}
+
+以下のJSONのみ返答（前後のテキスト・コードブロック不要）:
+{"profile_summary":"2〜3文の要約","strength_tags":["強み1","強み2","強み3","強み4"],"selection_fit":{"interview":{"score":0-100,"reason":"理由"},"essay":{"score":0-100,"reason":"理由"},"portfolio":{"score":0-100,"reason":"理由"},"presentation":{"score":0-100,"reason":"理由"}},"recommended_faculties":[{"name":"学部名","reason":"理由","match_score":0-100}],"suggested_universities":[{"rank":1,"university_name":"大学名","department":"学部・学科","match_score":0-100,"reason":"推薦理由100字","selection_type":"面接重視|小論文重視|活動実績重視|プレゼン重視","tags":["タグ"],"application_timing":"例:9〜10月","is_heigan":true,"is_anaba":false,"caution":""}],"advice":"アドバイス150字","next_actions":["アクション1","アクション2","アクション3"]}
+
+suggested_universitiesは実在する日本の大学で5件。多様なレベル・地域で。is_anabaは倍率が低く狙い目の大学の場合true。`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    const data = await resp.json();
+    const text = data.content?.[0]?.text||'';
+    let parsed;
+    try{parsed=JSON.parse(text.replace(/```json|```/g,'').trim());}catch(e){parsed=null;}
+    setTimeout(()=>{G.aiResult=parsed||getDemoResult();renderMypage();},3800);
+  } catch(e) {
+    setTimeout(()=>{G.aiResult=getDemoResult();renderMypage();},3800);
+  }
+}
+
+// ══════════════════════════════════════════════════
+// MYPAGE
+// ══════════════════════════════════════════════════
+function swMyTab(tab){
+  ['result','schedule','sim'].forEach(t=>document.getElementById('mt-'+t)?.classList.toggle('on',t===tab));
+  renderMypageContent(tab);
+}
+
+function renderMypage(){
+  if(!G.aiResult){
+    document.getElementById('mypage-content').innerHTML=`<div style="text-align:center;padding:60px 20px"><div style="font-size:48px;margin-bottom:16px">🔍</div><div style="font-family:'Kaisei Opti',serif;font-size:20px;color:var(--ink);margin-bottom:10px">まだ診断が完了していません</div><div style="font-size:13px;color:var(--ink2);margin-bottom:24px">AI問診に答えると、あなただけの受験プランが作成されます。</div><button class="btn-main" style="width:auto;padding:12px 28px" onclick="goTo('questionnaire')">✦ 診断を始める</button></div>`;
+    return;
+  }
+  renderMypageContent('result');
+}
+
+function renderMypageContent(tab){
+  const el=document.getElementById('mypage-content');
+  if(tab==='result')el.innerHTML=renderResult();
+  else if(tab==='schedule')el.innerHTML=renderSchedule();
+  else if(tab==='sim'){goTo('sim');return;}
+}
+
+function renderResult(){
+  const d=G.aiResult;
+  const sf=d.selection_fit||{};
+  const scores=[
+    {label:'面接・口頭試問',score:sf.interview?.score||0,reason:sf.interview?.reason||''},
+    {label:'小論文・レポート',score:sf.essay?.score||0,reason:sf.essay?.reason||''},
+    {label:'活動実績・書類',score:sf.portfolio?.score||0,reason:sf.portfolio?.reason||''},
+    {label:'プレゼン型',score:sf.presentation?.score||0,reason:sf.presentation?.reason||''},
+  ].sort((a,b)=>b.score-a.score);
+
+  return `
+  <div class="res-hero">
+    <div class="res-hero-emoji">✨</div>
+    <div class="res-hero-title font-display">診断完了</div>
+    <div class="res-hero-sub">${h(d.profile_summary||'')}</div>
+  </div>
+  <div class="pbadges">${(d.strength_tags||[]).map((t,i)=>`<span class="pbadge ${['pb-t','pb-a','pb-b','pb-r'][i%4]}">✦ ${h(t)}</span>`).join('')}</div>
+
+  <div class="ai-card">
+    <div class="ai-card-hd"><div class="ai-card-ico" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">🎯</div><div class="ai-card-title">選抜方法との相性</div></div>
+    <div class="ai-card-body">
+      ${scores.map(s=>`
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:5px;margin-top:12px">${s.label}</div>
+        <div class="score-row">
+          <div class="score-bar-w"><div class="score-bar-f" style="width:${s.score}%;background:${s.score>=70?'var(--teal)':s.score>=40?'var(--amber)':'#e11d48'}"></div></div>
+          <div class="score-num" style="color:${s.score>=70?'var(--teal)':s.score>=40?'var(--amber)':'#e11d48'}">${s.score}%</div>
+        </div>
+        ${s.reason?`<div style="font-size:11px;color:var(--ink3);line-height:1.5;margin-bottom:4px">${h(s.reason)}</div>`:''}
+      `).join('')}
+    </div>
+  </div>
+
+  <div class="ai-card">
+    <div class="ai-card-hd"><div class="ai-card-ico" style="background:linear-gradient(135deg,#2563eb,#3b82f6)">📚</div><div class="ai-card-title">おすすめの学部・学科</div></div>
+    <div class="ai-card-body">
+      ${(d.recommended_faculties||[]).map(f=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">${h(f.name)}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${h(f.reason)}</div></div>
+          <div style="font-size:18px;font-weight:900;color:var(--teal);font-family:'DM Mono',monospace">${f.match_score}%</div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:20px 0 12px;display:flex;align-items:center;gap:8px">おすすめ大学<span style="flex:1;height:1px;background:var(--border);display:block"></span>
+    <span style="font-size:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);padding:2px 8px;border-radius:20px;letter-spacing:0">📈 穴場データは近日追加予定</span>
+  </div>
+
+  ${(d.suggested_universities||[]).map((u,i)=>`
+    <div class="sug-card">
+      <div class="sug-card-head">
+        <div class="sug-rank ${i===0?'rank-g':i===1?'rank-s':i===2?'rank-b':'rank-n'}">${i+1}</div>
+        <div style="flex:1">
+          <div class="sug-uni-name">${h(u.university_name)}</div>
+          <div class="sug-dept">${h(u.department)}</div>
+          <div class="sug-tags">
+            <span class="sug-tag st-m">マッチ度 ${u.match_score}%</span>
+            <span class="sug-tag st-i">${h(u.selection_type||'')}</span>
+            ${u.is_heigan?'<span class="sug-tag st-m">✓ 併願可</span>':'<span class="sug-tag st-w">専願要確認</span>'}
+            ${u.is_anaba?'<span class="anaba-badge">🎯 穴場</span>':''}
+            ${(u.tags||[]).map(t=>`<span class="sug-tag st-i">${h(t)}</span>`).join('')}
+          </div>
+        </div>
+        <div class="sug-score-badge" style="color:${u.match_score>=80?'var(--teal)':'var(--amber)'}">${u.match_score}%</div>
+      </div>
+      <div class="sug-card-body">
+        <div class="sug-reason">${h(u.reason)}</div>
+        ${u.caution?`<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:7px;padding:7px 10px;margin-top:8px;font-size:11px;color:var(--amber)">⚠ ${h(u.caution)}</div>`:''}
+        <div class="sug-meta">
+          <div><div class="sml">出願時期</div><div class="smv">${h(u.application_timing||'要確認')}</div></div>
+          <div><div class="sml">選抜方法</div><div class="smv">${h(u.selection_type||'—')}</div></div>
+          <div><div class="sml">併願</div><div class="smv">${u.is_heigan?'✅ 可能':'❓ 要確認'}</div></div>
+        </div>
+      </div>
+    </div>`).join('')}
+
+  <div class="ai-card" style="margin-top:8px">
+    <div class="ai-card-hd"><div class="ai-card-ico" style="background:linear-gradient(135deg,var(--teal),#06b6d4)">💡</div><div class="ai-card-title">アドバイス</div></div>
+    <div class="ai-card-body">
+      <div>${h(d.advice||'')}</div>
+      ${d.next_actions?.length?`<div style="margin-top:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--ink3);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase">今すぐできること</div>
+        ${d.next_actions.map((a,i)=>`<div class="action-item"><div class="action-num">${i+1}</div><div style="font-size:12px;color:var(--ink2);line-height:1.5">${h(a)}</div></div>`).join('')}
+      </div>`:''}
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+    <button class="btn-main" style="flex:1;padding:11px;font-size:12px" onclick="goTo('questionnaire')">🔄 条件を変えて診断し直す</button>
+    <button class="btn-main" style="flex:1;padding:11px;font-size:12px;background:linear-gradient(135deg,#2563eb,#818cf8)" onclick="swMyTab('schedule')">📅 出願スケジュールを見る</button>
+  </div>
+
+  <div class="notice">⚠ この診断結果はAIによる参考情報です。実際の出願前には各大学の<strong>公式募集要項</strong>を必ず確認し、学校の先生・進路指導担当者にも相談してください。合否を保証するものではありません。</div>`;
+}
+
+function renderSchedule(){
+  const d=G.aiResult;
+  if(!d){return '<div style="padding:40px;text-align:center;color:var(--ink3)">診断結果がありません</div>';}
+  const unis=d.suggested_universities||[];
+  // Generate fake schedule from suggested unis
+  const monthMap={'9〜10月':['9月','10月'],'8〜9月':['8月','9月'],'9〜11月':['9月','10月','11月'],'10〜11月':['10月','11月']};
+  const scheduleItems=[];
+  unis.forEach(u=>{
+    const timing=u.application_timing||'9〜10月';
+    const months=monthMap[timing]||['9月','10月'];
+    scheduleItems.push({month:months[0],uni:u.university_name,dept:u.department,type:'ougan',label:'出願期間'});
+    const examMonth=months[months.length-1]==='10月'?'11月':months[months.length-1]==='9月'?'10月':'11月';
+    scheduleItems.push({month:examMonth,uni:u.university_name,dept:u.department,type:'shiken',label:'試験・選考'});
+    const kekkaMonth=examMonth==='10月'?'11月':examMonth==='11月'?'12月':'1月';
+    scheduleItems.push({month:kekkaMonth,uni:u.university_name,dept:u.department,type:'kekka',label:'結果発表'});
+  });
+  const byMonth={};
+  scheduleItems.forEach(item=>{if(!byMonth[item.month])byMonth[item.month]=[];byMonth[item.month].push(item);});
+  const typeColor={ougan:'sch-type-ougan',shiken:'sch-type-shiken',kekka:'sch-type-kekka',teguzuki:'sch-type-teguzuki'};
+  const sortedMonths=['8月','9月','10月','11月','12月','1月','2月','3月'].filter(m=>byMonth[m]);
+  return `
+  <div style="margin-bottom:16px">
+    <div class="abox abox-i">
+      <div class="abox-title">📅 出願スケジュール（AI生成）</div>
+      <div class="abox-body">診断結果の大学を基に生成しています。実際の日程は各大学の公式募集要項でご確認ください。<br>
+      <strong style="color:var(--teal)">穴場スコア・倍率データは1ヶ月後に追加予定です。</strong></div>
+    </div>
+  </div>
+  <div class="schedule-wrap">
+    ${sortedMonths.map(month=>`
+      <div class="sch-month">
+        <div class="sch-month-title"><div class="sch-month-dot"></div>${month}</div>
+        ${byMonth[month].map(item=>`
+          <div class="sch-item">
+            <div class="sch-item-type ${typeColor[item.type]}"></div>
+            <div class="sch-item-content">
+              <div class="sch-item-uni">${h(item.uni)}</div>
+              <div class="sch-item-detail">${h(item.dept)} · ${h(item.label)}</div>
+            </div>
+            <div class="sch-item-badge">${h(item.label)}</div>
+          </div>`).join('')}
+      </div>`).join('')}
+  </div>
+  <div style="margin-top:16px">
+    <div class="abox abox-w">
+      <div class="abox-title">📌 今後追加される機能</div>
+      <div class="abox-body">
+        ✦ 実際の出願締切・試験日をデータベースと連動した精密スケジュール<br>
+        ✦ 締切リマインド通知（LINE・メール）<br>
+        ✦ 逆算した志望理由書・書類準備のタスクリスト<br>
+        ✦ このスケジュールのPDF出力（保護者向けレポート）
+      </div>
+    </div>
+  </div>`;
+}
+
+// Demo data
+function getDemoResult(){return{profile_summary:"コミュニケーション能力が高く、課外活動での実績が豊富な活動的な生徒です。面接型・プレゼン型の選抜方式との相性が特に優れています。",strength_tags:["コミュニケーション力","リーダーシップ","課外活動実績","論理的思考"],selection_fit:{interview:{score:88,reason:"対人能力が高く、自己表現が得意なタイプです。"},essay:{score:72,reason:"論理的思考力があり、文章での表現も問題ありません。"},portfolio:{score:85,reason:"課外活動の実績が豊富で書類審査に強い。"},presentation:{score:79,reason:"人前での発表に慣れています。"}},recommended_faculties:[{name:"経営学部",reason:"リーダーシップと対人能力を活かせる分野。",match_score:91},{name:"国際学部",reason:"コミュニケーション力と異文化への興味を活かせる。",match_score:85},{name:"教育学部",reason:"人と関わることへの意欲が評価される。",match_score:80}],suggested_universities:[{rank:1,university_name:"立命館大学",department:"経営学部",match_score:92,reason:"総合型選抜の実績が豊富で、課外活動を重視する選考。面接重視型のため、コミュニケーション力が高い方に非常にマッチしています。",selection_type:"面接重視",tags:["課外活動評価","私立"],application_timing:"9〜10月",is_heigan:true,is_anaba:false,caution:""},{rank:2,university_name:"明治大学",department:"商学部",match_score:88,reason:"活動実績と小論文を組み合わせた選考方式。商学部では課外活動経験も高く評価されます。",selection_type:"活動実績重視",tags:["MARCH","私立"],application_timing:"8〜9月",is_heigan:true,is_anaba:false,caution:""},{rank:3,university_name:"関西学院大学",department:"国際学部",match_score:84,reason:"語学力と国際感覚を重視した選考。積極的なコミュニケーション力を評価します。",selection_type:"面接重視",tags:["近畿圏","私立"],application_timing:"9〜11月",is_heigan:false,is_anaba:false,caution:"専願の可能性があるため慎重に。"},{rank:4,university_name:"法政大学",department:"経営学部",match_score:79,reason:"多様な選抜方式があり、課外活動の実績を活かせます。",selection_type:"書類重視",tags:["MARCH","東京"],application_timing:"10〜11月",is_heigan:true,is_anaba:false,caution:""},{rank:5,university_name:"広島大学",department:"教育学部",match_score:75,reason:"国公立大学で費用を抑えられます。面接と書類審査中心の選考です。",selection_type:"面接重視",tags:["国公立","穴場"],application_timing:"10〜11月",is_heigan:true,is_anaba:true,caution:""}],advice:"面接・プレゼン型の選抜が最も得意です。まず志望する2〜3校の過去の選考内容を調べ、自分の活動実績を簡潔に伝える練習から始めましょう。",next_actions:["気になる大学の総合型選抜のエントリー締切（多くは6〜8月）を調べてカレンダーに記入する","自分の課外活動をA4用紙1枚にまとめる「活動報告書」の下書きを作る","志望する学部の学問内容を1冊本を読んで理解を深める"]};}
+
+// ══════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════
+function mRange(val){if(!val||val==='no data')return null;const s=String(val);let mn=12,mx=-1;for(const[m,i]of Object.entries(MI)){if(s.includes(m+'月')){if(i<mn)mn=i;if(i>mx)mx=i;}}return mx>=0?{s:mn,e:mx}:null;}
+function conflicts(data){const um=data.map(({name,records})=>{const ms=new Set();for(const r of records){const rg=mRange(r['出願期間']);if(rg)for(let i=rg.s;i<=rg.e;i++)ms.add(i);}return{name,ms};});const res=[];for(let i=0;i<um.length;i++)for(let j=i+1;j<um.length;j++){const ov=[...um[i].ms].filter(m=>um[j].ms.has(m));if(ov.length)res.push({a:um[i].name,b:um[j].name,months:ov.map(m=>MN[m])});}return res;}
+function parseCost(raw){const s=String(raw||'').replace(/\\n/g,'\n');const get=ks=>{for(const k of ks){const m=s.match(new RegExp(k+'[：: ]*([\\d,]+)円'));if(m)return parseInt(m[1].replace(/,/g,''));}return 0;};return{exam:get(['受験費用','検定料','入学検定料','受験料']),nyuugaku:get(['入学金']),jugyou:get(['授業料']),other:get(['施設設備費','教育充実費'])};}
+function shortCost(raw){if(!raw||raw==='no data')return 'no data';return String(raw).replace(/\\n/g,'\n').split('\n').slice(0,3).join('\n');}
+function fd(v){if(!v||v==='no data')return 'no data';return String(v).replace(/\\n/g,'\n');}
+function fmt(n){return n.toLocaleString('ja-JP');}
+function h(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function esc(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+
+// Animate score bars on DOM update
+const obs = new MutationObserver(() => {
+  document.querySelectorAll('.score-bar-f').forEach(b => {
+    if(b.dataset.animated) return;
+    b.dataset.animated = '1';
+    const w = b.style.width; b.style.width='0';
+    setTimeout(()=>b.style.width=w, 150);
+  });
+});
+obs.observe(document.getElementById('mypage-content')||document.body, {childList:true,subtree:true});
+</script>
+</body>
+</html>
