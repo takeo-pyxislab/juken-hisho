@@ -92,7 +92,7 @@ export default function SimulatorPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const res = await fetch("/api/universities?limit=500&page=1")
+      const res = await fetch("/api/universities?limit=1000&page=1")
       const data = await res.json()
       const records: URecord[] = data.data || []
       
@@ -101,9 +101,9 @@ export default function SimulatorPage() {
       let allRecords = [...records]
       
       if (total > 500) {
-        const pages = Math.ceil(total / 500)
-        for (let p = 2; p <= Math.min(pages, 20); p++) {
-          const r = await fetch(`/api/universities?limit=500&page=${p}`)
+        const pages = Math.ceil(total / 1000)
+        for (let p = 2; p <= Math.min(pages, 10); p++) {
+          const r = await fetch(`/api/universities?limit=1000&page=${p}`)
           const d = await r.json()
           allRecords = [...allRecords, ...(d.data || [])]
         }
