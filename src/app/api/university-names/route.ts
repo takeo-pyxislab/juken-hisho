@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     if (kyotsuu) query = query.eq("has_kyotsuu", kyotsuu)
     if (app_type) query = query.eq("application_type", app_type)
 
-    const { data, error } = await query.order("university_name").limit(5000)
+    const { data, error } = await query.order("university_name").limit(200)
     if (error) throw error
 
     // 大学名でグループ化
