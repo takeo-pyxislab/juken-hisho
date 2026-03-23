@@ -11,6 +11,11 @@ export async function GET(req: NextRequest) {
     const kyotsuu = searchParams.get("kyotsuu") || ""
     const app_type = searchParams.get("app_type") || ""
 
+    // キーワードなしの場合は空を返す（初期表示を高速化）
+    if (!keyword && !prefecture && !category && !kyotsuu && !app_type) {
+      return NextResponse.json({ data: [], count: 0, empty: true })
+    }
+
     let query = supabase
       .from("universities_db")
       .select("university_name, faculty_category, application_type, prefecture")

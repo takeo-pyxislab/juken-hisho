@@ -240,7 +240,11 @@ export default function SimulatorPage() {
                 <span style={{fontSize:"11px", color:"var(--ink3)"}}>読み込み中...</span>
               </div>
             ) : uniNames.length === 0 ? (
-              <div style={{padding:"14px", textAlign:"center", color:"var(--ink3)", fontSize:"11px"}}>条件に一致する大学がありません</div>
+              <div style={{padding:"20px 14px", textAlign:"center", color:"var(--ink3)"}}>
+                <div style={{fontSize:"24px", marginBottom:"8px"}}>🔍</div>
+                <div style={{fontSize:"12px", fontWeight:700, color:"var(--ink2)", marginBottom:"4px"}}>大学名で検索してください</div>
+                <div style={{fontSize:"11px", lineHeight:1.6}}>例：「早稲田」「看護」「東京」</div>
+              </div>
             ) : (
               uniNames.map(u => {
                 const sel = selected.has(u.name)
