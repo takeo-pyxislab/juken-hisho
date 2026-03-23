@@ -272,14 +272,9 @@ export default function QuestionnairePage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">気になっている大学（任意・複数可）</label>
               <p className="text-xs text-gray-400 mb-2">志望校として登録され、シミュレーターで優先表示されます</p>
               <textarea
-                value={answers.target_universities_text.join("
-")}
-                onChange={e => setAnswers(a => ({ ...a, target_universities_text: e.target.value.split("
-").filter(v => v.trim()) }))}
-                placeholder={"例：
-早稲田大学
-慶應義塾大学
-東京大学"}
+                value={answers.target_universities_text.join("\n")}
+                onChange={e => setAnswers(a => ({ ...a, target_universities_text: e.target.value.split("\n").filter((v: string) => v.trim()) }))}
+                placeholder="例：&#13;&#10;早稲田大学&#13;&#10;慶應義塾大学&#13;&#10;東京大学"
                 className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
                 rows={4}
               />
