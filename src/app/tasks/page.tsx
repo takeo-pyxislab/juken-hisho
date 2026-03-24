@@ -27,6 +27,7 @@ export default function TasksPage() {
   const [generating, setGenerating] = useState(false)
   const [newUni, setNewUni] = useState({ name: "", dept: "" })
   const [showAddUni, setShowAddUni] = useState(false)
+  const [filter, setFilter] = useState<"all"|"week"|"month">("all")
   const router = useRouter()
   const supabase = createClient()
 
@@ -86,8 +87,24 @@ export default function TasksPage() {
     "その他": "bg-gray-100 text-gray-600",
   }
 
+  const now = new Date()
+  const endOfWeek = new Date(now); endOfWeek.setDate(now.getDate() + 7)
+  const endOfMonth = new Date(now); endOfMonth.setDate(now.getDate() + 30)
+
+  const filterTask = (t: Task) => {
+    if (t.is_completed) return false
+    if (filter === "all") return true
+    if (!t.due_date) return false
+    const due = new Date(t.due_date)
+    if (filter === "week") return due <= endOfWeek
+    if (filter === "month") return due <= endOfMonth
+    return true
+  }
+
   const incomplete = tasks.filter(t => !t.is_completed)
+  const filtered = tasks.filter(filterTask)
   const complete = tasks.filter(t => t.is_completed)
+  const thisWeekCount = tasks.filter(t => !t.is_completed && t.due_date && new Date(t.due_date) <= endOfWeek).length
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-indigo-600">読み込み中...</p></div>
 
@@ -143,10 +160,29 @@ export default function TasksPage() {
           )}
         </div>
 
-        {incomplete.length > 0 && (
+        {/* フィルタータブ */}
+        {tasks.length > 0 && (
+          <div className="flex gap-2">
+            {([
+              { id: "all", label: "すべて", count: incomplete.length },
+              { id: "week", label: "今週", count: thisWeekCount },
+              { id: "month", label: "今月", count: tasks.filter(t => !t.is_completed && t.due_date && new Date(t.due_date) <= endOfMonth).length },
+            ] as const).map(f => (
+              <button key={f.id} onClick={() => setFilter(f.id)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition ${filter === f.id ? "bg-indigo-600 text-white" : "bg-white text-gray-500 border border-gray-200 hover:border-indigo-300"}`}>
+                {f.label}
+                <span className={`text-xs font-bold rounded-full px-1.5 py-0.5 ${filter === f.id ? "bg-white text-indigo-600" : "bg-gray-100 text-gray-500"}`}>{f.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {filtered.length > 0 && (
           <div className="space-y-3">
-            <h2 className="font-bold text-gray-700 text-sm px-1">未完了 ({incomplete.length})</h2>
-            {incomplete.map(task => (
+            <h2 className="font-bold text-gray-700 text-sm px-1">
+              {filter === "week" ? "今週やること" : filter === "month" ? "今月やること" : "未完了"} ({filtered.length})
+            </h2>
+            {filtered.map(task => (
               <div key={task.id} className="bg-white rounded-xl p-4 border border-gray-100 flex items-start gap-3">
                 <button onClick={() => toggleTask(task)}
                   className="mt-0.5 w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0 hover:border-indigo-400 transition" />

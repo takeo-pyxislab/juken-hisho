@@ -115,8 +115,43 @@ export default function ResultPage() {
           </ul>
         </div>
 
+        {/* 次のアクション */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-100">
+          <h3 className="font-bold text-gray-800 mb-1">🚀 診断結果をもとに、次のステップへ</h3>
+          <p className="text-xs text-gray-400 mb-4">どれか一つから始めるだけでOKです</p>
+          <div className="space-y-3">
+            <button onClick={() => router.push("/tasks")}
+              className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-indigo-100 bg-indigo-50 hover:border-indigo-400 transition text-left">
+              <span className="text-2xl">✅</span>
+              <div>
+                <p className="font-bold text-indigo-700 text-sm">タスクを自動生成する</p>
+                <p className="text-xs text-indigo-400 mt-0.5">出願までの逆算スケジュールをAIが作成</p>
+              </div>
+              <span className="ml-auto text-indigo-400">→</span>
+            </button>
+            <button onClick={() => router.push("/simulator")}
+              className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-teal-100 bg-teal-50 hover:border-teal-400 transition text-left">
+              <span className="text-2xl">🔍</span>
+              <div>
+                <p className="font-bold text-teal-700 text-sm">シミュレーターで大学を探す</p>
+                <p className="text-xs text-teal-400 mt-0.5">おすすめ大学の日程・費用・専願可否を確認</p>
+              </div>
+              <span className="ml-auto text-teal-400">→</span>
+            </button>
+            <button onClick={() => router.push("/essay")}
+              className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-purple-100 bg-purple-50 hover:border-purple-400 transition text-left">
+              <span className="text-2xl">✍️</span>
+              <div>
+                <p className="font-bold text-purple-700 text-sm">志望理由書を書き始める</p>
+                <p className="text-xs text-purple-400 mt-0.5">AIがあなたの強みを活かした文章を生成</p>
+              </div>
+              <span className="ml-auto text-purple-400">→</span>
+            </button>
+          </div>
+        </div>
+
         <button onClick={() => router.push("/mypage")}
-          className="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition">
+          className="w-full bg-gray-100 text-gray-600 py-3 rounded-xl font-medium hover:bg-gray-200 transition text-sm">
           マイページに戻る
         </button>
       </main>

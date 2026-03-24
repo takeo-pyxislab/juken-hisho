@@ -124,10 +124,13 @@ export default function QuestionnairePage() {
           </div>
           <div className="flex gap-1">
             {Array.from({ length: STEPS }).map((_, i) => (
-              <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i < step ? "bg-indigo-600" : "bg-gray-200"}`} />
+              <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i < step ? "bg-indigo-600" : "bg-gray-200"}`} />
             ))}
           </div>
-          <p className="text-xs text-gray-400 mt-1">Step {step} / {STEPS}</p>
+          <div className="flex items-center justify-between mt-1">
+            <p className="text-xs text-gray-400">Step {step} / {STEPS}　<span className="text-indigo-400 font-medium">約{Math.ceil((STEPS - step + 1) * 0.4)}分で完了</span></p>
+            <p className="text-xs text-gray-400">{Math.round((step - 1) / STEPS * 100)}%</p>
+          </div>
         </div>
       </header>
 
@@ -137,6 +140,7 @@ export default function QuestionnairePage() {
         {step === 1 && (
           <div className="space-y-6">
             <div>
+              <div className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full mb-3">✦ 全7問・約3分で完了します</div>
               <h2 className="text-xl font-bold text-gray-800 mb-1">はじめに教えてください</h2>
               <p className="text-gray-500 text-sm mb-5">個人を特定する情報はお預かりしません</p>
               <label className="block text-sm font-medium text-gray-700 mb-2">ニックネーム（アプリ内での表示名）</label>
@@ -172,6 +176,7 @@ export default function QuestionnairePage() {
         {step === 2 && (
           <div className="space-y-6">
             <div>
+              <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-600 text-xs font-bold px-3 py-1 rounded-full mb-3">👍 いいスタートです！続けましょう</div>
               <h2 className="text-xl font-bold text-gray-800 mb-1">居住地・学校について</h2>
               <p className="text-gray-500 text-sm mb-5">地域ごとの傾向分析に活用します</p>
             </div>
@@ -209,6 +214,7 @@ export default function QuestionnairePage() {
         {step === 3 && (
           <div className="space-y-6">
             <div>
+              <div className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full mb-3">📊 折り返し地点まであと少し</div>
               <h2 className="text-xl font-bold text-gray-800 mb-1">学力・資格について</h2>
               <p className="text-gray-500 text-sm mb-5">出願要件との照合に使います</p>
             </div>
@@ -306,6 +312,7 @@ export default function QuestionnairePage() {
         {step === 5 && (
           <div className="space-y-6">
             <div>
+              <div className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-600 text-xs font-bold px-3 py-1 rounded-full mb-3">🔥 ここが診断精度を上げる重要ポイント！</div>
               <h2 className="text-xl font-bold text-gray-800 mb-1">課外活動・実績</h2>
               <p className="text-gray-500 text-sm mb-5">総合型選抜の評価材料になります</p>
             </div>
@@ -341,6 +348,7 @@ export default function QuestionnairePage() {
         {step === 6 && (
           <div className="space-y-5">
             <div>
+              <div className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-600 text-xs font-bold px-3 py-1 rounded-full mb-3">✨ あと2問！もう少しです</div>
               <h2 className="text-xl font-bold text-gray-800 mb-1">あなたの強みを教えてください</h2>
               <p className="text-gray-500 text-sm mb-5">選抜方式との相性診断に使います</p>
             </div>
@@ -376,6 +384,7 @@ export default function QuestionnairePage() {
         {step === 7 && (
           <div className="space-y-6">
             <div>
+              <div className="inline-flex items-center gap-1.5 bg-teal-50 text-teal-600 text-xs font-bold px-3 py-1 rounded-full mb-3">🎉 最後の質問です！あと少し</div>
               <h2 className="text-xl font-bold text-gray-800 mb-1">最後に確認です</h2>
               <p className="text-gray-500 text-sm mb-5">残りの条件を教えてください</p>
             </div>

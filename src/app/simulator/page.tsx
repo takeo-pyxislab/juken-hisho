@@ -378,6 +378,18 @@ function SimResult({ data, rightTab, setRightTab }: {
         </div>
       </div>
 
+      {sOnly.length > 0 && (
+        <div style={{margin:"16px 20px 0", background:"rgba(225,29,72,.07)", border:"1.5px solid rgba(225,29,72,.2)", borderRadius:"12px", padding:"12px 16px", display:"flex", alignItems:"center", gap:"12px"}}>
+          <span style={{fontSize:"20px", flexShrink:0}}>⚠️</span>
+          <div>
+            <div style={{fontSize:"13px", fontWeight:700, color:"#e11d48", marginBottom:"2px"}}>専願のみの大学が {sOnly.length} 校あります</div>
+            <div style={{fontSize:"11px", color:"#9f1239", lineHeight:1.6}}>
+              {sOnly.map(u => u.name).join("・")} は専願のみです。不合格時に他大学を受験できないため、出願前に十分ご確認ください。
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="sim-stats-grid" style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"10px", padding:"16px 20px"}}>
         {[
           {l:"選択大学", v:data.length, sub:"校", color:"var(--blue)", grad:"linear-gradient(90deg,var(--blue),#818cf8)"},
