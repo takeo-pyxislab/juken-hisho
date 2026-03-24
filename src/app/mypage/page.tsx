@@ -151,7 +151,7 @@ export default function MyPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 dashboard-grid">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* 左カラム */}
           <div className="space-y-5">
             {/* 志望校リスト */}
@@ -280,7 +280,7 @@ export default function MyPage() {
             )}
 
             {/* 機能カード */}
-            <div className="grid grid-cols-2 gap-4 kpi-grid">
+            <div className="grid grid-cols-2 gap-4">
               {[
                 {href:"/questionnaire", icon:"🧠", title:"AI問診を受ける", desc:"プロフィールを更新して再診断", badge:"診断", color:"indigo"},
                 {href:"/simulator", icon:"🔍", title:"大学シミュレーター", desc:"8,015学科を検索・比較", badge:"無料", color:"teal"},
