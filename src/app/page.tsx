@@ -55,7 +55,7 @@ export default function Home() {
         </p>
 
         {/* 2つのCTAボタン */}
-        <div style={{display:"flex", gap:"12px", justifyContent:"center", flexWrap:"wrap", position:"relative", zIndex:1, marginBottom:"60px"}}>
+        <div style={{display:"flex", gap:"12px", justifyContent:"center", flexWrap:"wrap", position:"relative", zIndex:1, marginBottom:"60px"}} className="hero-btns">
           <Link href="/simulator" style={{
             padding:"15px 32px", borderRadius:"12px",
             border:"2px solid var(--border2)", background:"var(--surface)",
@@ -75,7 +75,7 @@ export default function Home() {
         </div>
 
         {/* 統計 */}
-        <div style={{display:"flex", border:"1px solid var(--border)", borderRadius:"var(--r-lg)", background:"var(--surface)", overflow:"hidden", boxShadow:"var(--sh)", position:"relative", zIndex:1, flexWrap:"wrap"}}>
+        <div style={{display:"flex", border:"1px solid var(--border)", borderRadius:"var(--r-lg)", background:"var(--surface)", overflow:"hidden", boxShadow:"var(--sh)", position:"relative", zIndex:1, flexWrap:"wrap"}} className="stats-row">
           {[{num:"522",label:"収録大学数"},{num:"7,980",label:"学科・専攻数"},{num:"2026",label:"年度対応済み"},{num:"AI",label:"マッチング診断"}].map((s,i) => (
             <div key={i} style={{padding:"20px 32px", textAlign:"center", borderRight: i < 3 ? "1px solid var(--border)" : "none"}}>
               <div style={{fontSize:"28px", fontWeight:900, fontFamily:"DM Mono,monospace", color:"var(--teal)"}}>{s.num}</div>
@@ -89,7 +89,7 @@ export default function Home() {
       <section style={{padding:"80px 24px", maxWidth:"1100px", margin:"0 auto", textAlign:"center"}}>
         <div style={{fontSize:"11px", fontWeight:700, letterSpacing:".14em", textTransform:"uppercase", color:"var(--teal)", marginBottom:"12px"}}>使い方</div>
         <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"clamp(26px,3vw,36px)", fontWeight:700, color:"var(--ink)", lineHeight:1.3, marginBottom:"48px"}}>4ステップで、受験計画が完成する</h2>
-        <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"0", position:"relative"}}>
+        <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"0", position:"relative"}} className="flow-steps-grid">
           <div style={{position:"absolute", top:"28px", left:"calc(12.5%)", right:"calc(12.5%)", height:"2px", background:"linear-gradient(90deg,var(--teal),#06b6d4)", zIndex:0}}/>
           {[
             {icon:"🔍", badge:"無料", badgeDark:false, title:"大学を検索・比較", desc:"日程・費用・併願可否を一覧で比較。登録不要ですぐ使える。"},
@@ -150,7 +150,7 @@ export default function Home() {
           <p style={{fontSize:"15px", color:"rgba(255,255,255,.7)", lineHeight:1.8, maxWidth:"560px", marginBottom:"48px"}}>
             無料版は「情報を調べる」ツール。プレミアムは「自分に合った答えを出す」ツールです。
           </p>
-          <div style={{display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:"14px", marginBottom:"48px"}}>
+          <div style={{display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:"14px", marginBottom:"48px"}} className="premium-features-grid">
             {[
               {icon:"🧠", title:"AI問診 × マッチング診断", desc:"得意科目・活動実績・パーソナリティから、最適な大学・学部・選抜方法を診断。"},
               {icon:"📈", title:"穴場スコア・倍率データ", desc:"募集人数・応募者数・合格率データと照合。「実はここ穴場！」「ここは激戦注意」を表示。"},
@@ -188,7 +188,7 @@ export default function Home() {
 
       {/* 保護者向けセクション */}
       <section style={{padding:"80px 24px", maxWidth:"1100px", margin:"0 auto"}}>
-        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:"60px", alignItems:"center"}}>
+        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:"60px", alignItems:"center"}} className="parent-section-grid">
           <div>
             <div style={{fontSize:"11px", fontWeight:700, letterSpacing:".14em", textTransform:"uppercase", color:"var(--teal)", marginBottom:"12px"}}>保護者の方へ</div>
             <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"clamp(24px,2.5vw,34px)", fontWeight:700, color:"var(--ink)", lineHeight:1.3, marginBottom:"16px"}}>

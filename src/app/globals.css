@@ -50,3 +50,56 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ══ スマホ対応 ══ */
+@media (max-width: 768px) {
+  /* LP: 4ステップを縦並び */
+  .flow-steps-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* LP: プレミアム機能グリッドを1列 */
+  .premium-features-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* LP: 保護者セクションを縦並び */
+  .parent-section-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* LP: 統計行を縦 */
+  .stats-row {
+    flex-direction: column !important;
+  }
+  /* シミュレーター：サイドバーを上部に */
+  .sim-shell {
+    flex-direction: column !important;
+  }
+  .sim-sidebar {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-height: 320px;
+  }
+  /* ダッシュボード：3カラムを1カラム */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* KPIカード：2カラム */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* 統計：2列 */
+  .stats-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+  /* ボタン：縦並び */
+  .hero-btns {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .hero-btns a {
+    text-align: center !important;
+  }
+}
