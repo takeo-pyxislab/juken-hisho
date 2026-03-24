@@ -7,8 +7,8 @@ import Link from "next/link"
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
   const supabase = createClient()
 
@@ -19,39 +19,69 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setError("メールアドレスまたはパスワードが正しくありません")
+      setLoading(false)
     } else {
       router.push("/mypage")
     }
-    setLoading(false)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center text-indigo-700 mb-2">受験秘書</h1>
-        <p className="text-center text-gray-500 mb-8 text-sm">ログイン</p>
-        {error && <p className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</p>}
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">メールアドレス</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              required />
+    <div style={{minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", padding:"40px 24px", background:"var(--bg)"}}>
+      <div style={{width:"100%", maxWidth:"440px"}}>
+        {/* ロゴ */}
+        <div style={{textAlign:"center", marginBottom:"32px"}}>
+          <Link href="/" style={{textDecoration:"none", display:"inline-block"}}>
+            <div style={{width:"52px", height:"52px", background:"linear-gradient(135deg,var(--premium),#3d3530)", borderRadius:"14px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"26px", margin:"0 auto 12px"}}>📖</div>
+            <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", fontWeight:700, color:"var(--ink)"}}>受験秘書</div>
+          </Link>
+          <h1 style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", fontWeight:700, color:"var(--ink)", marginTop:"16px", marginBottom:"6px"}}>ログイン</h1>
+          <p style={{fontSize:"13px", color:"var(--ink3)", lineHeight:1.6}}>おかえりなさい</p>
+        </div>
+
+        {/* カード */}
+        <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"var(--r-lg)", padding:"36px", boxShadow:"var(--sh-lg)"}}>
+          <form onSubmit={handleLogin} style={{display:"flex", flexDirection:"column", gap:"16px"}}>
+            <div>
+              <label style={{fontSize:"12px", fontWeight:700, color:"var(--ink2)", marginBottom:"6px", display:"block"}}>メールアドレス</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
+                placeholder="example@email.com"
+                style={{width:"100%", padding:"11px 14px", border:"1.5px solid var(--border)", borderRadius:"9px", background:"var(--surface2)", color:"var(--ink)", fontSize:"13px", fontFamily:"inherit", outline:"none", boxSizing:"border-box"}}
+              />
+            </div>
+            <div>
+              <label style={{fontSize:"12px", fontWeight:700, color:"var(--ink2)", marginBottom:"6px", display:"block"}}>パスワード</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
+                placeholder="パスワードを入力"
+                style={{width:"100%", padding:"11px 14px", border:"1.5px solid var(--border)", borderRadius:"9px", background:"var(--surface2)", color:"var(--ink)", fontSize:"13px", fontFamily:"inherit", outline:"none", boxSizing:"border-box"}}
+              />
+            </div>
+
+            {error && (
+              <div style={{background:"var(--rose-bg)", border:"1px solid var(--rose-border)", borderRadius:"9px", padding:"10px 14px", fontSize:"12px", color:"var(--rose)"}}>
+                ⚠️ {error}
+              </div>
+            )}
+
+            <button type="submit" disabled={loading}
+              style={{width:"100%", padding:"13px", borderRadius:"10px", border:"none", background:"var(--premium)", color:"#fff", fontSize:"14px", fontWeight:700, cursor:loading?"not-allowed":"pointer", fontFamily:"inherit", marginTop:"4px", opacity:loading?0.7:1}}>
+              {loading ? "ログイン中..." : "ログインする →"}
+            </button>
+          </form>
+
+          <div style={{display:"flex", alignItems:"center", gap:"10px", margin:"16px 0"}}>
+            <div style={{flex:1, height:"1px", background:"var(--border)"}}/>
+            <span style={{fontSize:"11px", color:"var(--ink3)"}}>または</span>
+            <div style={{flex:1, height:"1px", background:"var(--border)"}}/>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">パスワード</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              required />
-          </div>
-          <button type="submit" disabled={loading}
-            className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 transition">
-            {loading ? "ログイン中..." : "ログイン"}
-          </button>
-        </form>
-        <p className="text-center text-sm text-gray-500 mt-6">
-          アカウントをお持ちでない方は{" "}
-          <Link href="/signup" className="text-indigo-600 hover:underline">新規登録</Link>
+
+          <p style={{fontSize:"12px", color:"var(--ink3)", textAlign:"center"}}>
+            アカウントをお持ちでないですか？{" "}
+            <Link href="/signup" style={{color:"var(--teal)", fontWeight:600, textDecoration:"underline"}}>新規登録</Link>
+          </p>
+        </div>
+
+        <p style={{textAlign:"center", marginTop:"20px", fontSize:"11px", color:"var(--ink4)"}}>
+          <Link href="/" style={{color:"var(--ink3)", textDecoration:"none"}}>← トップに戻る</Link>
         </p>
       </div>
     </div>
