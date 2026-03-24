@@ -151,9 +151,9 @@ export default function SimulatorPage() {
         </div>
       </nav>
 
-      <div style={{display:"flex", height:"calc(100vh - 58px)"}}>
+      <div className="sim-layout" style={{display:"flex", height:"calc(100vh - 58px)"}}>
         {/* サイドバー */}
-        <div style={{width:"300px", minWidth:"300px", background:"var(--surface)", borderRight:"1px solid var(--border)", display:"flex", flexDirection:"column", overflow:"hidden"}}>
+        <div className="sim-sidebar" style={{width:"300px", minWidth:"300px", background:"var(--surface)", borderRight:"1px solid var(--border)", display:"flex", flexDirection:"column", overflow:"hidden"}}>
           {/* タブ */}
           <div style={{display:"flex", borderBottom:"1px solid var(--border)"}}>
             {[{id:"s" as const, label:"🔍 検索"}, {id:"f" as const, label:"⚙ 絞込"}].map(t => (
@@ -241,7 +241,7 @@ export default function SimulatorPage() {
           )}
 
           {/* 大学リスト */}
-          <div style={{flex:1, overflowY:"auto", padding:"6px"}}>
+          <div className="sim-sidebar-list" style={{flex:1, overflowY:"auto", padding:"6px"}}>
             {loading ? (
               <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100px", gap:"8px"}}>
                 <div style={{width:"24px", height:"24px", border:"3px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
@@ -316,7 +316,7 @@ export default function SimulatorPage() {
         </div>
 
         {/* メインコンテンツ */}
-        <div style={{flex:1, overflowY:"auto", background:"var(--bg)"}}>
+        <div className="sim-main" style={{flex:1, overflowY:"auto", background:"var(--bg)"}}>
           {!simRunning ? (
             <div style={{display:"flex", alignItems:"center", justifyContent:"center", height:"100%", padding:"40px"}}>
               <div style={{textAlign:"center", maxWidth:"440px"}}>
@@ -336,7 +336,17 @@ export default function SimulatorPage() {
           )}
         </div>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg) } }
+        @media (max-width: 767px) {
+          .sim-layout { flex-direction: column; height: auto; min-height: calc(100vh - 58px); }
+          .sim-sidebar { width: 100% !important; min-width: 0 !important; border-right: none !important; border-bottom: 1px solid var(--border); max-height: 55vh; }
+          .sim-sidebar-list { max-height: 160px; }
+          .sim-main { flex: 1; min-height: 0; }
+          .sim-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .sim-tabs { flex-shrink: 0; }
+        }
+      `}</style>
     </div>
   )
 }
@@ -355,7 +365,7 @@ function SimResult({ data, rightTab, setRightTab }: {
     <div>
       <div style={{background:"var(--surface)", borderBottom:"1px solid var(--border)", padding:"11px 20px", display:"flex", alignItems:"center", gap:"10px", flexWrap:"wrap", position:"sticky", top:0, zIndex:100, boxShadow:"var(--sh-sm)"}}>
         <div style={{fontSize:"13px", fontWeight:700, marginRight:"auto"}}>📊 {data.length}大学 / {data.reduce((s,u) => s+u.records.length, 0)}学科</div>
-        <div style={{display:"flex", gap:"3px", background:"var(--surface2)", borderRadius:"9px", padding:"3px"}}>
+        <div className="sim-tabs" style={{display:"flex", gap:"3px", background:"var(--surface2)", borderRadius:"9px", padding:"3px", overflowX:"auto"}}>
           {[{id:"detail",l:"📋 詳細"},{id:"timeline",l:"📅 日程"},{id:"cost",l:"💰 費用"},{id:"heigan",l:"⚡ 併願"},{id:"parent",l:"👨‍👩‍👧 保護者"}].map(t => (
             <button key={t.id} onClick={() => setRightTab(t.id)} style={{
               padding:"6px 12px", borderRadius:"7px", border:"none", fontFamily:"inherit",
@@ -368,7 +378,7 @@ function SimResult({ data, rightTab, setRightTab }: {
         </div>
       </div>
 
-      <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"10px", padding:"16px 20px"}}>
+      <div className="sim-stats-grid" style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"10px", padding:"16px 20px"}}>
         {[
           {l:"選択大学", v:data.length, sub:"校", color:"var(--blue)", grad:"linear-gradient(90deg,var(--blue),#818cf8)"},
           {l:"専願のみ", v:sOnly.length, sub:"校（要注意）", color:"#e11d48", grad:"linear-gradient(90deg,#e11d48,#ec4899)"},
