@@ -79,31 +79,32 @@ export default function SimulatorPage() {
   const [ougan, setOugan] = useState("")
   const [kyotsuu, setKyotsuu] = useState("")
 
-  const fetchNames = useCallback(async () => {
-    setLoading(true)
-    const params = new URLSearchParams()
-    if (keyword) params.set("keyword", keyword)
-    if (pref) params.set("prefecture", pref)
-    if (facCategory) params.set("category", facCategory)
-    if (ougan) params.set("app_type", ougan)
-    if (kyotsuu) params.set("kyotsuu", kyotsuu)
-    const res = await fetch(`/api/university-names?${params}`)
-    const data = await res.json()
-    setUniNames(data.empty ? [] : (data.data || []))
-    setLoading(false)
-  }, [keyword, pref, facCategory, ougan, kyotsuu])
-
   useEffect(() => {
-    // 検索条件が何もない場合は初期ロードしない
     const hasCondition = keyword || pref || facCategory || ougan || kyotsuu
     if (!hasCondition) {
       setLoading(false)
       setUniNames([])
       return
     }
-    const t = setTimeout(fetchNames, 300)
+    setLoading(true)
+    const t = setTimeout(async () => {
+      const params = new URLSearchParams()
+      if (keyword) params.set("keyword", keyword)
+      if (pref) params.set("prefecture", pref)
+      if (facCategory) params.set("category", facCategory)
+      if (ougan) params.set("app_type", ougan)
+      if (kyotsuu) params.set("kyotsuu", kyotsuu)
+      try {
+        const res = await fetch(`/api/university-names?${params}`)
+        const data = await res.json()
+        setUniNames(data.empty ? [] : (data.data || []))
+      } catch(e) {
+        setUniNames([])
+      }
+      setLoading(false)
+    }, 400)
     return () => clearTimeout(t)
-  }, [fetchNames, keyword, pref, facCategory, ougan, kyotsuu])
+  }, [keyword, pref, facCategory, ougan, kyotsuu])
 
   const toggleSelect = (name: string) => {
     setSelected(prev => {
