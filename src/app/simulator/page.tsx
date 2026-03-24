@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase"
 
 type UniName = {
   name: string
@@ -63,6 +64,8 @@ function parseCost(raw: string) {
 
 function fmt(n: number) { return n.toLocaleString("ja-JP") }
 
+type MyTarget = { id: string; university_name: string; department: string; priority: number }
+
 export default function SimulatorPage() {
   const [uniNames, setUniNames] = useState<UniName[]>([])
   const [loading, setLoading] = useState(false)
@@ -70,7 +73,7 @@ export default function SimulatorPage() {
   const [simData, setSimData] = useState<UniGroup[]>([])
   const [simLoading, setSimLoading] = useState(false)
   const [simRunning, setSimRunning] = useState(false)
-  const [sideTab, setSideTab] = useState<"s"|"f">("s")
+  const [sideTab, setSideTab] = useState<"s"|"f"|"m">("s")
   const [rightTab, setRightTab] = useState<"detail"|"timeline"|"cost"|"heigan"|"parent">("detail")
   const [keyword, setKeyword] = useState("")
   const [region, setRegion] = useState("")
@@ -78,6 +81,47 @@ export default function SimulatorPage() {
   const [facCategory, setFacCategory] = useState("")
   const [ougan, setOugan] = useState("")
   const [kyotsuu, setKyotsuu] = useState("")
+  const [userId, setUserId] = useState<string|null>(null)
+  const [myTargets, setMyTargets] = useState<MyTarget[]>([])
+  const [savingUni, setSavingUni] = useState<string|null>(null)
+  const supabase = createClient()
+
+  // ログイン状態と志望校を取得
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      setUserId(user.id)
+      supabase.from("target_universities").select("*").eq("user_id", user.id).order("priority")
+        .then(({ data }) => {
+          const targets = data || []
+          setMyTargets(targets)
+          if (targets.length > 0) {
+            setSideTab("m")
+            setSelected(new Set(targets.map((t: MyTarget) => t.university_name)))
+          }
+        })
+    })
+  }, [])
+
+  const saveToTargets = async (name: string) => {
+    if (!userId) return
+    setSavingUni(name)
+    const alreadySaved = myTargets.some(t => t.university_name === name)
+    if (alreadySaved) {
+      const target = myTargets.find(t => t.university_name === name)!
+      await supabase.from("target_universities").delete().eq("id", target.id)
+      setMyTargets(prev => prev.filter(t => t.id !== target.id))
+    } else {
+      const { data } = await supabase.from("target_universities").insert({
+        user_id: userId,
+        university_name: name,
+        department: "",
+        priority: myTargets.length + 1,
+      }).select().single()
+      if (data) setMyTargets(prev => [...prev, data])
+    }
+    setSavingUni(null)
+  }
 
   useEffect(() => {
     const hasCondition = keyword || pref || facCategory || ougan || kyotsuu
@@ -146,8 +190,17 @@ export default function SimulatorPage() {
           </div>
         </Link>
         <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
-          <Link href="/login" style={{padding:"6px 12px", borderRadius:"8px", color:"var(--ink2)", fontSize:"12px", fontWeight:600, textDecoration:"none"}}>ログイン</Link>
-          <Link href="/signup" style={{padding:"7px 16px", borderRadius:"8px", background:"var(--premium)", color:"#fff", fontSize:"12px", fontWeight:700, textDecoration:"none"}}>✦ プレミアム登録</Link>
+          {userId ? (
+            <>
+              <Link href="/mypage" style={{padding:"6px 12px", borderRadius:"8px", color:"var(--ink2)", fontSize:"12px", fontWeight:600, textDecoration:"none", border:"1px solid var(--border)"}}>マイページ</Link>
+              <Link href="/questionnaire" style={{padding:"7px 16px", borderRadius:"8px", background:"var(--teal)", color:"#fff", fontSize:"12px", fontWeight:700, textDecoration:"none"}}>✦ AI診断</Link>
+            </>
+          ) : (
+            <>
+              <Link href="/login" style={{padding:"6px 12px", borderRadius:"8px", color:"var(--ink2)", fontSize:"12px", fontWeight:600, textDecoration:"none"}}>ログイン</Link>
+              <Link href="/signup" style={{padding:"7px 16px", borderRadius:"8px", background:"var(--premium)", color:"#fff", fontSize:"12px", fontWeight:700, textDecoration:"none"}}>✦ プレミアム登録</Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -156,7 +209,11 @@ export default function SimulatorPage() {
         <div className="sim-sidebar" style={{width:"300px", minWidth:"300px", background:"var(--surface)", borderRight:"1px solid var(--border)", display:"flex", flexDirection:"column", overflow:"hidden"}}>
           {/* タブ */}
           <div style={{display:"flex", borderBottom:"1px solid var(--border)"}}>
-            {[{id:"s" as const, label:"🔍 検索"}, {id:"f" as const, label:"⚙ 絞込"}].map(t => (
+            {([
+              {id:"s" as const, label:"🔍 検索"},
+              {id:"f" as const, label:"⚙ 絞込"},
+              ...(userId ? [{id:"m" as const, label:`⭐ 志望校${myTargets.length > 0 ? ` ${myTargets.length}` : ""}`}] : []),
+            ]).map(t => (
               <button key={t.id} onClick={() => setSideTab(t.id)} style={{
                 flex:1, padding:"11px 4px", textAlign:"center", fontSize:"11px", fontWeight:700,
                 cursor:"pointer", background:"transparent", border:"none", fontFamily:"inherit",
@@ -240,8 +297,50 @@ export default function SimulatorPage() {
             </div>
           )}
 
-          {/* 大学リスト */}
-          <div className="sim-sidebar-list" style={{flex:1, overflowY:"auto", padding:"6px"}}>
+          {/* マイ志望校タブ */}
+          {sideTab === "m" && (
+            <div className="sim-sidebar-list" style={{flex:1, overflowY:"auto", padding:"6px"}}>
+              {myTargets.length === 0 ? (
+                <div style={{padding:"30px 14px", textAlign:"center"}}>
+                  <div style={{fontSize:"32px", marginBottom:"10px"}}>⭐</div>
+                  <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink2)", marginBottom:"6px"}}>志望校が未登録です</div>
+                  <div style={{fontSize:"11px", color:"var(--ink3)", lineHeight:1.7}}>「検索」タブで大学を選んで<br/>シミュレーションを始めましょう</div>
+                </div>
+              ) : (
+                <>
+                  <div style={{padding:"8px 10px 4px", fontSize:"10px", fontWeight:700, color:"var(--ink3)", letterSpacing:".08em"}}>登録済み志望校</div>
+                  {myTargets.map(u => {
+                    const sel = selected.has(u.university_name)
+                    return (
+                      <div key={u.id} onClick={() => toggleSelect(u.university_name)} style={{
+                        padding:"8px 10px", borderRadius:"8px", cursor:"pointer",
+                        display:"flex", alignItems:"center", gap:"8px",
+                        border:`1.5px solid ${sel?"rgba(13,148,136,.22)":"transparent"}`,
+                        background: sel?"rgba(13,148,136,.06)":"transparent",
+                        marginBottom:"2px", transition:".15s"
+                      }}>
+                        <div style={{
+                          width:"18px", height:"18px", minWidth:"18px", borderRadius:"5px",
+                          border:`1.5px solid ${sel?"var(--teal)":"var(--border)"}`,
+                          background: sel?"var(--teal)":"transparent",
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          fontSize:"9px", color:"#fff", transition:".15s", flexShrink:0
+                        }}>{sel?"✓":""}</div>
+                        <div style={{flex:1, minWidth:0}}>
+                          <div style={{fontSize:"12px", fontWeight:600, color:"var(--ink)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{u.university_name}</div>
+                          {u.department && <div style={{fontSize:"10px", color:"var(--ink3)", marginTop:"1px"}}>{u.department}</div>}
+                        </div>
+                        <div style={{background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"20px", padding:"1px 6px", fontSize:"9px", fontWeight:700, color:"var(--teal2)", flexShrink:0}}>登録済</div>
+                      </div>
+                    )
+                  })}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* 大学リスト（検索・絞込タブ） */}
+          <div className="sim-sidebar-list" style={{flex:1, overflowY:"auto", padding:"6px", display: sideTab === "m" ? "none" : undefined}}>
             {loading ? (
               <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100px", gap:"8px"}}>
                 <div style={{width:"24px", height:"24px", border:"3px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
@@ -332,7 +431,7 @@ export default function SimulatorPage() {
               <p style={{fontSize:"13px", color:"var(--ink3)"}}>シミュレーション中...</p>
             </div>
           ) : (
-            <SimResult data={simData} rightTab={rightTab} setRightTab={setRightTab} />
+            <SimResult data={simData} rightTab={rightTab} setRightTab={setRightTab} userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={saveToTargets} />
           )}
         </div>
       </div>
@@ -351,10 +450,14 @@ export default function SimulatorPage() {
   )
 }
 
-function SimResult({ data, rightTab, setRightTab }: {
+function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, onSave }: {
   data: UniGroup[]
   rightTab: string
   setRightTab: (t: any) => void
+  userId: string | null
+  myTargets: MyTarget[]
+  savingUni: string | null
+  onSave: (name: string) => void
 }) {
   const sOnly = data.filter(u => u.records.every(r => r.application_type === "専願"))
   const hOk = data.filter(u => u.records.some(r => r.application_type === "併願"))
@@ -407,7 +510,7 @@ function SimResult({ data, rightTab, setRightTab }: {
       </div>
 
       <div style={{padding:"0 20px 28px"}}>
-        {rightTab === "detail" && <DetailTab data={data} />}
+        {rightTab === "detail" && <DetailTab data={data} userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={onSave} />}
         {rightTab === "timeline" && <TimelineTab data={data} />}
         {rightTab === "cost" && <CostTab data={data} />}
         {rightTab === "heigan" && <HeiganTab data={data} />}
@@ -427,21 +530,43 @@ function SimResult({ data, rightTab, setRightTab }: {
   )
 }
 
-function DetailTab({ data }: { data: UniGroup[] }) {
+function DetailTab({ data, userId, myTargets, savingUni, onSave }: {
+  data: UniGroup[]
+  userId: string | null
+  myTargets: MyTarget[]
+  savingUni: string | null
+  onSave: (name: string) => void
+}) {
   return (
     <div>
       {data.map(({ name, records }) => {
         const hasH = records.some(r => r.application_type === "併願")
         const hasS = records.some(r => r.application_type === "専願")
+        const isSaved = myTargets.some(t => t.university_name === name)
+        const isSaving = savingUni === name
         return (
           <div key={name} style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px", marginBottom:"12px", overflow:"hidden", boxShadow:"var(--sh-sm)"}}>
-            <div style={{padding:"12px 16px", background:"linear-gradient(135deg,rgba(13,148,136,.03),rgba(6,182,212,.03))", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+            <div style={{padding:"12px 16px", background:"linear-gradient(135deg,rgba(13,148,136,.03),rgba(6,182,212,.03))", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"8px", flexWrap:"wrap"}}>
               <div style={{fontSize:"14px", fontWeight:800, color:"var(--ink)", display:"flex", alignItems:"center", gap:"6px", flexWrap:"wrap"}}>
                 🏫 {name}
                 {(!hasH && hasS) ? <span style={{fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"rgba(225,29,72,.08)",color:"#e11d48",border:"1px solid rgba(225,29,72,.15)",fontWeight:700}}>⚠ 専願のみ</span> :
                   hasH ? <span style={{fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"rgba(13,148,136,.08)",color:"var(--teal2)",border:"1px solid rgba(13,148,136,.15)",fontWeight:700}}>✓ 併願可</span> : null}
               </div>
-              <div style={{fontSize:"11px", color:"var(--ink3)"}}>{records.length}学科</div>
+              <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
+                {userId && (
+                  <button onClick={() => onSave(name)} disabled={isSaving} style={{
+                    padding:"4px 10px", borderRadius:"20px", cursor:"pointer", fontFamily:"inherit",
+                    background: isSaved ? "var(--teal-bg)" : "var(--surface2)",
+                    color: isSaved ? "var(--teal2)" : "var(--ink3)",
+                    fontSize:"10px", fontWeight:700, display:"flex", alignItems:"center", gap:"4px",
+                    border: isSaved ? "1px solid var(--teal-border)" : "1px solid var(--border)",
+                    opacity: isSaving ? 0.5 : 1, transition:".15s"
+                  } as React.CSSProperties}>
+                    {isSaving ? "..." : isSaved ? "⭐ 志望校済み" : "☆ 志望校に追加"}
+                  </button>
+                )}
+                <div style={{fontSize:"11px", color:"var(--ink3)"}}>{records.length}学科</div>
+              </div>
             </div>
             <table style={{width:"100%", borderCollapse:"collapse"}}>
               <thead>
