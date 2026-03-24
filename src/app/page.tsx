@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 export default function Home() {
+
   return (
     <div style={{background:"var(--bg)", minHeight:"100vh", fontFamily:"Noto Sans JP,sans-serif"}}>
 
@@ -55,7 +56,7 @@ export default function Home() {
         </p>
 
         {/* 2つのCTAボタン */}
-        <div style={{display:"flex", gap:"12px", justifyContent:"center", flexWrap:"wrap", position:"relative", zIndex:1, marginBottom:"60px"}}>
+        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3" style={{position:"relative", zIndex:1, marginBottom:"60px"}}>
           <Link href="/simulator" style={{
             padding:"15px 32px", borderRadius:"12px",
             border:"2px solid var(--border2)", background:"var(--surface)",
@@ -75,9 +76,9 @@ export default function Home() {
         </div>
 
         {/* 統計 */}
-        <div style={{display:"flex", border:"1px solid var(--border)", borderRadius:"var(--r-lg)", background:"var(--surface)", overflow:"hidden", boxShadow:"var(--sh)", position:"relative", zIndex:1, flexWrap:"wrap"}}>
+        <div className="grid grid-cols-2 md:grid-cols-4" style={{border:"1px solid var(--border)", borderRadius:"var(--r-lg)", background:"var(--surface)", overflow:"hidden", boxShadow:"var(--sh)", position:"relative", zIndex:1}}>
           {[{num:"522",label:"収録大学数"},{num:"7,980",label:"学科・専攻数"},{num:"2026",label:"年度対応済み"},{num:"AI",label:"マッチング診断"}].map((s,i) => (
-            <div key={i} style={{padding:"20px 32px", textAlign:"center", borderRight: i < 3 ? "1px solid var(--border)" : "none"}}>
+            <div key={i} className={`${i < 2 ? "border-b md:border-b-0" : ""} ${i < 3 ? "md:border-r" : ""} ${i % 2 === 0 ? "border-r md:border-r-0" : ""}`} style={{padding:"20px 32px", textAlign:"center", borderColor:"var(--border)"}}>
               <div style={{fontSize:"28px", fontWeight:900, fontFamily:"DM Mono,monospace", color:"var(--teal)"}}>{s.num}</div>
               <div style={{fontSize:"11px", color:"var(--ink3)", marginTop:"3px", fontWeight:600, letterSpacing:".05em"}}>{s.label}</div>
             </div>
@@ -89,8 +90,8 @@ export default function Home() {
       <section style={{padding:"80px 24px", maxWidth:"1100px", margin:"0 auto", textAlign:"center"}}>
         <div style={{fontSize:"11px", fontWeight:700, letterSpacing:".14em", textTransform:"uppercase", color:"var(--teal)", marginBottom:"12px"}}>使い方</div>
         <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"clamp(26px,3vw,36px)", fontWeight:700, color:"var(--ink)", lineHeight:1.3, marginBottom:"48px"}}>4ステップで、受験計画が完成する</h2>
-        <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"0", position:"relative"}}>
-          <div style={{position:"absolute", top:"28px", left:"calc(12.5%)", right:"calc(12.5%)", height:"2px", background:"linear-gradient(90deg,var(--teal),#06b6d4)", zIndex:0}}/>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-0" style={{position:"relative"}}>
+          <div className="hidden md:block" style={{position:"absolute", top:"28px", left:"calc(12.5%)", right:"calc(12.5%)", height:"2px", background:"linear-gradient(90deg,var(--teal),#06b6d4)", zIndex:0}}/>
           {[
             {icon:"🔍", badge:"無料", badgeDark:false, title:"大学を検索・比較", desc:"日程・費用・併願可否を一覧で比較。登録不要ですぐ使える。"},
             {icon:"💡", badge:"無料", badgeDark:false, title:"「もっと知りたい」が芽生える", desc:"「自分はどこを受ければいいの？」という問いが自然に浮かぶ。"},
@@ -117,7 +118,7 @@ export default function Home() {
           <p style={{fontSize:"15px", color:"var(--ink2)", lineHeight:1.8, maxWidth:"560px", margin:"0 auto 48px"}}>
             受験生が何時間もかけて調べていた情報を、ボタン一つで比較できます。
           </p>
-          <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"16px"}}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               {icon:"📅", title:"日程タイムライン", desc:"選んだ大学の出願期間・試験日を4月〜3月のガントチャートで一覧表示。重複が一目でわかる。"},
               {icon:"⚡", title:"併願チェック", desc:"専願のみの大学を自動検出・警告。出願期間の重複を月単位で可視化。受験計画の抜け漏れを防ぐ。"},
@@ -150,7 +151,7 @@ export default function Home() {
           <p style={{fontSize:"15px", color:"rgba(255,255,255,.7)", lineHeight:1.8, maxWidth:"560px", marginBottom:"48px"}}>
             無料版は「情報を調べる」ツール。プレミアムは「自分に合った答えを出す」ツールです。
           </p>
-          <div style={{display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:"14px", marginBottom:"48px"}}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
             {[
               {icon:"🧠", title:"AI問診 × マッチング診断", desc:"得意科目・活動実績・パーソナリティから、最適な大学・学部・選抜方法を診断。"},
               {icon:"📈", title:"穴場スコア・倍率データ", desc:"募集人数・応募者数・合格率データと照合。「実はここ穴場！」「ここは激戦注意」を表示。"},
@@ -188,7 +189,7 @@ export default function Home() {
 
       {/* 保護者向けセクション */}
       <section style={{padding:"80px 24px", maxWidth:"1100px", margin:"0 auto"}}>
-        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:"60px", alignItems:"center"}}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
           <div>
             <div style={{fontSize:"11px", fontWeight:700, letterSpacing:".14em", textTransform:"uppercase", color:"var(--teal)", marginBottom:"12px"}}>保護者の方へ</div>
             <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"clamp(24px,2.5vw,34px)", fontWeight:700, color:"var(--ink)", lineHeight:1.3, marginBottom:"16px"}}>
@@ -258,7 +259,7 @@ export default function Home() {
         <div style={{maxWidth:"1100px", margin:"0 auto", textAlign:"center"}}>
           <div style={{fontSize:"11px", fontWeight:700, letterSpacing:".14em", textTransform:"uppercase", color:"var(--teal)", marginBottom:"12px"}}>利用者の声</div>
           <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"clamp(26px,3vw,36px)", fontWeight:700, color:"var(--ink)", marginBottom:"48px"}}>受験生・保護者から届いた声</h2>
-          <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"16px"}}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               {quote:"専願かどうかが一目でわかったのが一番助かった。自分で調べていたときは気づかなかった大学を3校も見逃していました。", name:"高校3年生（私立）", role:"関東在住 · 経営学部志望", icon:"📚"},
               {quote:"受験料の合計がこんなに見やすく出るとは思わなかった。3パターン比較して、予算の組み方が全然変わりました。", name:"保護者（お母様）", role:"子ども：高校2年生", icon:"👩"},
@@ -289,7 +290,7 @@ export default function Home() {
           <p style={{fontSize:"15px", color:"var(--ink2)", lineHeight:1.8, marginBottom:"40px"}}>
             登録不要でシミュレーターをすぐに使えます。<br/>「もっと詳しく知りたい」と思ったらプレミアムへ。
           </p>
-          <div style={{display:"flex", gap:"12px", justifyContent:"center", flexWrap:"wrap"}}>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap items-center">
             <Link href="/simulator" style={{padding:"15px 32px", borderRadius:"12px", border:"2px solid var(--border2)", background:"var(--surface)", color:"var(--ink)", fontSize:"15px", fontWeight:700, textDecoration:"none", display:"inline-block"}}>
               🔍 無料で試す（登録不要）
             </Link>
