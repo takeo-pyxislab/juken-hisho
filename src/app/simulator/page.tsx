@@ -726,10 +726,18 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
   hiddenDepts: Set<string>
   setHiddenDepts: (v: Set<string>) => void
 }) {
-  const sOnly = data.filter(u => u.records.every(r => r.application_type === "専願"))
-  const hOk = data.filter(u => u.records.some(r => r.application_type === "併願"))
+  // 絞込モード時は hiddenDepts を除外したデータを他タブに渡す
+  const filteredData = filterDeptMode
+    ? data.map(u => ({
+        ...u,
+        records: u.records.filter(r => !hiddenDepts.has(`${u.name}||${r.faculty_name}||${r.department_name}`))
+      })).filter(u => u.records.length > 0)
+    : data
+
+  const sOnly = filteredData.filter(u => u.records.every(r => r.application_type === "専願"))
+  const hOk = filteredData.filter(u => u.records.some(r => r.application_type === "併願"))
   let eSum = 0
-  data.forEach(u => { const c = parseCost(u.records[0]?.cost || ""); eSum += c.exam || 0 })
+  filteredData.forEach(u => { const c = parseCost(u.records[0]?.cost || ""); eSum += c.exam || 0 })
 
   const toggleHidden = (key: string) => {
     const next = new Set(hiddenDepts)
@@ -806,10 +814,10 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
 
       <div style={{padding:"0 20px 28px"}}>
         {rightTab === "detail" && <DetailTab data={data} userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={onSave} filterDeptMode={filterDeptMode} hiddenDepts={hiddenDepts} onToggleHidden={toggleHidden} />}
-        {rightTab === "timeline" && <TimelineTab data={data} />}
-        {rightTab === "cost" && <CostTab data={data} />}
-        {rightTab === "heigan" && <HeiganTab data={data} />}
-        {rightTab === "parent" && <ParentTab data={data} />}
+        {rightTab === "timeline" && <TimelineTab data={filteredData} />}
+        {rightTab === "cost" && <CostTab data={filteredData} />}
+        {rightTab === "heigan" && <HeiganTab data={filteredData} />}
+        {rightTab === "parent" && <ParentTab data={filteredData} />}
       </div>
 
       <div style={{padding:"0 20px 20px"}}>
