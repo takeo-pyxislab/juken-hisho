@@ -35,6 +35,7 @@ type Task = {
 type TargetUniversity = {
   id: string
   university_name: string
+  faculty_name?: string
   department?: string
   priority?: number
 }
@@ -172,7 +173,8 @@ export default function MyPage() {
                       <div style={{width:"22px",height:"22px",background:"linear-gradient(135deg,var(--teal),#06b6d4)",borderRadius:"6px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",fontWeight:700,color:"#fff",flexShrink:0}}>{i+1}</div>
                       <div style={{flex:1,minWidth:0}}>
                         <p style={{fontSize:"12px",fontWeight:600,color:"var(--ink)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.university_name}</p>
-                        {u.department && <p style={{fontSize:"10px",color:"var(--ink3)"}}>{u.department}</p>}
+                        {u.faculty_name && <p style={{fontSize:"10px",color:"var(--ink2)",fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.faculty_name}</p>}
+                        {u.department && <p style={{fontSize:"10px",color:"var(--ink3)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.department}</p>}
                       </div>
                     </div>
                   ))}

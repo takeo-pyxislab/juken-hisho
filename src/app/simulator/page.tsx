@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase"
 
@@ -64,7 +64,7 @@ function parseCost(raw: string) {
 
 function fmt(n: number) { return n.toLocaleString("ja-JP") }
 
-type MyTarget = { id: string; university_name: string; department: string; priority: number }
+type MyTarget = { id: string; university_name: string; faculty_name: string | null; department: string | null; priority: number }
 
 export default function SimulatorPage() {
   const [uniNames, setUniNames] = useState<UniName[]>([])
@@ -74,7 +74,7 @@ export default function SimulatorPage() {
   const [simLoading, setSimLoading] = useState(false)
   const [simRunning, setSimRunning] = useState(false)
   const [sideTab, setSideTab] = useState<"s"|"f"|"m">("s")
-  const [rightTab, setRightTab] = useState<"detail"|"timeline"|"cost"|"heigan"|"parent">("detail")
+  const [rightTab, setRightTab] = useState<string>("detail")
   const [keyword, setKeyword] = useState("")
   const [region, setRegion] = useState("")
   const [pref, setPref] = useState("")
@@ -84,9 +84,17 @@ export default function SimulatorPage() {
   const [userId, setUserId] = useState<string|null>(null)
   const [myTargets, setMyTargets] = useState<MyTarget[]>([])
   const [savingUni, setSavingUni] = useState<string|null>(null)
+  // 学科単位選択
+  const [expandedUnis, setExpandedUnis] = useState<Set<string>>(new Set())
+  const [uniDepts, setUniDepts] = useState<Record<string, URecord[]>>({})
+  const [deptLoadingSet, setDeptLoadingSet] = useState<Set<string>>(new Set())
+  const [deptFilter, setDeptFilter] = useState<Map<string, Set<string>>>(new Map())
+  // 結果画面の学科フィルター（案1）
+  const [filterDeptMode, setFilterDeptMode] = useState(false)
+  const [hiddenDepts, setHiddenDepts] = useState<Set<string>>(new Set())
+
   const supabase = createClient()
 
-  // ログイン状態と志望校を取得
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
@@ -98,24 +106,133 @@ export default function SimulatorPage() {
           if (targets.length > 0) {
             setSideTab("m")
             setSelected(new Set(targets.map((t: MyTarget) => t.university_name)))
+            const deptFilterMap = new Map<string, Set<string>>()
+            targets.forEach((t: MyTarget) => {
+              if (t.faculty_name && t.department) {
+                if (!deptFilterMap.has(t.university_name)) {
+                  deptFilterMap.set(t.university_name, new Set())
+                }
+                deptFilterMap.get(t.university_name)!.add(`${t.faculty_name}||${t.department}`)
+              }
+            })
+            if (deptFilterMap.size > 0) setDeptFilter(deptFilterMap)
           }
         })
     })
   }, [])
 
-  const saveToTargets = async (name: string) => {
+  const toggleExpand = async (uniName: string) => {
+    const next = new Set(expandedUnis)
+    if (next.has(uniName)) {
+      next.delete(uniName)
+      setExpandedUnis(next)
+      return
+    }
+    next.add(uniName)
+    setExpandedUnis(next)
+    if (!uniDepts[uniName]) {
+      setDeptLoadingSet(prev => new Set([...prev, uniName]))
+      try {
+        const res = await fetch(`/api/universities?keyword=${encodeURIComponent(uniName)}&limit=50`)
+        const data = await res.json()
+        const records = (data.data || []).filter((r: URecord) => r.university_name === uniName)
+        setUniDepts(prev => ({ ...prev, [uniName]: records }))
+      } catch {}
+      setDeptLoadingSet(prev => { const s = new Set(prev); s.delete(uniName); return s })
+    }
+  }
+
+  const toggleUni = (name: string) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(name)) {
+        next.delete(name)
+        setDeptFilter(f => { const m = new Map(f); m.delete(name); return m })
+      } else {
+        next.add(name)
+      }
+      return next
+    })
+  }
+
+  const toggleDept = (uniName: string, faculty: string, dept: string) => {
+    const records = uniDepts[uniName] || []
+    const allKeys = records.map(r => `${r.faculty_name}||${r.department_name}`)
+    const deptKey = `${faculty}||${dept}`
+    setDeptFilter(prev => {
+      const next = new Map(prev)
+      let current = next.get(uniName)
+      if (!current) {
+        current = new Set(allKeys)
+        current.delete(deptKey)
+      } else {
+        current = new Set(current)
+        if (current.has(deptKey)) current.delete(deptKey)
+        else current.add(deptKey)
+      }
+      if (current.size === 0) {
+        setSelected(s => { const n = new Set(s); n.delete(uniName); return n })
+        next.delete(uniName)
+      } else if (current.size === allKeys.length) {
+        next.delete(uniName)
+      } else {
+        next.set(uniName, current)
+      }
+      return next
+    })
+    setSelected(prev => {
+      if (!prev.has(uniName)) return new Set([...prev, uniName])
+      return prev
+    })
+  }
+
+  const toggleFaculty = (uniName: string, faculty: string, deptNames: string[]) => {
+    const records = uniDepts[uniName] || []
+    const allKeys = records.map(r => `${r.faculty_name}||${r.department_name}`)
+    const facKeys = deptNames.map(d => `${faculty}||${d}`)
+    setDeptFilter(prev => {
+      const next = new Map(prev)
+      let current = next.get(uniName)
+      if (!current) current = new Set(allKeys)
+      else current = new Set(current)
+      const allFacSelected = facKeys.every(k => current!.has(k))
+      if (allFacSelected) facKeys.forEach(k => current!.delete(k))
+      else facKeys.forEach(k => current!.add(k))
+      if (current.size === 0) {
+        setSelected(s => { const n = new Set(s); n.delete(uniName); return n })
+        next.delete(uniName)
+      } else if (current.size === allKeys.length) {
+        next.delete(uniName)
+      } else {
+        next.set(uniName, current)
+      }
+      return next
+    })
+    setSelected(prev => {
+      if (!prev.has(uniName)) return new Set([...prev, uniName])
+      return prev
+    })
+  }
+
+  const saveToTargets = async (uniName: string, facultyName: string, deptName: string) => {
     if (!userId) return
-    setSavingUni(name)
-    const alreadySaved = myTargets.some(t => t.university_name === name)
+    const saveKey = `${uniName}||${facultyName}||${deptName}`
+    setSavingUni(saveKey)
+    const alreadySaved = myTargets.some(t =>
+      t.university_name === uniName && t.faculty_name === facultyName && t.department === deptName
+    )
     if (alreadySaved) {
-      const target = myTargets.find(t => t.university_name === name)!
+      const target = myTargets.find(t =>
+        t.university_name === uniName && t.faculty_name === facultyName && t.department === deptName
+      )!
       await supabase.from("target_universities").delete().eq("id", target.id)
       setMyTargets(prev => prev.filter(t => t.id !== target.id))
     } else {
       const { data } = await supabase.from("target_universities").insert({
         user_id: userId,
-        university_name: name,
-        department: "",
+        university_name: uniName,
+        faculty_name: facultyName,
+        department: deptName,
         priority: myTargets.length + 1,
       }).select().single()
       if (data) setMyTargets(prev => [...prev, data])
@@ -125,11 +242,7 @@ export default function SimulatorPage() {
 
   useEffect(() => {
     const hasCondition = keyword || pref || facCategory || ougan || kyotsuu
-    if (!hasCondition) {
-      setLoading(false)
-      setUniNames([])
-      return
-    }
+    if (!hasCondition) { setLoading(false); setUniNames([]); return }
     setLoading(true)
     const t = setTimeout(async () => {
       const params = new URLSearchParams()
@@ -142,37 +255,43 @@ export default function SimulatorPage() {
         const res = await fetch(`/api/university-names?${params}`)
         const data = await res.json()
         setUniNames(data.empty ? [] : (data.data || []))
-      } catch(e) {
-        setUniNames([])
-      }
+      } catch { setUniNames([]) }
       setLoading(false)
     }, 400)
     return () => clearTimeout(t)
   }, [keyword, pref, facCategory, ougan, kyotsuu])
 
-  const toggleSelect = (name: string) => {
-    setSelected(prev => {
-      const next = new Set(prev)
-      next.has(name) ? next.delete(name) : next.add(name)
-      return next
-    })
-  }
-
   const runSimulation = async () => {
     if (selected.size === 0) return
     setSimLoading(true)
     setSimRunning(true)
+    setFilterDeptMode(false)
+    setHiddenDepts(new Set())
     const names = [...selected]
     const results: UniGroup[] = []
     for (const name of names) {
       const res = await fetch(`/api/universities?keyword=${encodeURIComponent(name)}&limit=50`)
       const data = await res.json()
-      const records = (data.data || []).filter((r: URecord) => r.university_name === name)
+      let records = (data.data || []).filter((r: URecord) => r.university_name === name)
+      const filter = deptFilter.get(name)
+      if (filter && filter.size > 0) {
+        records = records.filter((r: URecord) => filter.has(`${r.faculty_name}||${r.department_name}`))
+      }
       results.push({ name, records })
     }
     setSimData(results)
     setSimLoading(false)
   }
+
+  // 選択中の学科数を計算
+  const selectedDeptCount = [...selected].reduce((sum, uniName) => {
+    const filter = deptFilter.get(uniName)
+    if (!filter) {
+      const depts = uniDepts[uniName]
+      return sum + (depts ? depts.length : 1)
+    }
+    return sum + filter.size
+  }, 0)
 
   return (
     <div style={{background:"var(--bg)", minHeight:"100vh"}}>
@@ -304,33 +423,69 @@ export default function SimulatorPage() {
                 <div style={{padding:"30px 14px", textAlign:"center"}}>
                   <div style={{fontSize:"32px", marginBottom:"10px"}}>⭐</div>
                   <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink2)", marginBottom:"6px"}}>志望校が未登録です</div>
-                  <div style={{fontSize:"11px", color:"var(--ink3)", lineHeight:1.7}}>「検索」タブで大学を選んで<br/>シミュレーションを始めましょう</div>
+                  <div style={{fontSize:"11px", color:"var(--ink3)", lineHeight:1.7}}>シミュレーション結果から<br/>学科ごとに登録できます</div>
                 </div>
               ) : (
                 <>
                   <div style={{padding:"8px 10px 4px", fontSize:"10px", fontWeight:700, color:"var(--ink3)", letterSpacing:".08em"}}>登録済み志望校</div>
-                  {myTargets.map(u => {
-                    const sel = selected.has(u.university_name)
+                  {Object.entries(
+                    myTargets.reduce((acc, t) => {
+                      if (!acc[t.university_name]) acc[t.university_name] = []
+                      acc[t.university_name].push(t)
+                      return acc
+                    }, {} as Record<string, MyTarget[]>)
+                  ).map(([uniName, ts]) => {
+                    const sel = selected.has(uniName)
                     return (
-                      <div key={u.id} onClick={() => toggleSelect(u.university_name)} style={{
-                        padding:"8px 10px", borderRadius:"8px", cursor:"pointer",
-                        display:"flex", alignItems:"center", gap:"8px",
-                        border:`1.5px solid ${sel?"rgba(13,148,136,.22)":"transparent"}`,
-                        background: sel?"rgba(13,148,136,.06)":"transparent",
-                        marginBottom:"2px", transition:".15s"
-                      }}>
-                        <div style={{
-                          width:"18px", height:"18px", minWidth:"18px", borderRadius:"5px",
-                          border:`1.5px solid ${sel?"var(--teal)":"var(--border)"}`,
-                          background: sel?"var(--teal)":"transparent",
-                          display:"flex", alignItems:"center", justifyContent:"center",
-                          fontSize:"9px", color:"#fff", transition:".15s", flexShrink:0
-                        }}>{sel?"✓":""}</div>
-                        <div style={{flex:1, minWidth:0}}>
-                          <div style={{fontSize:"12px", fontWeight:600, color:"var(--ink)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{u.university_name}</div>
-                          {u.department && <div style={{fontSize:"10px", color:"var(--ink3)", marginTop:"1px"}}>{u.department}</div>}
+                      <div key={uniName} style={{marginBottom:"4px"}}>
+                        <div onClick={() => toggleUni(uniName)} style={{
+                          padding:"7px 10px", borderRadius: ts.some(t => t.faculty_name) ? "8px 8px 0 0" : "8px",
+                          cursor:"pointer", display:"flex", alignItems:"center", gap:"8px",
+                          border:`1.5px solid ${sel?"rgba(13,148,136,.22)":"var(--border)"}`,
+                          borderBottom: ts.some(t => t.faculty_name) ? "none" : undefined,
+                          background: sel?"rgba(13,148,136,.06)":"transparent",
+                        }}>
+                          <div style={{
+                            width:"18px", height:"18px", minWidth:"18px", borderRadius:"5px",
+                            border:`1.5px solid ${sel?"var(--teal)":"var(--border)"}`,
+                            background: sel?"var(--teal)":"transparent",
+                            display:"flex", alignItems:"center", justifyContent:"center",
+                            fontSize:"9px", color:"#fff", transition:".15s", flexShrink:0
+                          }}>{sel?"✓":""}</div>
+                          <div style={{flex:1, minWidth:0}}>
+                            <div style={{fontSize:"12px", fontWeight:700, color:"var(--ink)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{uniName}</div>
+                          </div>
+                          <div style={{background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"20px", padding:"1px 6px", fontSize:"9px", fontWeight:700, color:"var(--teal2)", flexShrink:0}}>{ts.length}学科</div>
                         </div>
-                        <div style={{background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"20px", padding:"1px 6px", fontSize:"9px", fontWeight:700, color:"var(--teal2)", flexShrink:0}}>登録済</div>
+                        {ts.some(t => t.faculty_name) && (
+                          <div style={{border:`1.5px solid ${sel?"rgba(13,148,136,.22)":"var(--border)"}`, borderTop:"1px solid var(--border)", borderRadius:"0 0 8px 8px", background:"var(--surface2)", marginBottom:"0"}}>
+                            {ts.map((t, ti) => {
+                              const deptKey = `${t.faculty_name}||${t.department}`
+                              const currentFilter = deptFilter.get(uniName)
+                              const isDeptSel = !currentFilter || currentFilter.has(deptKey)
+                              return (
+                                <div key={t.id} onClick={() => t.faculty_name && t.department && toggleDept(uniName, t.faculty_name, t.department)} style={{
+                                  display:"flex", alignItems:"center", gap:"8px", padding:"5px 10px",
+                                  cursor: t.faculty_name ? "pointer" : "default",
+                                  borderTop: ti > 0 ? "1px solid rgba(0,0,0,.05)" : "none",
+                                  background: isDeptSel ? "rgba(13,148,136,.03)" : "transparent",
+                                }}>
+                                  <div style={{
+                                    width:"13px", height:"13px", minWidth:"13px", borderRadius:"3px",
+                                    border:`1.5px solid ${isDeptSel?"var(--teal)":"var(--border)"}`,
+                                    background: isDeptSel?"var(--teal)":"transparent",
+                                    display:"flex", alignItems:"center", justifyContent:"center",
+                                    fontSize:"8px", color:"#fff", flexShrink:0
+                                  }}>{isDeptSel?"✓":""}</div>
+                                  <div style={{flex:1, minWidth:0}}>
+                                    <div style={{fontSize:"10px", fontWeight:600, color:"var(--ink2)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{t.faculty_name}</div>
+                                    <div style={{fontSize:"9px", color:"var(--ink3)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{t.department}</div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
                       </div>
                     )
                   })}
@@ -339,7 +494,7 @@ export default function SimulatorPage() {
             </div>
           )}
 
-          {/* 大学リスト（検索・絞込タブ） */}
+          {/* 大学リスト（検索・絞込タブ） - 展開可能 */}
           <div className="sim-sidebar-list" style={{flex:1, overflowY:"auto", padding:"6px", display: sideTab === "m" ? "none" : undefined}}>
             {loading ? (
               <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100px", gap:"8px"}}>
@@ -358,32 +513,130 @@ export default function SimulatorPage() {
             ) : (
               uniNames.map(u => {
                 const sel = selected.has(u.name)
+                const isExpanded = expandedUnis.has(u.name)
+                const isLoading = deptLoadingSet.has(u.name)
+                const currentFilter = deptFilter.get(u.name)
+                const depts = uniDepts[u.name] || []
+                const totalDepts = depts.length
+                const selectedDepts = currentFilter ? currentFilter.size : totalDepts
+                const isPartial = currentFilter && currentFilter.size > 0 && currentFilter.size < totalDepts
+
                 const tagColor = (!u.hasHeigan && u.hasSengan) ? {bg:"rgba(239,68,68,.1)", color:"#e11d48"} :
                   u.hasHeigan ? {bg:"rgba(13,148,136,.1)", color:"var(--teal2)"} :
                   {bg:"var(--surface2)", color:"var(--ink3)"}
                 const tagLabel = (!u.hasHeigan && u.hasSengan) ? "専願" : u.hasHeigan ? "併願可" : "要確認"
+
                 return (
-                  <div key={u.name} onClick={() => toggleSelect(u.name)} style={{
-                    padding:"8px 10px", borderRadius:"8px", cursor:"pointer",
-                    display:"flex", alignItems:"center", gap:"8px",
-                    border:`1.5px solid ${sel?"rgba(13,148,136,.22)":"transparent"}`,
-                    background: sel?"rgba(13,148,136,.06)":"transparent",
-                    marginBottom:"2px", transition:".15s"
-                  }}>
+                  <div key={u.name} style={{marginBottom: isExpanded ? "0" : "2px"}}>
+                    {/* 大学行 */}
                     <div style={{
-                      width:"18px", height:"18px", minWidth:"18px", borderRadius:"5px",
-                      border:`1.5px solid ${sel?"var(--teal)":"var(--border)"}`,
-                      background: sel?"var(--teal)":"transparent",
-                      display:"flex", alignItems:"center", justifyContent:"center",
-                      fontSize:"9px", color:"#fff", transition:".15s"
-                    }}>{sel?"✓":""}</div>
-                    <div style={{flex:1, minWidth:0}}>
-                      <div style={{fontSize:"12px", fontWeight:600, color:"var(--ink)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{u.name}</div>
-                      <div style={{fontSize:"10px", color:"var(--ink3)", display:"flex", gap:"4px", marginTop:"1px", flexWrap:"wrap"}}>
-                        <span style={{padding:"1px 5px", borderRadius:"3px", fontSize:"9px", fontWeight:700, background:tagColor.bg, color:tagColor.color}}>{tagLabel}</span>
-                        {u.cats.slice(0,1).map(c => <span key={c} style={{padding:"1px 5px", borderRadius:"3px", fontSize:"9px", fontWeight:700, background:"var(--surface2)", color:"var(--ink3)"}}>{c}</span>)}
+                      padding:"7px 8px", borderRadius: isExpanded ? "8px 8px 0 0" : "8px",
+                      display:"flex", alignItems:"center", gap:"6px",
+                      border:`1.5px solid ${sel?"rgba(13,148,136,.22)":"transparent"}`,
+                      borderBottom: isExpanded ? `1px solid var(--border)` : undefined,
+                      background: sel?"rgba(13,148,136,.06)":"transparent",
+                      transition:".15s"
+                    }}>
+                      {/* チェックボックス */}
+                      <div onClick={() => toggleUni(u.name)} style={{
+                        width:"18px", height:"18px", minWidth:"18px", borderRadius:"5px",
+                        border:`1.5px solid ${sel?"var(--teal)":isPartial?"var(--amber)":"var(--border)"}`,
+                        background: sel && !isPartial?"var(--teal)":isPartial?"rgba(245,158,11,.15)":"transparent",
+                        display:"flex", alignItems:"center", justifyContent:"center",
+                        fontSize:"9px", color: isPartial?"var(--amber)":"#fff", transition:".15s", flexShrink:0, cursor:"pointer"
+                      }}>{sel && !isPartial?"✓":isPartial?"—":""}</div>
+                      {/* 大学名 */}
+                      <div onClick={() => toggleExpand(u.name)} style={{flex:1, minWidth:0, cursor:"pointer"}}>
+                        <div style={{fontSize:"12px", fontWeight:600, color:"var(--ink)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{u.name}</div>
+                        <div style={{fontSize:"10px", color:"var(--ink3)", display:"flex", gap:"4px", marginTop:"1px", flexWrap:"wrap"}}>
+                          <span style={{padding:"1px 5px", borderRadius:"3px", fontSize:"9px", fontWeight:700, background:tagColor.bg, color:tagColor.color}}>{tagLabel}</span>
+                          {u.cats.slice(0,1).map(c => <span key={c} style={{padding:"1px 5px", borderRadius:"3px", fontSize:"9px", fontWeight:700, background:"var(--surface2)", color:"var(--ink3)"}}>{c}</span>)}
+                          {isPartial && <span style={{fontSize:"9px", color:"var(--amber)", fontWeight:700}}>{selectedDepts}学科選択中</span>}
+                        </div>
                       </div>
+                      {/* 展開ボタン */}
+                      <button onClick={() => toggleExpand(u.name)} style={{
+                        background:"transparent", border:"none", cursor:"pointer", padding:"2px 4px",
+                        color:"var(--ink3)", fontSize:"10px", flexShrink:0, fontFamily:"inherit"
+                      }}>{isExpanded ? "▲" : "▼"}</button>
                     </div>
+
+                    {/* 展開: 学部・学科リスト */}
+                    {isExpanded && (
+                      <div style={{
+                        border:`1.5px solid ${sel?"rgba(13,148,136,.22)":"var(--border)"}`,
+                        borderTop:"none", borderRadius:"0 0 8px 8px", marginBottom:"2px",
+                        background:"var(--surface2)", overflow:"hidden"
+                      }}>
+                        {isLoading ? (
+                          <div style={{padding:"14px", textAlign:"center", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px"}}>
+                            <div style={{width:"14px", height:"14px", border:"2px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
+                            <span style={{fontSize:"11px", color:"var(--ink3)"}}>学科を読み込み中...</span>
+                          </div>
+                        ) : depts.length === 0 ? (
+                          <div style={{padding:"10px 12px", fontSize:"11px", color:"var(--ink3)"}}>学科データがありません</div>
+                        ) : (
+                          Object.entries(
+                            depts.reduce((acc, r) => {
+                              if (!acc[r.faculty_name]) acc[r.faculty_name] = []
+                              if (!acc[r.faculty_name].includes(r.department_name)) {
+                                acc[r.faculty_name].push(r.department_name)
+                              }
+                              return acc
+                            }, {} as Record<string, string[]>)
+                          ).map(([faculty, deptNames], fi) => {
+                            const facKeys = deptNames.map(d => `${faculty}||${d}`)
+                            const allFacSelected = !currentFilter || facKeys.every(k => currentFilter.has(k))
+                            const someFacSelected = !currentFilter || facKeys.some(k => currentFilter.has(k))
+                            return (
+                              <div key={faculty}>
+                                {/* 学部行 */}
+                                <div onClick={() => toggleFaculty(u.name, faculty, deptNames)} style={{
+                                  display:"flex", alignItems:"center", gap:"7px",
+                                  padding:"6px 10px 5px",
+                                  cursor:"pointer",
+                                  borderTop: fi > 0 ? "1px solid var(--border)" : "none",
+                                  background:"rgba(0,0,0,.015)"
+                                }}>
+                                  <div style={{
+                                    width:"15px", height:"15px", minWidth:"15px", borderRadius:"4px",
+                                    border:`1.5px solid ${allFacSelected?"var(--teal)":someFacSelected?"var(--amber)":"var(--border)"}`,
+                                    background: allFacSelected?"var(--teal)":someFacSelected?"rgba(245,158,11,.15)":"transparent",
+                                    display:"flex", alignItems:"center", justifyContent:"center",
+                                    fontSize:"8px", color: someFacSelected&&!allFacSelected?"var(--amber)":"#fff", flexShrink:0
+                                  }}>{allFacSelected?"✓":someFacSelected?"—":""}</div>
+                                  <div style={{flex:1, fontSize:"11px", fontWeight:700, color:"var(--ink2)"}}>{faculty}</div>
+                                  <div style={{fontSize:"9px", color:"var(--ink3)"}}>{deptNames.length}学科</div>
+                                </div>
+                                {/* 学科行 */}
+                                {deptNames.map(dept => {
+                                  const deptKey = `${faculty}||${dept}`
+                                  const isDeptSel = !currentFilter || currentFilter.has(deptKey)
+                                  return (
+                                    <div key={dept} onClick={() => toggleDept(u.name, faculty, dept)} style={{
+                                      display:"flex", alignItems:"center", gap:"7px",
+                                      padding:"4px 10px 4px 26px",
+                                      cursor:"pointer",
+                                      background: isDeptSel ? "rgba(13,148,136,.04)" : "transparent",
+                                      borderTop:"1px solid rgba(0,0,0,.04)"
+                                    }}>
+                                      <div style={{
+                                        width:"13px", height:"13px", minWidth:"13px", borderRadius:"3px",
+                                        border:`1.5px solid ${isDeptSel?"var(--teal)":"var(--border)"}`,
+                                        background: isDeptSel?"var(--teal)":"transparent",
+                                        display:"flex", alignItems:"center", justifyContent:"center",
+                                        fontSize:"8px", color:"#fff", flexShrink:0
+                                      }}>{isDeptSel?"✓":""}</div>
+                                      <div style={{fontSize:"11px", color:"var(--ink2)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{dept}</div>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            )
+                          })
+                        )}
+                      </div>
+                    )}
                   </div>
                 )
               })
@@ -394,9 +647,14 @@ export default function SimulatorPage() {
           <div style={{padding:"12px", borderTop:"1px solid var(--border)", display:"flex", flexDirection:"column", gap:"7px"}}>
             <div style={{display:"flex", alignItems:"center", justifyContent:"space-between"}}>
               <span style={{fontSize:"11px", color:"var(--ink2)"}}>選択中</span>
-              <div>
+              <div style={{display:"flex", alignItems:"baseline", gap:"4px"}}>
                 <span style={{fontSize:"20px", fontWeight:900, color:"var(--teal)", fontFamily:"DM Mono,monospace"}}>{selected.size}</span>
-                <span style={{fontSize:"11px", color:"var(--ink3)"}}> 校</span>
+                <span style={{fontSize:"11px", color:"var(--ink3)"}}>校</span>
+                {deptFilter.size > 0 && (
+                  <span style={{fontSize:"10px", color:"var(--amber)", fontWeight:700, marginLeft:"4px"}}>
+                    ({[...selected].reduce((sum, n) => { const f = deptFilter.get(n); return sum + (f ? f.size : (uniDepts[n]?.length || 0)) }, 0)}学科)
+                  </span>
+                )}
               </div>
             </div>
             <button onClick={runSimulation} disabled={selected.size===0||simLoading} style={{
@@ -406,7 +664,7 @@ export default function SimulatorPage() {
               cursor: selected.size===0?"not-allowed":"pointer",
               opacity: selected.size===0?0.4:1
             }}>{simLoading?"読み込み中...":"シミュレーション開始 →"}</button>
-            <button onClick={() => { setSelected(new Set()); setSimRunning(false); setSimData([]) }} style={{
+            <button onClick={() => { setSelected(new Set()); setSimRunning(false); setSimData([]); setDeptFilter(new Map()); setExpandedUnis(new Set()) }} style={{
               width:"100%", background:"transparent", border:"1.5px solid var(--border)",
               borderRadius:"8px", padding:"7px", color:"var(--ink3)", fontSize:"11px",
               cursor:"pointer", fontFamily:"inherit"
@@ -421,7 +679,7 @@ export default function SimulatorPage() {
               <div style={{textAlign:"center", maxWidth:"440px"}}>
                 <div style={{fontSize:"52px", marginBottom:"16px", opacity:.6}}>🗺️</div>
                 <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:800, color:"var(--ink)", marginBottom:"8px"}}>志望大学を選んでシミュレーション</div>
-                <div style={{fontSize:"13px", color:"var(--ink2)", lineHeight:1.8, marginBottom:"20px"}}>左のリストから大学を選択して「シミュレーション開始」を押すと、日程・費用・併願可否を一覧比較できます。</div>
+                <div style={{fontSize:"13px", color:"var(--ink2)", lineHeight:1.8, marginBottom:"20px"}}>左のリストから大学を選択して「シミュレーション開始」を押すと、日程・費用・併願可否を一覧比較できます。<br/>▼ で展開すると学科単位で選べます。</div>
                 <Link href="/" style={{display:"inline-block", padding:"10px 22px", borderRadius:"10px", background:"linear-gradient(135deg,var(--teal),#06b6d4)", color:"#fff", fontSize:"12px", fontWeight:700, textDecoration:"none"}}>← ホームに戻る</Link>
               </div>
             </div>
@@ -431,7 +689,12 @@ export default function SimulatorPage() {
               <p style={{fontSize:"13px", color:"var(--ink3)"}}>シミュレーション中...</p>
             </div>
           ) : (
-            <SimResult data={simData} rightTab={rightTab} setRightTab={setRightTab} userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={saveToTargets} />
+            <SimResult
+              data={simData} rightTab={rightTab} setRightTab={setRightTab}
+              userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={saveToTargets}
+              filterDeptMode={filterDeptMode} setFilterDeptMode={setFilterDeptMode}
+              hiddenDepts={hiddenDepts} setHiddenDepts={setHiddenDepts}
+            />
           )}
         </div>
       </div>
@@ -450,24 +713,42 @@ export default function SimulatorPage() {
   )
 }
 
-function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, onSave }: {
+function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, onSave, filterDeptMode, setFilterDeptMode, hiddenDepts, setHiddenDepts }: {
   data: UniGroup[]
   rightTab: string
-  setRightTab: (t: any) => void
+  setRightTab: (t: string) => void
   userId: string | null
   myTargets: MyTarget[]
   savingUni: string | null
-  onSave: (name: string) => void
+  onSave: (uniName: string, facultyName: string, deptName: string) => void
+  filterDeptMode: boolean
+  setFilterDeptMode: (v: boolean) => void
+  hiddenDepts: Set<string>
+  setHiddenDepts: (v: Set<string>) => void
 }) {
   const sOnly = data.filter(u => u.records.every(r => r.application_type === "専願"))
   const hOk = data.filter(u => u.records.some(r => r.application_type === "併願"))
   let eSum = 0
   data.forEach(u => { const c = parseCost(u.records[0]?.cost || ""); eSum += c.exam || 0 })
 
+  const toggleHidden = (key: string) => {
+    const next = new Set(hiddenDepts)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    setHiddenDepts(next)
+  }
+
+  const totalDepts = data.reduce((s, u) => s + u.records.length, 0)
+  const visibleDepts = filterDeptMode
+    ? data.reduce((s, u) => s + u.records.filter(r => !hiddenDepts.has(`${u.name}||${r.faculty_name}||${r.department_name}`)).length, 0)
+    : totalDepts
+
   return (
     <div>
       <div style={{background:"var(--surface)", borderBottom:"1px solid var(--border)", padding:"11px 20px", display:"flex", alignItems:"center", gap:"10px", flexWrap:"wrap", position:"sticky", top:0, zIndex:100, boxShadow:"var(--sh-sm)"}}>
-        <div style={{fontSize:"13px", fontWeight:700, marginRight:"auto"}}>📊 {data.length}大学 / {data.reduce((s,u) => s+u.records.length, 0)}学科</div>
+        <div style={{fontSize:"13px", fontWeight:700, marginRight:"auto"}}>
+          📊 {data.length}大学 / {filterDeptMode ? `${visibleDepts}/${totalDepts}学科` : `${totalDepts}学科`}
+        </div>
         <div className="sim-tabs" style={{display:"flex", gap:"3px", background:"var(--surface2)", borderRadius:"9px", padding:"3px", overflowX:"auto"}}>
           {[{id:"detail",l:"📋 詳細"},{id:"timeline",l:"📅 日程"},{id:"cost",l:"💰 費用"},{id:"heigan",l:"⚡ 併願"},{id:"parent",l:"👨‍👩‍👧 保護者"}].map(t => (
             <button key={t.id} onClick={() => setRightTab(t.id)} style={{
@@ -479,6 +760,20 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
             }}>{t.l}</button>
           ))}
         </div>
+        {rightTab === "detail" && (
+          <button onClick={() => {
+            setFilterDeptMode(!filterDeptMode)
+            if (filterDeptMode) setHiddenDepts(new Set())
+          }} style={{
+            padding:"6px 12px", borderRadius:"8px", fontFamily:"inherit",
+            background: filterDeptMode ? "rgba(13,148,136,.12)" : "var(--surface2)",
+            color: filterDeptMode ? "var(--teal2)" : "var(--ink3)",
+            fontSize:"11px", fontWeight:700, cursor:"pointer", whiteSpace:"nowrap",
+            border: filterDeptMode ? "1.5px solid rgba(13,148,136,.3)" : "1.5px solid var(--border)",
+          } as React.CSSProperties}>
+            {filterDeptMode ? "✕ 絞込解除" : "🔍 学科を絞る"}
+          </button>
+        )}
       </div>
 
       {sOnly.length > 0 && (
@@ -510,7 +805,7 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
       </div>
 
       <div style={{padding:"0 20px 28px"}}>
-        {rightTab === "detail" && <DetailTab data={data} userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={onSave} />}
+        {rightTab === "detail" && <DetailTab data={data} userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={onSave} filterDeptMode={filterDeptMode} hiddenDepts={hiddenDepts} onToggleHidden={toggleHidden} />}
         {rightTab === "timeline" && <TimelineTab data={data} />}
         {rightTab === "cost" && <CostTab data={data} />}
         {rightTab === "heigan" && <HeiganTab data={data} />}
@@ -530,20 +825,30 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
   )
 }
 
-function DetailTab({ data, userId, myTargets, savingUni, onSave }: {
+function DetailTab({ data, userId, myTargets, savingUni, onSave, filterDeptMode, hiddenDepts, onToggleHidden }: {
   data: UniGroup[]
   userId: string | null
   myTargets: MyTarget[]
   savingUni: string | null
-  onSave: (name: string) => void
+  onSave: (uniName: string, facultyName: string, deptName: string) => void
+  filterDeptMode: boolean
+  hiddenDepts: Set<string>
+  onToggleHidden: (key: string) => void
 }) {
   return (
     <div>
+      {filterDeptMode && (
+        <div style={{marginBottom:"10px", padding:"10px 14px", background:"rgba(13,148,136,.06)", border:"1.5px solid rgba(13,148,136,.2)", borderRadius:"10px", fontSize:"12px", color:"var(--teal2)", fontWeight:600}}>
+          🔍 絞込モード：チェックを外した学科は非表示になります
+        </div>
+      )}
       {data.map(({ name, records }) => {
         const hasH = records.some(r => r.application_type === "併願")
         const hasS = records.some(r => r.application_type === "専願")
-        const isSaved = myTargets.some(t => t.university_name === name)
-        const isSaving = savingUni === name
+        const visibleRecords = filterDeptMode
+          ? records.filter(r => !hiddenDepts.has(`${name}||${r.faculty_name}||${r.department_name}`))
+          : records
+        if (filterDeptMode && visibleRecords.length === 0) return null
         return (
           <div key={name} style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px", marginBottom:"12px", overflow:"hidden", boxShadow:"var(--sh-sm)"}}>
             <div style={{padding:"12px 16px", background:"linear-gradient(135deg,rgba(13,148,136,.03),rgba(6,182,212,.03))", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"8px", flexWrap:"wrap"}}>
@@ -552,34 +857,43 @@ function DetailTab({ data, userId, myTargets, savingUni, onSave }: {
                 {(!hasH && hasS) ? <span style={{fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"rgba(225,29,72,.08)",color:"#e11d48",border:"1px solid rgba(225,29,72,.15)",fontWeight:700}}>⚠ 専願のみ</span> :
                   hasH ? <span style={{fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"rgba(13,148,136,.08)",color:"var(--teal2)",border:"1px solid rgba(13,148,136,.15)",fontWeight:700}}>✓ 併願可</span> : null}
               </div>
-              <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
-                {userId && (
-                  <button onClick={() => onSave(name)} disabled={isSaving} style={{
-                    padding:"4px 10px", borderRadius:"20px", cursor:"pointer", fontFamily:"inherit",
-                    background: isSaved ? "var(--teal-bg)" : "var(--surface2)",
-                    color: isSaved ? "var(--teal2)" : "var(--ink3)",
-                    fontSize:"10px", fontWeight:700, display:"flex", alignItems:"center", gap:"4px",
-                    border: isSaved ? "1px solid var(--teal-border)" : "1px solid var(--border)",
-                    opacity: isSaving ? 0.5 : 1, transition:".15s"
-                  } as React.CSSProperties}>
-                    {isSaving ? "..." : isSaved ? "⭐ 志望校済み" : "☆ 志望校に追加"}
-                  </button>
-                )}
-                <div style={{fontSize:"11px", color:"var(--ink3)"}}>{records.length}学科</div>
-              </div>
+              <div style={{fontSize:"11px", color:"var(--ink3)"}}>{filterDeptMode ? `${visibleRecords.length}/${records.length}` : records.length}学科</div>
             </div>
             <table style={{width:"100%", borderCollapse:"collapse"}}>
               <thead>
-                <tr>{["学部・学科","区分","出願期間","試験日程","結果発表","費用概算"].map(h => (
-                  <th key={h} style={{padding:"7px 12px", textAlign:"left", fontSize:"9px", fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)"}}>{h}</th>
-                ))}</tr>
+                <tr>
+                  {filterDeptMode && <th style={{padding:"7px 8px", textAlign:"center", fontSize:"9px", fontWeight:700, color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)", width:"28px"}}>表示</th>}
+                  {["学部・学科","区分","出願期間","試験日程","結果発表","費用概算"].map(h => (
+                    <th key={h} style={{padding:"7px 12px", textAlign:"left", fontSize:"9px", fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)"}}>{h}</th>
+                  ))}
+                  {userId && <th style={{padding:"7px 8px", textAlign:"center", fontSize:"9px", fontWeight:700, color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)", width:"80px"}}>志望校</th>}
+                </tr>
               </thead>
               <tbody>
                 {records.map((r, i) => {
+                  const deptKey = `${name}||${r.faculty_name}||${r.department_name}`
+                  const isHidden = hiddenDepts.has(deptKey)
+                  if (filterDeptMode && isHidden) return null
+                  const saveKey = `${name}||${r.faculty_name}||${r.department_name}`
+                  const isSaved = myTargets.some(t =>
+                    t.university_name === name && t.faculty_name === r.faculty_name && t.department === r.department_name
+                  )
+                  const isSaving = savingUni === saveKey
                   const c = parseCost(r.cost)
                   const cs = c.exam > 0 ? `受験料 ${fmt(c.exam)}円` : (r.cost?.slice(0,30) || "no data")
                   return (
-                    <tr key={i} style={{borderBottom:"1px solid rgba(0,0,0,.04)"}}>
+                    <tr key={i} style={{borderBottom:"1px solid rgba(0,0,0,.04)", opacity: filterDeptMode && isHidden ? 0.3 : 1}}>
+                      {filterDeptMode && (
+                        <td style={{padding:"10px 8px", textAlign:"center"}}>
+                          <div onClick={() => onToggleHidden(deptKey)} style={{
+                            width:"15px", height:"15px", margin:"auto", borderRadius:"4px", cursor:"pointer",
+                            border:`1.5px solid ${!isHidden?"var(--teal)":"var(--border)"}`,
+                            background: !isHidden?"var(--teal)":"transparent",
+                            display:"flex", alignItems:"center", justifyContent:"center",
+                            fontSize:"8px", color:"#fff"
+                          }}>{!isHidden?"✓":""}</div>
+                        </td>
+                      )}
                       <td style={{padding:"10px 12px"}}><div style={{fontWeight:600,color:"var(--ink)",fontSize:"12px"}}>{r.faculty_name} {r.department_name}</div><div style={{fontSize:"10px",color:"var(--ink3)",marginTop:"1px"}}>{r.exam_type}</div></td>
                       <td style={{padding:"10px 12px"}}>
                         {r.application_type==="専願"?<span style={{fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"rgba(225,29,72,.08)",color:"#e11d48",border:"1px solid rgba(225,29,72,.15)",fontWeight:700}}>専願</span>:
@@ -590,6 +904,20 @@ function DetailTab({ data, userId, myTargets, savingUni, onSave }: {
                       <td style={{padding:"10px 12px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.exam_date?.slice(0,60)||"—"}</td>
                       <td style={{padding:"10px 12px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.result_date?.slice(0,40)||"—"}</td>
                       <td style={{padding:"10px 12px",fontSize:"10px",color:"var(--ink2)",fontFamily:"DM Mono,monospace"}}>{cs}</td>
+                      {userId && (
+                        <td style={{padding:"10px 8px", textAlign:"center"}}>
+                          <button onClick={() => onSave(name, r.faculty_name, r.department_name)} disabled={isSaving} style={{
+                            padding:"3px 8px", borderRadius:"20px", cursor:"pointer", fontFamily:"inherit",
+                            background: isSaved ? "var(--teal-bg)" : "var(--surface2)",
+                            color: isSaved ? "var(--teal2)" : "var(--ink3)",
+                            fontSize:"10px", fontWeight:700,
+                            border: isSaved ? "1px solid var(--teal-border)" : "1px solid var(--border)",
+                            opacity: isSaving ? 0.5 : 1, transition:".15s", whiteSpace:"nowrap"
+                          } as React.CSSProperties}>
+                            {isSaving ? "..." : isSaved ? "⭐" : "☆"}
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   )
                 })}
