@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { createClient } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 
@@ -16,18 +16,33 @@ type Task = {
 type University = {
   id: string
   university_name: string
-  department: string
+  faculty_name?: string
+  department?: string
   priority: number
 }
+
+type UniSuggestion = { name: string; cats: string[] }
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [universities, setUniversities] = useState<University[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
-  const [newUni, setNewUni] = useState({ name: "", dept: "" })
   const [showAddUni, setShowAddUni] = useState(false)
   const [filter, setFilter] = useState<"all"|"week"|"month">("all")
+
+  // 志望校追加用オートコンプリート
+  const [uniSearch, setUniSearch] = useState("")
+  const [suggestions, setSuggestions] = useState<UniSuggestion[]>([])
+  const [sugLoading, setSugLoading] = useState(false)
+  const [selectedUni, setSelectedUni] = useState("")
+  const [deptGroups, setDeptGroups] = useState<Record<string, string[]>>({})
+  const [deptLoading, setDeptLoading] = useState(false)
+  const [selectedFaculty, setSelectedFaculty] = useState("")
+  const [selectedDept, setSelectedDept] = useState("")
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
   const router = useRouter()
   const supabase = createClient()
 
@@ -45,18 +60,70 @@ export default function TasksPage() {
     setLoading(false)
   }
 
+  // 大学名サジェスト検索
+  useEffect(() => {
+    if (!uniSearch || uniSearch.length < 1 || uniSearch === selectedUni) {
+      setSuggestions([])
+      return
+    }
+    setSugLoading(true)
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/university-names?keyword=${encodeURIComponent(uniSearch)}`)
+        const data = await res.json()
+        setSuggestions(data.data || [])
+      } catch { setSuggestions([]) }
+      setSugLoading(false)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [uniSearch, selectedUni])
+
+  const selectUniversity = async (name: string) => {
+    setSelectedUni(name)
+    setUniSearch(name)
+    setSuggestions([])
+    setShowSuggestions(false)
+    setSelectedFaculty("")
+    setSelectedDept("")
+    setDeptGroups({})
+    setDeptLoading(true)
+    try {
+      const res = await fetch(`/api/universities?keyword=${encodeURIComponent(name)}&limit=50`)
+      const data = await res.json()
+      const records: { faculty_name: string; department_name: string; university_name: string }[] =
+        (data.data || []).filter((r: { university_name: string }) => r.university_name === name)
+      const groups = records.reduce((acc, r) => {
+        if (!acc[r.faculty_name]) acc[r.faculty_name] = []
+        if (!acc[r.faculty_name].includes(r.department_name)) acc[r.faculty_name].push(r.department_name)
+        return acc
+      }, {} as Record<string, string[]>)
+      setDeptGroups(groups)
+    } catch {}
+    setDeptLoading(false)
+  }
+
   const addUniversity = async () => {
-    if (!newUni.name) return
+    if (!selectedUni) return
     const { data: { user } } = await supabase.auth.getUser()
     await supabase.from("target_universities").insert({
       user_id: user!.id,
-      university_name: newUni.name,
-      department: newUni.dept,
+      university_name: selectedUni,
+      faculty_name: selectedFaculty || null,
+      department: selectedDept || null,
       priority: universities.length + 1,
     })
-    setNewUni({ name: "", dept: "" })
+    setUniSearch("")
+    setSelectedUni("")
+    setSelectedFaculty("")
+    setSelectedDept("")
+    setDeptGroups({})
     setShowAddUni(false)
     loadData()
+  }
+
+  const removeUniversity = async (id: string) => {
+    await supabase.from("target_universities").delete().eq("id", id)
+    setUniversities(prev => prev.filter(u => u.id !== id))
   }
 
   const generateTasks = async () => {
@@ -98,7 +165,7 @@ export default function TasksPage() {
     const due = new Date(t.due_date)
     if (filter === "week") return due <= endOfWeek
     if (filter === "month") return due <= endOfMonth
-    return true
+    return false
   }
 
   const incomplete = tasks.filter(t => !t.is_completed)
@@ -107,6 +174,9 @@ export default function TasksPage() {
   const thisWeekCount = tasks.filter(t => !t.is_completed && t.due_date && new Date(t.due_date) <= endOfWeek).length
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-indigo-600">読み込み中...</p></div>
+
+  const faculties = Object.keys(deptGroups)
+  const depts = selectedFaculty ? (deptGroups[selectedFaculty] || []) : []
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -124,37 +194,103 @@ export default function TasksPage() {
         <div className="bg-white rounded-2xl p-5 border border-gray-100">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-bold text-gray-800">志望校リスト</h2>
-            <button onClick={() => setShowAddUni(v => !v)}
+            <button onClick={() => { setShowAddUni(v => !v); setUniSearch(""); setSelectedUni(""); setDeptGroups({}) }}
               className="text-sm text-indigo-600 hover:underline">+ 追加</button>
           </div>
+
           {showAddUni && (
-            <div className="mb-4 space-y-2">
-              <input value={newUni.name} onChange={e => setNewUni(v => ({ ...v, name: e.target.value }))}
-                placeholder="大学名" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-              <input value={newUni.dept} onChange={e => setNewUni(v => ({ ...v, dept: e.target.value }))}
-                placeholder="学部・学科名" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-              <button onClick={addUniversity}
-                className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium">追加する</button>
+            <div className="mb-4 space-y-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+              {/* 大学名サジェスト */}
+              <div className="relative">
+                <label className="text-xs font-semibold text-gray-500 mb-1 block">大学名</label>
+                <input
+                  ref={inputRef}
+                  value={uniSearch}
+                  onChange={e => { setUniSearch(e.target.value); setSelectedUni(""); setShowSuggestions(true) }}
+                  onFocus={() => setShowSuggestions(true)}
+                  placeholder="大学名を入力（例：早稲田、北海道）"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                />
+                {sugLoading && (
+                  <div className="absolute right-3 top-8 w-4 h-4 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
+                )}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                    {suggestions.map(s => (
+                      <button key={s.name} onMouseDown={() => selectUniversity(s.name)}
+                        className="w-full text-left px-3 py-2.5 hover:bg-indigo-50 text-sm border-b border-gray-50 last:border-0 flex items-center justify-between">
+                        <span className="font-medium text-gray-800">{s.name}</span>
+                        {s.cats.slice(0,1).map(c => <span key={c} className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{c}</span>)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 学部・学科選択（大学選択後） */}
+              {selectedUni && (
+                <>
+                  {deptLoading ? (
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <div className="w-3.5 h-3.5 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
+                      学部・学科を読み込み中...
+                    </div>
+                  ) : faculties.length > 0 ? (
+                    <>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500 mb-1 block">学部</label>
+                        <select value={selectedFaculty} onChange={e => { setSelectedFaculty(e.target.value); setSelectedDept("") }}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white">
+                          <option value="">学部を選択（任意）</option>
+                          {faculties.map(f => <option key={f} value={f}>{f}</option>)}
+                        </select>
+                      </div>
+                      {selectedFaculty && depts.length > 0 && (
+                        <div>
+                          <label className="text-xs font-semibold text-gray-500 mb-1 block">学科</label>
+                          <select value={selectedDept} onChange={e => setSelectedDept(e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white">
+                            <option value="">学科を選択（任意）</option>
+                            {depts.map(d => <option key={d} value={d}>{d}</option>)}
+                          </select>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xs text-gray-400">この大学の学科データが見つかりませんでした</p>
+                  )}
+                </>
+              )}
+
+              <button onClick={addUniversity} disabled={!selectedUni}
+                className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-semibold disabled:opacity-40 hover:bg-indigo-700 transition">
+                追加する
+              </button>
             </div>
           )}
+
           {universities.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-4">志望校を追加してタスクを自動生成しましょう</p>
           ) : (
             <div className="space-y-2">
               {universities.map((u, i) => (
                 <div key={u.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                  <span className="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold flex items-center justify-center">{i + 1}</span>
-                  <div>
-                    <p className="font-medium text-sm text-gray-800">{u.university_name}</p>
-                    <p className="text-xs text-gray-500">{u.department}</p>
+                  <span className="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-gray-800">{u.university_name}</p>
+                    {u.faculty_name && <p className="text-xs text-gray-600">{u.faculty_name}</p>}
+                    {u.department && <p className="text-xs text-gray-400">{u.department}</p>}
                   </div>
+                  <button onClick={() => removeUniversity(u.id)}
+                    className="text-gray-300 hover:text-red-400 text-sm transition flex-shrink-0">✕</button>
                 </div>
               ))}
             </div>
           )}
+
           {universities.length > 0 && (
             <button onClick={generateTasks} disabled={generating}
-              className="mt-4 w-full bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-40 transition">
+              className="mt-4 w-full bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 disabled:opacity-40 transition">
               {generating ? "タスクを生成中..." : "✨ タスクを自動生成"}
             </button>
           )}
@@ -189,7 +325,7 @@ export default function TasksPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-800 text-sm">{task.title}</p>
                   {task.description && <p className="text-xs text-gray-500 mt-1">{task.description}</p>}
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
                     {task.category && (
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${categoryColor[task.category] || "bg-gray-100 text-gray-600"}`}>
                         {task.category}
