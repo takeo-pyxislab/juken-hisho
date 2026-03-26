@@ -92,6 +92,7 @@ export default function SimulatorPage() {
   // 結果画面の学科フィルター（案1）
   const [filterDeptMode, setFilterDeptMode] = useState(false)
   const [hiddenDepts, setHiddenDepts] = useState<Set<string>>(new Set())
+  const [showSignupModal, setShowSignupModal] = useState(false)
 
   const supabase = createClient()
 
@@ -225,7 +226,7 @@ export default function SimulatorPage() {
   }
 
   const saveToTargets = async (uniName: string, facultyName: string, deptName: string) => {
-    if (!userId) return
+    if (!userId) { setShowSignupModal(true); return }
     const saveKey = `${uniName}||${facultyName}||${deptName}`
     setSavingUni(saveKey)
     const alreadySaved = myTargets.some(t =>
@@ -754,6 +755,58 @@ export default function SimulatorPage() {
           )}
         </div>
       </div>
+      {/* 未ログイン登録促進モーダル */}
+      {showSignupModal && (
+        <div onClick={() => setShowSignupModal(false)} style={{
+          position:"fixed", inset:0, background:"rgba(0,0,0,.55)", zIndex:1000,
+          display:"flex", alignItems:"center", justifyContent:"center", padding:"24px"
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background:"var(--surface)", borderRadius:"20px", padding:"36px 32px",
+            maxWidth:"400px", width:"100%", boxShadow:"0 24px 60px rgba(0,0,0,.3)",
+            textAlign:"center", position:"relative"
+          }}>
+            <button onClick={() => setShowSignupModal(false)} style={{
+              position:"absolute", top:"14px", right:"16px", background:"transparent",
+              border:"none", fontSize:"18px", color:"var(--ink3)", cursor:"pointer", lineHeight:1
+            }}>✕</button>
+
+            <div style={{fontSize:"48px", marginBottom:"14px"}}>⭐</div>
+            <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:700, color:"var(--ink)", marginBottom:"10px"}}>
+              志望校を保存しませんか？
+            </h2>
+            <p style={{fontSize:"13px", color:"var(--ink2)", lineHeight:1.8, marginBottom:"24px"}}>
+              アカウント登録（無料）で志望校を保存できます。<br/>
+              タスク自動生成・AI診断など全機能が使えるプレミアムプランもあります。
+            </p>
+
+            <div style={{display:"flex", flexDirection:"column", gap:"10px", marginBottom:"16px"}}>
+              <Link href="/signup" style={{
+                display:"block", padding:"13px", borderRadius:"10px",
+                background:"linear-gradient(135deg,var(--teal),#06b6d4)",
+                color:"#fff", fontSize:"14px", fontWeight:700, textDecoration:"none"
+              }}>
+                ✦ 無料登録して保存する →
+              </Link>
+              <Link href="/login" style={{
+                display:"block", padding:"12px", borderRadius:"10px",
+                border:"1.5px solid var(--border)", color:"var(--ink2)",
+                fontSize:"13px", fontWeight:600, textDecoration:"none"
+              }}>
+                ログインして保存する
+              </Link>
+            </div>
+
+            <button onClick={() => setShowSignupModal(false)} style={{
+              background:"transparent", border:"none", fontSize:"12px",
+              color:"var(--ink3)", cursor:"pointer", fontFamily:"inherit"
+            }}>
+              今は登録しない
+            </button>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
         @media (max-width: 767px) {
@@ -923,14 +976,15 @@ function DetailTab({ data, userId, myTargets, savingUni, onSave, filterDeptMode,
               </div>
               <div style={{fontSize:"11px", color:"var(--ink3)"}}>{filterDeptMode ? `${visibleRecords.length}/${records.length}` : records.length}学科</div>
             </div>
-            <table style={{width:"100%", borderCollapse:"collapse"}}>
+            <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%", borderCollapse:"collapse", minWidth:"600px"}}>
               <thead>
                 <tr>
                   {filterDeptMode && <th style={{padding:"7px 8px", textAlign:"center", fontSize:"9px", fontWeight:700, color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)", width:"28px"}}>表示</th>}
                   {["学部・学科","区分","出願期間","試験日程","結果発表","費用概算"].map(h => (
                     <th key={h} style={{padding:"7px 12px", textAlign:"left", fontSize:"9px", fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)"}}>{h}</th>
                   ))}
-                  {userId && <th style={{padding:"7px 8px", textAlign:"center", fontSize:"9px", fontWeight:700, color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)", width:"80px"}}>志望校</th>}
+                  <th style={{padding:"7px 8px", textAlign:"center", fontSize:"9px", fontWeight:700, color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)", width:"72px"}}>志望校</th>
                 </tr>
               </thead>
               <tbody>
@@ -968,25 +1022,24 @@ function DetailTab({ data, userId, myTargets, savingUni, onSave, filterDeptMode,
                       <td style={{padding:"10px 12px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.exam_date?.slice(0,60)||"—"}</td>
                       <td style={{padding:"10px 12px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.result_date?.slice(0,40)||"—"}</td>
                       <td style={{padding:"10px 12px",fontSize:"10px",color:"var(--ink2)",fontFamily:"DM Mono,monospace"}}>{cs}</td>
-                      {userId && (
-                        <td style={{padding:"10px 8px", textAlign:"center"}}>
-                          <button onClick={() => onSave(name, r.faculty_name, r.department_name)} disabled={isSaving} style={{
-                            padding:"3px 8px", borderRadius:"20px", cursor:"pointer", fontFamily:"inherit",
-                            background: isSaved ? "var(--teal-bg)" : "var(--surface2)",
-                            color: isSaved ? "var(--teal2)" : "var(--ink3)",
-                            fontSize:"10px", fontWeight:700,
-                            border: isSaved ? "1px solid var(--teal-border)" : "1px solid var(--border)",
-                            opacity: isSaving ? 0.5 : 1, transition:".15s", whiteSpace:"nowrap"
-                          } as React.CSSProperties}>
-                            {isSaving ? "..." : isSaved ? "⭐" : "☆"}
-                          </button>
-                        </td>
-                      )}
+                      <td style={{padding:"10px 8px", textAlign:"center"}}>
+                        <button onClick={() => onSave(name, r.faculty_name, r.department_name)} disabled={isSaving} style={{
+                          padding:"3px 8px", borderRadius:"20px", cursor:"pointer", fontFamily:"inherit",
+                          background: isSaved ? "var(--teal-bg)" : "var(--surface2)",
+                          color: isSaved ? "var(--teal2)" : "var(--ink3)",
+                          fontSize:"10px", fontWeight:700,
+                          border: isSaved ? "1px solid var(--teal-border)" : "1px solid var(--border)",
+                          opacity: isSaving ? 0.5 : 1, transition:".15s", whiteSpace:"nowrap"
+                        } as React.CSSProperties}>
+                          {isSaving ? "..." : isSaved ? "⭐" : "☆"}
+                        </button>
+                      </td>
                     </tr>
                   )
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         )
       })}

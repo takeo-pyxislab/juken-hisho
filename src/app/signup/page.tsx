@@ -25,7 +25,7 @@ export default function SignupPage() {
     e.preventDefault()
     setLoading(true)
     setError("")
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { error } = await supabase.auth.signUp({ email, password, options: { data: { user_type: userType } } })
     if (error) {
       setError(error.message === "User already registered" ? "このメールアドレスはすでに登録されています" : "登録に失敗しました")
       setLoading(false)
@@ -262,11 +262,22 @@ export default function SignupPage() {
             </h1>
             <p style={{fontSize:"14px", color:"var(--ink2)", lineHeight:1.8, marginBottom:"28px"}}>
               {userType === "parent"
-                ? "お子さんのメールアドレスにログイン情報を共有してください。保護者としての機能もご利用いただけます。"
+                ? "保護者ダッシュボードへようこそ。お子さんのアカウントと連携して見守りを始めましょう。"
                 : "受験秘書へようこそ。まずはAI問診でプロフィールを作成しましょう。"}
             </p>
 
-            {plan === "premium" && (
+            {userType === "parent" && (
+              <div style={{background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"12px", padding:"16px", marginBottom:"24px"}}>
+                <div style={{fontSize:"12px", fontWeight:700, color:"var(--teal2)", marginBottom:"8px"}}>🔗 連携手順</div>
+                <div style={{fontSize:"12px", color:"var(--ink2)", lineHeight:1.7}}>
+                  ① お子さんがマイページで「保護者を招待」ボタンを押す<br/>
+                  ② 発行された招待URLをLINE/メールで受け取る<br/>
+                  ③ URLを開くと自動で連携完了
+                </div>
+              </div>
+            )}
+
+            {plan === "premium" && userType !== "parent" && (
               <div style={{background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"12px", padding:"16px", marginBottom:"24px", textAlign:"left"}}>
                 <div style={{fontSize:"12px", fontWeight:700, color:"var(--teal2)", marginBottom:"10px"}}>✦ 利用可能な機能</div>
                 {["AI問診・マッチング診断","志望理由書の自動生成","出願スケジュール自動生成","大学シミュレーター（全機能）","保護者向けレポートPDF"].map(f => (
@@ -277,12 +288,19 @@ export default function SignupPage() {
               </div>
             )}
 
-            <Link href={plan === "premium" ? "/questionnaire" : "/simulator"}
-              style={{display:"block", width:"100%", padding:"14px", borderRadius:"10px", background:"var(--premium)", color:"#fff", fontSize:"14px", fontWeight:700, textDecoration:"none", textAlign:"center", boxSizing:"border-box"}}>
-              {plan === "premium" ? "✦ AI問診を始める →" : "🔍 シミュレーターを使う →"}
-            </Link>
+            {userType === "parent" ? (
+              <Link href="/parent"
+                style={{display:"block", width:"100%", padding:"14px", borderRadius:"10px", background:"var(--premium)", color:"#fff", fontSize:"14px", fontWeight:700, textDecoration:"none", textAlign:"center", boxSizing:"border-box"}}>
+                👨‍👩‍👧 保護者ダッシュボードへ →
+              </Link>
+            ) : (
+              <Link href={plan === "premium" ? "/questionnaire" : "/simulator"}
+                style={{display:"block", width:"100%", padding:"14px", borderRadius:"10px", background:"var(--premium)", color:"#fff", fontSize:"14px", fontWeight:700, textDecoration:"none", textAlign:"center", boxSizing:"border-box"}}>
+                {plan === "premium" ? "✦ AI問診を始める →" : "🔍 シミュレーターを使う →"}
+              </Link>
+            )}
 
-            {plan === "premium" && (
+            {plan === "premium" && userType !== "parent" && (
               <Link href="/mypage" style={{display:"block", marginTop:"10px", fontSize:"12px", color:"var(--ink3)", textDecoration:"none"}}>
                 マイページへ →
               </Link>

@@ -47,6 +47,10 @@ export default function MyPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [targets, setTargets] = useState<TargetUniversity[]>([])
   const [loading, setLoading] = useState(true)
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null)
+  const [inviteLoading, setInviteLoading] = useState(false)
+  const [inviteCopied, setInviteCopied] = useState(false)
+  const [inviteError, setInviteError] = useState("")
   const router = useRouter()
   const supabase = createClient()
 
@@ -54,6 +58,7 @@ export default function MyPage() {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push("/login"); return }
+      if (user.user_metadata?.user_type === "parent") { router.push("/parent"); return }
       setUser(user)
 
       const [{ data: profiles }, { data: results }, { data: taskData }, { data: targetData }] = await Promise.all([
@@ -80,6 +85,31 @@ export default function MyPage() {
   const toggleTask = async (task: Task) => {
     await supabase.from("tasks").update({ is_completed: true, completed_at: new Date().toISOString() }).eq("id", task.id)
     setTasks(prev => prev.filter(t => t.id !== task.id))
+  }
+
+  const generateInviteUrl = async () => {
+    setInviteLoading(true)
+    setInviteError("")
+    try {
+      const res = await fetch("/api/family/invite", { method: "POST" })
+      const data = await res.json()
+      if (data.token) {
+        const url = `${window.location.origin}/invite/${data.token}`
+        setInviteUrl(url)
+      } else {
+        setInviteError(data.error || "URLの発行に失敗しました")
+      }
+    } catch {
+      setInviteError("通信エラーが発生しました")
+    }
+    setInviteLoading(false)
+  }
+
+  const copyInviteUrl = async () => {
+    if (!inviteUrl) return
+    await navigator.clipboard.writeText(inviteUrl)
+    setInviteCopied(true)
+    setTimeout(() => setInviteCopied(false), 2000)
   }
 
   if (loading) return (
@@ -185,6 +215,34 @@ export default function MyPage() {
                       <p style={{fontSize:"12px",fontWeight:600,color:"var(--ink)"}}>{name}</p>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* 保護者招待 */}
+            <div style={{background:"#fff",borderRadius:"16px",border:"1.5px solid var(--border)",padding:"20px",boxShadow:"var(--sh-sm)"}}>
+              <h2 style={{fontSize:"14px",fontWeight:700,color:"var(--ink)",marginBottom:"12px"}}>👨‍👩‍👧 保護者を招待</h2>
+              {!inviteUrl ? (
+                <div>
+                  <p style={{fontSize:"11px",color:"var(--ink3)",lineHeight:1.6,marginBottom:"12px"}}>招待URLを発行して保護者と連携。保護者はあなたの志望校・タスク・日程を閲覧できます。</p>
+                  <button onClick={generateInviteUrl} disabled={inviteLoading}
+                    style={{width:"100%",padding:"10px",borderRadius:"9px",border:"none",background:"var(--teal)",color:"#fff",fontSize:"12px",fontWeight:700,cursor:"pointer",fontFamily:"inherit",opacity:inviteLoading?0.7:1}}>
+                    {inviteLoading ? "生成中..." : "🔗 招待URLを発行する"}
+                  </button>
+                  {inviteError && (
+                    <p style={{fontSize:"11px",color:"var(--rose)",marginTop:"8px"}}>{inviteError}</p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <div style={{background:"var(--surface2)",borderRadius:"8px",padding:"10px 12px",fontSize:"11px",color:"var(--ink2)",wordBreak:"break-all",marginBottom:"8px",fontFamily:"DM Mono,monospace"}}>
+                    {inviteUrl}
+                  </div>
+                  <button onClick={copyInviteUrl}
+                    style={{width:"100%",padding:"9px",borderRadius:"9px",border:"1.5px solid var(--teal)",background:inviteCopied?"var(--teal)":"transparent",color:inviteCopied?"#fff":"var(--teal)",fontSize:"12px",fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:".15s"}}>
+                    {inviteCopied ? "✓ コピーしました" : "📋 URLをコピー"}
+                  </button>
+                  <p style={{fontSize:"10px",color:"var(--ink3)",marginTop:"8px",lineHeight:1.6}}>このURLをLINEやメールで保護者に送ってください</p>
                 </div>
               )}
             </div>

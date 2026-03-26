@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react"
 import { createClient } from "@/lib/supabase"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 
 export default function LoginPage() {
@@ -10,18 +10,26 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get("redirect")
   const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError("")
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setError("メールアドレスまたはパスワードが正しくありません")
       setLoading(false)
     } else {
-      router.push("/mypage")
+      if (redirectTo) {
+        router.push(redirectTo)
+      } else if (data.user?.user_metadata?.user_type === "parent") {
+        router.push("/parent")
+      } else {
+        router.push("/mypage")
+      }
     }
   }
 

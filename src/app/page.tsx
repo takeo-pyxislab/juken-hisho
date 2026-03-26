@@ -176,7 +176,7 @@ export default function Home() {
               <div style={{fontSize:"12px", color:"rgba(255,255,255,.4)", marginTop:"4px"}}>※ いつでも解約可能 · 初月無料キャンペーン準備中</div>
             </div>
             <div style={{display:"flex", flexDirection:"column", gap:"10px"}}>
-              <Link href="/signup" style={{padding:"14px 36px", borderRadius:"10px", background:"linear-gradient(135deg,var(--teal),#06b6d4)", color:"#fff", fontSize:"15px", fontWeight:700, textDecoration:"none", display:"inline-block", textAlign:"center", whiteSpace:"nowrap"}}>
+              <Link href="/simulator" style={{padding:"14px 36px", borderRadius:"10px", background:"linear-gradient(135deg,var(--teal),#06b6d4)", color:"#fff", fontSize:"15px", fontWeight:700, textDecoration:"none", display:"inline-block", textAlign:"center", whiteSpace:"nowrap"}}>
                 ✦ 今すぐ始める
               </Link>
               <Link href="/simulator" style={{padding:"12px 36px", borderRadius:"10px", border:"1px solid rgba(255,255,255,.2)", color:"rgba(255,255,255,.8)", fontSize:"14px", fontWeight:600, textDecoration:"none", display:"inline-block", textAlign:"center"}}>
