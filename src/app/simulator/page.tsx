@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase"
 
@@ -66,36 +66,56 @@ function fmt(n: number) { return n.toLocaleString("ja-JP") }
 
 type MyTarget = { id: string; university_name: string; faculty_name: string | null; department: string | null; priority: number }
 
+type Purpose = "cost" | "timeline" | "heigan" | "search"
+
+const PURPOSE_CONFIG = {
+  cost:     { icon: "💰", title: "受験にいくらかかる？", desc: "受験料・入学金・授業料を大学ごとに比較", sample: "例: 3校で合計 約12万円" },
+  timeline: { icon: "📅", title: "日程を整理する", desc: "出願期間・試験日・結果発表を一覧で確認", sample: "例: 最短の締切は9月1日" },
+  heigan:   { icon: "⚡", title: "併願できるか確認", desc: "専願/併願の区分をチェック", sample: "例: 3校中2校が併願OK" },
+  search:   { icon: "🔍", title: "まず大学を探す", desc: "8,015学科から条件で絞り込み", sample: "" },
+}
+
 export default function SimulatorPage() {
+  // Step state
+  const [purpose, setPurpose] = useState<Purpose | null>(null)
+  const [step, setStep] = useState<1 | 2 | 3>(1)
+
+  // Search / filter
   const [uniNames, setUniNames] = useState<UniName[]>([])
   const [loading, setLoading] = useState(false)
-  const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [simData, setSimData] = useState<UniGroup[]>([])
-  const [simLoading, setSimLoading] = useState(false)
-  const [simRunning, setSimRunning] = useState(false)
-  const [sideTab, setSideTab] = useState<"s"|"f"|"m">("s")
-  const [rightTab, setRightTab] = useState<string>("detail")
   const [keyword, setKeyword] = useState("")
   const [region, setRegion] = useState("")
   const [pref, setPref] = useState("")
   const [facCategory, setFacCategory] = useState("")
   const [ougan, setOugan] = useState("")
   const [kyotsuu, setKyotsuu] = useState("")
-  const [userId, setUserId] = useState<string|null>(null)
-  const [myTargets, setMyTargets] = useState<MyTarget[]>([])
-  const [savingUni, setSavingUni] = useState<string|null>(null)
-  // 学科単位選択
-  const [expandedUnis, setExpandedUnis] = useState<Set<string>>(new Set())
+  const [showFilters, setShowFilters] = useState(false)
+
+  // Selection
+  const [selected, setSelected] = useState<Set<string>>(new Set())
   const [uniDepts, setUniDepts] = useState<Record<string, URecord[]>>({})
-  const [deptLoadingSet, setDeptLoadingSet] = useState<Set<string>>(new Set())
   const [deptFilter, setDeptFilter] = useState<Map<string, Set<string>>>(new Map())
-  // 結果画面の学科フィルター（案1）
+  const [expandedUnis, setExpandedUnis] = useState<Set<string>>(new Set())
+  const [deptLoadingSet, setDeptLoadingSet] = useState<Set<string>>(new Set())
+
+  // Simulation
+  const [simData, setSimData] = useState<UniGroup[]>([])
+  const [simLoading, setSimLoading] = useState(false)
+  const [rightTab, setRightTab] = useState<string>("detail")
   const [filterDeptMode, setFilterDeptMode] = useState(false)
   const [hiddenDepts, setHiddenDepts] = useState<Set<string>>(new Set())
+
+  // Auth
+  const [userId, setUserId] = useState<string | null>(null)
+  const [myTargets, setMyTargets] = useState<MyTarget[]>([])
+  const [savingUni, setSavingUni] = useState<string | null>(null)
   const [showSignupModal, setShowSignupModal] = useState(false)
 
   const supabase = createClient()
+  const step2Ref = useRef<HTMLDivElement>(null)
+  const step3Ref = useRef<HTMLDivElement>(null)
 
+  // Auth check
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
@@ -105,21 +125,17 @@ export default function SimulatorPage() {
           const targets = data || []
           setMyTargets(targets)
           if (targets.length > 0) {
-            setSideTab("m")
             setSelected(new Set(targets.map((t: MyTarget) => t.university_name)))
             const deptFilterMap = new Map<string, Set<string>>()
             targets.forEach((t: MyTarget) => {
               if (t.faculty_name && t.department) {
-                if (!deptFilterMap.has(t.university_name)) {
-                  deptFilterMap.set(t.university_name, new Set())
-                }
+                if (!deptFilterMap.has(t.university_name)) deptFilterMap.set(t.university_name, new Set())
                 deptFilterMap.get(t.university_name)!.add(`${t.faculty_name}||${t.department}`)
               }
             })
             if (deptFilterMap.size > 0) setDeptFilter(deptFilterMap)
-            // マイ志望校タブ用：登録済み大学の学科を自動フェッチ
-            const uniNames = [...new Set(targets.map((t: MyTarget) => t.university_name))]
-            uniNames.forEach(async (name) => {
+            const uNames = [...new Set(targets.map((t: MyTarget) => t.university_name))]
+            uNames.forEach(async (name) => {
               try {
                 const res = await fetch(`/api/universities?keyword=${encodeURIComponent(name)}&limit=50`)
                 const d = await res.json()
@@ -132,125 +148,7 @@ export default function SimulatorPage() {
     })
   }, [])
 
-  const toggleExpand = async (uniName: string) => {
-    const next = new Set(expandedUnis)
-    if (next.has(uniName)) {
-      next.delete(uniName)
-      setExpandedUnis(next)
-      return
-    }
-    next.add(uniName)
-    setExpandedUnis(next)
-    if (!uniDepts[uniName]) {
-      setDeptLoadingSet(prev => new Set([...prev, uniName]))
-      try {
-        const res = await fetch(`/api/universities?keyword=${encodeURIComponent(uniName)}&limit=50`)
-        const data = await res.json()
-        const records = (data.data || []).filter((r: URecord) => r.university_name === uniName)
-        setUniDepts(prev => ({ ...prev, [uniName]: records }))
-      } catch {}
-      setDeptLoadingSet(prev => { const s = new Set(prev); s.delete(uniName); return s })
-    }
-  }
-
-  const toggleUni = (name: string) => {
-    setSelected(prev => {
-      const next = new Set(prev)
-      if (next.has(name)) {
-        next.delete(name)
-        setDeptFilter(f => { const m = new Map(f); m.delete(name); return m })
-      } else {
-        next.add(name)
-      }
-      return next
-    })
-  }
-
-  const toggleDept = (uniName: string, faculty: string, dept: string) => {
-    const records = uniDepts[uniName] || []
-    const allKeys = records.map(r => `${r.faculty_name}||${r.department_name}`)
-    const deptKey = `${faculty}||${dept}`
-    setDeptFilter(prev => {
-      const next = new Map(prev)
-      let current = next.get(uniName)
-      if (!current) {
-        current = new Set(allKeys)
-        current.delete(deptKey)
-      } else {
-        current = new Set(current)
-        if (current.has(deptKey)) current.delete(deptKey)
-        else current.add(deptKey)
-      }
-      if (current.size === 0) {
-        setSelected(s => { const n = new Set(s); n.delete(uniName); return n })
-        next.delete(uniName)
-      } else if (current.size === allKeys.length) {
-        next.delete(uniName)
-      } else {
-        next.set(uniName, current)
-      }
-      return next
-    })
-    setSelected(prev => {
-      if (!prev.has(uniName)) return new Set([...prev, uniName])
-      return prev
-    })
-  }
-
-  const toggleFaculty = (uniName: string, faculty: string, deptNames: string[]) => {
-    const records = uniDepts[uniName] || []
-    const allKeys = records.map(r => `${r.faculty_name}||${r.department_name}`)
-    const facKeys = deptNames.map(d => `${faculty}||${d}`)
-    setDeptFilter(prev => {
-      const next = new Map(prev)
-      let current = next.get(uniName)
-      if (!current) current = new Set(allKeys)
-      else current = new Set(current)
-      const allFacSelected = facKeys.every(k => current!.has(k))
-      if (allFacSelected) facKeys.forEach(k => current!.delete(k))
-      else facKeys.forEach(k => current!.add(k))
-      if (current.size === 0) {
-        setSelected(s => { const n = new Set(s); n.delete(uniName); return n })
-        next.delete(uniName)
-      } else if (current.size === allKeys.length) {
-        next.delete(uniName)
-      } else {
-        next.set(uniName, current)
-      }
-      return next
-    })
-    setSelected(prev => {
-      if (!prev.has(uniName)) return new Set([...prev, uniName])
-      return prev
-    })
-  }
-
-  const saveToTargets = async (uniName: string, facultyName: string, deptName: string) => {
-    if (!userId) { setShowSignupModal(true); return }
-    const saveKey = `${uniName}||${facultyName}||${deptName}`
-    setSavingUni(saveKey)
-    const alreadySaved = myTargets.some(t =>
-      t.university_name === uniName && t.faculty_name === facultyName && t.department === deptName
-    )
-    if (alreadySaved) {
-      const target = myTargets.find(t =>
-        t.university_name === uniName && t.faculty_name === facultyName && t.department === deptName
-      )!
-      await supabase.from("target_universities").delete().eq("id", target.id)
-      setMyTargets(prev => prev.filter(t => t.id !== target.id))
-    } else {
-      const { data } = await supabase.from("target_universities").insert({
-        user_id: userId,
-        university_name: uniName,
-        faculty_name: facultyName,
-        department: deptName,
-        priority: myTargets.length + 1,
-      }).select().single()
-      if (data) setMyTargets(prev => [...prev, data])
-    }
-    setSavingUni(null)
-  }
-
+  // Search
   useEffect(() => {
     const hasCondition = keyword || pref || facCategory || ougan || kyotsuu
     if (!hasCondition) { setLoading(false); setUniNames([]); return }
@@ -272,10 +170,99 @@ export default function SimulatorPage() {
     return () => clearTimeout(t)
   }, [keyword, pref, facCategory, ougan, kyotsuu])
 
+  const toggleExpand = async (uniName: string) => {
+    const next = new Set(expandedUnis)
+    if (next.has(uniName)) { next.delete(uniName); setExpandedUnis(next); return }
+    next.add(uniName)
+    setExpandedUnis(next)
+    if (!uniDepts[uniName]) {
+      setDeptLoadingSet(prev => new Set([...prev, uniName]))
+      try {
+        const res = await fetch(`/api/universities?keyword=${encodeURIComponent(uniName)}&limit=50`)
+        const data = await res.json()
+        const records = (data.data || []).filter((r: URecord) => r.university_name === uniName)
+        setUniDepts(prev => ({ ...prev, [uniName]: records }))
+      } catch {}
+      setDeptLoadingSet(prev => { const s = new Set(prev); s.delete(uniName); return s })
+    }
+  }
+
+  const toggleUni = (name: string) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(name)) { next.delete(name); setDeptFilter(f => { const m = new Map(f); m.delete(name); return m }) }
+      else next.add(name)
+      return next
+    })
+  }
+
+  const toggleDept = (uniName: string, faculty: string, dept: string) => {
+    const records = uniDepts[uniName] || []
+    const allKeys = records.map(r => `${r.faculty_name}||${r.department_name}`)
+    const deptKey = `${faculty}||${dept}`
+    setDeptFilter(prev => {
+      const next = new Map(prev)
+      let current = next.get(uniName)
+      if (!current) { current = new Set(allKeys); current.delete(deptKey) }
+      else { current = new Set(current); if (current.has(deptKey)) current.delete(deptKey); else current.add(deptKey) }
+      if (current.size === 0) { setSelected(s => { const n = new Set(s); n.delete(uniName); return n }); next.delete(uniName) }
+      else if (current.size === allKeys.length) next.delete(uniName)
+      else next.set(uniName, current)
+      return next
+    })
+    setSelected(prev => prev.has(uniName) ? prev : new Set([...prev, uniName]))
+  }
+
+  const toggleFaculty = (uniName: string, faculty: string, deptNames: string[]) => {
+    const records = uniDepts[uniName] || []
+    const allKeys = records.map(r => `${r.faculty_name}||${r.department_name}`)
+    const facKeys = deptNames.map(d => `${faculty}||${d}`)
+    setDeptFilter(prev => {
+      const next = new Map(prev)
+      let current = next.get(uniName)
+      if (!current) current = new Set(allKeys); else current = new Set(current)
+      const allFacSelected = facKeys.every(k => current!.has(k))
+      if (allFacSelected) facKeys.forEach(k => current!.delete(k)); else facKeys.forEach(k => current!.add(k))
+      if (current.size === 0) { setSelected(s => { const n = new Set(s); n.delete(uniName); return n }); next.delete(uniName) }
+      else if (current.size === allKeys.length) next.delete(uniName)
+      else next.set(uniName, current)
+      return next
+    })
+    setSelected(prev => prev.has(uniName) ? prev : new Set([...prev, uniName]))
+  }
+
+  const saveToTargets = async (uniName: string, facultyName: string, deptName: string) => {
+    if (!userId) { setShowSignupModal(true); return }
+    const saveKey = `${uniName}||${facultyName}||${deptName}`
+    setSavingUni(saveKey)
+    const alreadySaved = myTargets.some(t => t.university_name === uniName && t.faculty_name === facultyName && t.department === deptName)
+    if (alreadySaved) {
+      const target = myTargets.find(t => t.university_name === uniName && t.faculty_name === facultyName && t.department === deptName)!
+      await supabase.from("target_universities").delete().eq("id", target.id)
+      setMyTargets(prev => prev.filter(t => t.id !== target.id))
+    } else {
+      const { data } = await supabase.from("target_universities").insert({
+        user_id: userId, university_name: uniName, faculty_name: facultyName, department: deptName, priority: myTargets.length + 1,
+      }).select().single()
+      if (data) setMyTargets(prev => [...prev, data])
+    }
+    setSavingUni(null)
+  }
+
+  const selectPurpose = (p: Purpose) => {
+    setPurpose(p)
+    setStep(2)
+    if (p === "cost") setRightTab("cost")
+    else if (p === "timeline") setRightTab("timeline")
+    else if (p === "heigan") setRightTab("heigan")
+    else setRightTab("detail")
+    setTimeout(() => step2Ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100)
+  }
+
   const runSimulation = async () => {
     if (selected.size === 0) return
     setSimLoading(true)
-    setSimRunning(true)
+    setStep(3)
     setFilterDeptMode(false)
     setHiddenDepts(new Set())
     const names = [...selected]
@@ -285,27 +272,19 @@ export default function SimulatorPage() {
       const data = await res.json()
       let records = (data.data || []).filter((r: URecord) => r.university_name === name)
       const filter = deptFilter.get(name)
-      if (filter && filter.size > 0) {
-        records = records.filter((r: URecord) => filter.has(`${r.faculty_name}||${r.department_name}`))
-      }
+      if (filter && filter.size > 0) records = records.filter((r: URecord) => filter.has(`${r.faculty_name}||${r.department_name}`))
       results.push({ name, records })
     }
     setSimData(results)
     setSimLoading(false)
+    setTimeout(() => step3Ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 200)
   }
 
-  // 選択中の学科数を計算
-  const selectedDeptCount = [...selected].reduce((sum, uniName) => {
-    const filter = deptFilter.get(uniName)
-    if (!filter) {
-      const depts = uniDepts[uniName]
-      return sum + (depts ? depts.length : 1)
-    }
-    return sum + filter.size
-  }, 0)
+  const purposeLabel = purpose ? PURPOSE_CONFIG[purpose].title : ""
 
   return (
     <div style={{background:"var(--bg)", minHeight:"100vh"}}>
+      {/* ナビ */}
       <nav style={{
         position:"sticky", top:0, zIndex:300, height:"58px", padding:"0 24px",
         display:"flex", alignItems:"center", justifyContent:"space-between",
@@ -334,427 +313,399 @@ export default function SimulatorPage() {
         </div>
       </nav>
 
-      <div className="sim-layout" style={{display:"flex", height:"calc(100vh - 58px)"}}>
-        {/* サイドバー */}
-        <div className="sim-sidebar" style={{width:"300px", minWidth:"300px", background:"var(--surface)", borderRight:"1px solid var(--border)", display:"flex", flexDirection:"column", overflow:"hidden"}}>
-          {/* タブ */}
-          <div style={{display:"flex", borderBottom:"1px solid var(--border)"}}>
-            {([
-              {id:"s" as const, label:"🔍 検索"},
-              {id:"f" as const, label:"⚙ 絞込"},
-              ...(userId ? [{id:"m" as const, label:`⭐ 志望校${myTargets.length > 0 ? ` ${myTargets.length}` : ""}`}] : []),
-            ]).map(t => (
-              <button key={t.id} onClick={() => setSideTab(t.id)} style={{
-                flex:1, padding:"11px 4px", textAlign:"center", fontSize:"11px", fontWeight:700,
-                cursor:"pointer", background:"transparent", border:"none", fontFamily:"inherit",
-                color: sideTab === t.id ? "var(--teal)" : "var(--ink3)",
-                borderBottom: `2px solid ${sideTab === t.id ? "var(--teal)" : "transparent"}`,
-                letterSpacing:".04em"
-              }}>{t.label}</button>
-            ))}
+      <div style={{maxWidth:"1100px", margin:"0 auto", padding:"0 20px"}}>
+
+        {/* ━━━ STEP 1: 目的を選ぶ ━━━ */}
+        <div style={{padding:"48px 0 32px", textAlign:"center"}}>
+          <div style={{fontSize:"11px", fontWeight:700, color:"var(--teal)", letterSpacing:".15em", marginBottom:"10px"}}>STEP 1</div>
+          <h1 style={{fontFamily:"Kaisei Opti,serif", fontSize:"26px", fontWeight:800, color:"var(--ink)", marginBottom:"8px"}}>
+            あなたの受験、何を整理したいですか？
+          </h1>
+          <p style={{fontSize:"14px", color:"var(--ink3)", marginBottom:"32px"}}>知りたいことを選ぶと、大学選択に進みます</p>
+
+          <div className="purpose-grid" style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:"14px", maxWidth:"800px", margin:"0 auto"}}>
+            {(["cost","timeline","heigan","search"] as Purpose[]).map(p => {
+              const c = PURPOSE_CONFIG[p]
+              const isSelected = purpose === p
+              return (
+                <button key={p} onClick={() => selectPurpose(p)} style={{
+                  padding:"24px 16px", borderRadius:"16px", cursor:"pointer", fontFamily:"inherit",
+                  border: isSelected ? "2px solid var(--teal)" : "1.5px solid var(--border)",
+                  background: isSelected ? "rgba(13,148,136,.06)" : "var(--surface)",
+                  boxShadow: isSelected ? "0 4px 20px rgba(13,148,136,.15)" : "var(--sh-sm)",
+                  transition:".2s", textAlign:"center",
+                  transform: isSelected ? "translateY(-2px)" : "none",
+                }}>
+                  <div style={{fontSize:"36px", marginBottom:"12px"}}>{c.icon}</div>
+                  <div style={{fontSize:"14px", fontWeight:700, color: isSelected ? "var(--teal)" : "var(--ink)", marginBottom:"6px"}}>{c.title}</div>
+                  <div style={{fontSize:"11px", color:"var(--ink3)", lineHeight:1.6, marginBottom: c.sample ? "8px" : "0"}}>{c.desc}</div>
+                  {c.sample && <div style={{fontSize:"10px", color:"var(--teal)", fontWeight:600, background:"var(--teal-bg)", borderRadius:"20px", padding:"3px 10px", display:"inline-block"}}>{c.sample}</div>}
+                </button>
+              )
+            })}
           </div>
+        </div>
 
-          {/* 検索 */}
-          {sideTab === "s" && (
-            <div style={{padding:"12px", borderBottom:"1px solid var(--border)"}}>
-              <input value={keyword} onChange={e => setKeyword(e.target.value)}
-                placeholder="🔍 大学名・学部名で検索..."
-                style={{background:"var(--surface2)", border:"1.5px solid var(--border)", borderRadius:"8px", padding:"8px 11px", color:"var(--ink)", fontSize:"12px", fontFamily:"inherit", outline:"none", width:"100%"}} />
+        {/* ━━━ STEP 2: 大学を選ぶ ━━━ */}
+        {purpose && (
+          <div ref={step2Ref} style={{paddingBottom:"32px"}}>
+            <div style={{borderTop:"1px solid var(--border)", paddingTop:"32px", marginBottom:"24px"}}>
+              <div style={{display:"flex", alignItems:"center", gap:"12px", marginBottom:"6px"}}>
+                <div style={{fontSize:"11px", fontWeight:700, color:"var(--teal)", letterSpacing:".15em"}}>STEP 2</div>
+                <div style={{fontSize:"10px", color:"var(--ink3)", background:"var(--surface2)", borderRadius:"20px", padding:"2px 10px"}}>
+                  {PURPOSE_CONFIG[purpose].icon} {purposeLabel}
+                </div>
+              </div>
+              <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", fontWeight:800, color:"var(--ink)", marginBottom:"6px"}}>比較したい大学を選んでください</h2>
+              <p style={{fontSize:"13px", color:"var(--ink3)"}}>検索して大学を追加。▼ で学科単位の絞り込みもできます。</p>
             </div>
-          )}
 
-          {/* 絞込 */}
-          {sideTab === "f" && (
-            <div style={{padding:"12px", borderBottom:"1px solid var(--border)", display:"flex", flexDirection:"column", gap:"10px", overflowY:"auto", maxHeight:"300px"}}>
-              <div>
-                <div style={{fontSize:"10px", fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"var(--ink3)", marginBottom:"4px"}}>地域</div>
-                <select value={region} onChange={e => { setRegion(e.target.value); setPref("") }}
-                  style={{background:"var(--surface2)", border:"1.5px solid var(--border)", borderRadius:"8px", padding:"7px 10px", color:"var(--ink)", fontSize:"12px", width:"100%", fontFamily:"inherit"}}>
-                  <option value="">すべての地域</option>
-                  {Object.keys(PREFS).map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-              <div>
-                <div style={{fontSize:"10px", fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"var(--ink3)", marginBottom:"4px"}}>都道府県</div>
-                <select value={pref} onChange={e => setPref(e.target.value)}
-                  style={{background:"var(--surface2)", border:"1.5px solid var(--border)", borderRadius:"8px", padding:"7px 10px", color:"var(--ink)", fontSize:"12px", width:"100%", fontFamily:"inherit"}}>
-                  <option value="">すべて</option>
-                  {(region ? PREFS[region] || [] : Object.values(PREFS).flat()).map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
-              </div>
-              <div>
-                <div style={{fontSize:"10px", fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"var(--ink3)", marginBottom:"4px"}}>学部系統</div>
-                <div style={{display:"flex", flexWrap:"wrap", gap:"4px"}}>
-                  {[{v:"",l:"すべて"},{v:"文系・国際",l:"文系"},{v:"理工・情報",l:"理系"},{v:"医療・保健",l:"医療"},{v:"教育",l:"教育"},{v:"芸術・スポーツ",l:"芸術"},{v:"農・食・環境",l:"農食"}].map(c => (
-                    <button key={c.v} onClick={() => setFacCategory(c.v)} style={{
-                      padding:"3px 9px", borderRadius:"20px", fontFamily:"inherit",
-                      border:`1.5px solid ${facCategory===c.v?"var(--teal)":"var(--border)"}`,
-                      background: facCategory===c.v?"rgba(13,148,136,.08)":"transparent",
-                      color: facCategory===c.v?"var(--teal)":"var(--ink3)",
-                      fontSize:"10px", cursor:"pointer", fontWeight:600
-                    }}>{c.l}</button>
-                  ))}
+            <div className="step2-layout" style={{display:"flex", gap:"20px", alignItems:"flex-start"}}>
+              {/* 左: 検索 + 結果 */}
+              <div style={{flex:1, minWidth:0}}>
+                {/* 検索バー */}
+                <div style={{marginBottom:"12px"}}>
+                  <input value={keyword} onChange={e => setKeyword(e.target.value)}
+                    placeholder="🔍 大学名・学部名で検索..."
+                    style={{width:"100%", padding:"12px 16px", border:"1.5px solid var(--border)", borderRadius:"12px", background:"var(--surface)", color:"var(--ink)", fontSize:"14px", fontFamily:"inherit", outline:"none", boxSizing:"border-box", boxShadow:"var(--sh-sm)"}} />
                 </div>
-              </div>
-              <div>
-                <div style={{fontSize:"10px", fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"var(--ink3)", marginBottom:"4px"}}>出願区分</div>
-                <div style={{display:"flex", flexWrap:"wrap", gap:"4px"}}>
-                  {[{v:"",l:"すべて"},{v:"専願",l:"専願のみ"},{v:"併願",l:"併願可"}].map(c => (
-                    <button key={c.v} onClick={() => setOugan(c.v)} style={{
-                      padding:"3px 9px", borderRadius:"20px", fontFamily:"inherit",
-                      border:`1.5px solid ${ougan===c.v?"var(--teal)":"var(--border)"}`,
-                      background: ougan===c.v?"rgba(13,148,136,.08)":"transparent",
-                      color: ougan===c.v?"var(--teal)":"var(--ink3)",
-                      fontSize:"10px", cursor:"pointer", fontWeight:600
-                    }}>{c.l}</button>
-                  ))}
+
+                {/* 絞り込みトグル */}
+                <div style={{marginBottom:"14px"}}>
+                  <button onClick={() => setShowFilters(!showFilters)} style={{
+                    padding:"6px 14px", borderRadius:"8px", border:"1.5px solid var(--border)",
+                    background: showFilters ? "rgba(13,148,136,.06)" : "var(--surface)",
+                    color: showFilters ? "var(--teal)" : "var(--ink3)",
+                    fontSize:"12px", fontWeight:600, cursor:"pointer", fontFamily:"inherit"
+                  }}>⚙ 絞り込み {showFilters ? "▲" : "▼"}</button>
                 </div>
-              </div>
-              <div>
-                <div style={{fontSize:"10px", fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"var(--ink3)", marginBottom:"4px"}}>共通テスト</div>
-                <div style={{display:"flex", flexWrap:"wrap", gap:"4px"}}>
-                  {[{v:"",l:"すべて"},{v:"あり",l:"あり"},{v:"なし",l:"なし"}].map(c => (
-                    <button key={c.v} onClick={() => setKyotsuu(c.v)} style={{
-                      padding:"3px 9px", borderRadius:"20px", fontFamily:"inherit",
-                      border:`1.5px solid ${kyotsuu===c.v?"var(--teal)":"var(--border)"}`,
-                      background: kyotsuu===c.v?"rgba(13,148,136,.08)":"transparent",
-                      color: kyotsuu===c.v?"var(--teal)":"var(--ink3)",
-                      fontSize:"10px", cursor:"pointer", fontWeight:600
-                    }}>{c.l}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* マイ志望校タブ */}
-          {sideTab === "m" && (
-            <div className="sim-sidebar-list" style={{flex:1, overflowY:"auto", padding:"6px"}}>
-              {myTargets.length === 0 ? (
-                <div style={{padding:"30px 14px", textAlign:"center"}}>
-                  <div style={{fontSize:"32px", marginBottom:"10px"}}>⭐</div>
-                  <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink2)", marginBottom:"6px"}}>志望校が未登録です</div>
-                  <div style={{fontSize:"11px", color:"var(--ink3)", lineHeight:1.7}}>シミュレーション結果から<br/>学科ごとに登録できます</div>
-                </div>
-              ) : (
-                <>
-                  <div style={{padding:"8px 10px 4px", fontSize:"10px", fontWeight:700, color:"var(--ink3)", letterSpacing:".08em"}}>登録済み志望校 — 学科を選んでシミュレーション</div>
-                  {[...new Set(myTargets.map(t => t.university_name))].map(uniName => {
-                    const sel = selected.has(uniName)
-                    const currentFilter = deptFilter.get(uniName)
-                    const depts = uniDepts[uniName] || []
-                    const isLoadingDepts = depts.length === 0
-                    const registeredDepts = myTargets.filter(t => t.university_name === uniName)
-
-                    // 学部グループ
-                    const facGroups = depts.reduce((acc, r) => {
-                      if (!acc[r.faculty_name]) acc[r.faculty_name] = []
-                      if (!acc[r.faculty_name].includes(r.department_name)) acc[r.faculty_name].push(r.department_name)
-                      return acc
-                    }, {} as Record<string, string[]>)
-
-                    const registeredCount = myTargets.filter(t => t.university_name === uniName && t.faculty_name).length
-
-                    return (
-                      <div key={uniName} style={{marginBottom:"4px"}}>
-                        {/* 大学ヘッダー */}
-                        <div style={{
-                          padding:"7px 10px", borderRadius:"8px 8px 0 0",
-                          display:"flex", alignItems:"center", gap:"8px",
-                          border:`1.5px solid ${sel?"rgba(13,148,136,.22)":"var(--border)"}`,
-                          borderBottom:"none",
-                          background: sel?"rgba(13,148,136,.06)":"transparent",
-                        }}>
-                          <div onClick={() => toggleUni(uniName)} style={{
-                            width:"18px", height:"18px", minWidth:"18px", borderRadius:"5px",
-                            border:`1.5px solid ${sel?"var(--teal)":"var(--border)"}`,
-                            background: sel?"var(--teal)":"transparent",
-                            display:"flex", alignItems:"center", justifyContent:"center",
-                            fontSize:"9px", color:"#fff", transition:".15s", flexShrink:0, cursor:"pointer"
-                          }}>{sel?"✓":""}</div>
-                          <div style={{flex:1, minWidth:0}}>
-                            <div style={{fontSize:"12px", fontWeight:700, color:"var(--ink)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{uniName}</div>
-                          </div>
-                          {registeredCount > 0 && (
-                            <div style={{background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"20px", padding:"1px 6px", fontSize:"9px", fontWeight:700, color:"var(--teal2)", flexShrink:0}}>⭐{registeredCount}</div>
-                          )}
-                        </div>
-
-                        {/* 学部・学科一覧（全件 + 登録済みバッジ） */}
-                        <div style={{
-                          border:`1.5px solid ${sel?"rgba(13,148,136,.22)":"var(--border)"}`,
-                          borderTop:"none", borderRadius:"0 0 8px 8px",
-                          background:"var(--surface2)", overflow:"hidden", marginBottom:"0"
-                        }}>
-                          {isLoadingDepts ? (
-                            <div style={{padding:"10px 12px", display:"flex", alignItems:"center", gap:"7px"}}>
-                              <div style={{width:"12px", height:"12px", border:"2px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
-                              <span style={{fontSize:"10px", color:"var(--ink3)"}}>学科を読み込み中...</span>
-                            </div>
-                          ) : Object.entries(facGroups).map(([faculty, deptNames], fi) => {
-                            const facKeys = deptNames.map(d => `${faculty}||${d}`)
-                            const allFacSelected = !currentFilter || facKeys.every(k => currentFilter.has(k))
-                            const someFacSelected = !currentFilter || facKeys.some(k => currentFilter.has(k))
-                            return (
-                              <div key={faculty}>
-                                {/* 学部行 */}
-                                <div onClick={() => toggleFaculty(uniName, faculty, deptNames)} style={{
-                                  display:"flex", alignItems:"center", gap:"7px", padding:"5px 10px 4px",
-                                  cursor:"pointer", borderTop: fi > 0 ? "1px solid var(--border)" : "none",
-                                  background:"rgba(0,0,0,.015)"
-                                }}>
-                                  <div style={{
-                                    width:"15px", height:"15px", minWidth:"15px", borderRadius:"4px",
-                                    border:`1.5px solid ${allFacSelected?"var(--teal)":someFacSelected?"var(--amber)":"var(--border)"}`,
-                                    background: allFacSelected?"var(--teal)":someFacSelected?"rgba(245,158,11,.15)":"transparent",
-                                    display:"flex", alignItems:"center", justifyContent:"center",
-                                    fontSize:"8px", color: someFacSelected&&!allFacSelected?"var(--amber)":"#fff", flexShrink:0
-                                  }}>{allFacSelected?"✓":someFacSelected?"—":""}</div>
-                                  <div style={{flex:1, fontSize:"11px", fontWeight:700, color:"var(--ink2)"}}>{faculty}</div>
-                                  <div style={{fontSize:"9px", color:"var(--ink3)"}}>{deptNames.length}学科</div>
-                                </div>
-                                {/* 学科行 */}
-                                {deptNames.map(dept => {
-                                  const deptKey = `${faculty}||${dept}`
-                                  const isDeptSel = !currentFilter || currentFilter.has(deptKey)
-                                  const isRegistered = registeredDepts.some(t => t.faculty_name === faculty && t.department === dept)
-                                  return (
-                                    <div key={dept} onClick={() => toggleDept(uniName, faculty, dept)} style={{
-                                      display:"flex", alignItems:"center", gap:"7px",
-                                      padding:"4px 10px 4px 26px", cursor:"pointer",
-                                      background: isDeptSel ? "rgba(13,148,136,.04)" : "transparent",
-                                      borderTop:"1px solid rgba(0,0,0,.04)"
-                                    }}>
-                                      <div style={{
-                                        width:"13px", height:"13px", minWidth:"13px", borderRadius:"3px",
-                                        border:`1.5px solid ${isDeptSel?"var(--teal)":"var(--border)"}`,
-                                        background: isDeptSel?"var(--teal)":"transparent",
-                                        display:"flex", alignItems:"center", justifyContent:"center",
-                                        fontSize:"8px", color:"#fff", flexShrink:0
-                                      }}>{isDeptSel?"✓":""}</div>
-                                      <div style={{flex:1, fontSize:"10px", color:"var(--ink2)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{dept}</div>
-                                      {isRegistered && (
-                                        <div style={{background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"20px", padding:"1px 5px", fontSize:"8px", fontWeight:700, color:"var(--teal2)", flexShrink:0}}>⭐登録済</div>
-                                      )}
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            )
-                          })}
+                {showFilters && (
+                  <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"12px", padding:"16px", marginBottom:"14px", display:"flex", flexDirection:"column", gap:"12px"}}>
+                    <div style={{display:"flex", gap:"12px", flexWrap:"wrap"}}>
+                      <div style={{flex:1, minWidth:"140px"}}>
+                        <div style={{fontSize:"10px", fontWeight:700, color:"var(--ink3)", marginBottom:"4px"}}>地域</div>
+                        <select value={region} onChange={e => { setRegion(e.target.value); setPref("") }}
+                          style={{width:"100%", padding:"7px 10px", border:"1.5px solid var(--border)", borderRadius:"8px", background:"var(--surface2)", color:"var(--ink)", fontSize:"12px", fontFamily:"inherit"}}>
+                          <option value="">すべての地域</option>
+                          {Object.keys(PREFS).map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
+                      </div>
+                      <div style={{flex:1, minWidth:"140px"}}>
+                        <div style={{fontSize:"10px", fontWeight:700, color:"var(--ink3)", marginBottom:"4px"}}>都道府県</div>
+                        <select value={pref} onChange={e => setPref(e.target.value)}
+                          style={{width:"100%", padding:"7px 10px", border:"1.5px solid var(--border)", borderRadius:"8px", background:"var(--surface2)", color:"var(--ink)", fontSize:"12px", fontFamily:"inherit"}}>
+                          <option value="">すべて</option>
+                          {(region ? PREFS[region] || [] : Object.values(PREFS).flat()).map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{fontSize:"10px", fontWeight:700, color:"var(--ink3)", marginBottom:"4px"}}>学部系統</div>
+                      <div style={{display:"flex", flexWrap:"wrap", gap:"5px"}}>
+                        {[{v:"",l:"すべて"},{v:"文系・国際",l:"文系"},{v:"理工・情報",l:"理系"},{v:"医療・保健",l:"医療"},{v:"教育",l:"教育"},{v:"芸術・スポーツ",l:"芸術"},{v:"農・食・環境",l:"農食"}].map(c => (
+                          <button key={c.v} onClick={() => setFacCategory(c.v)} style={{
+                            padding:"4px 11px", borderRadius:"20px", fontFamily:"inherit",
+                            border:`1.5px solid ${facCategory===c.v?"var(--teal)":"var(--border)"}`,
+                            background: facCategory===c.v?"rgba(13,148,136,.08)":"transparent",
+                            color: facCategory===c.v?"var(--teal)":"var(--ink3)",
+                            fontSize:"11px", cursor:"pointer", fontWeight:600
+                          }}>{c.l}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{display:"flex", gap:"16px", flexWrap:"wrap"}}>
+                      <div>
+                        <div style={{fontSize:"10px", fontWeight:700, color:"var(--ink3)", marginBottom:"4px"}}>出願区分</div>
+                        <div style={{display:"flex", gap:"4px"}}>
+                          {[{v:"",l:"すべて"},{v:"専願",l:"専願のみ"},{v:"併願",l:"併願可"}].map(c => (
+                            <button key={c.v} onClick={() => setOugan(c.v)} style={{
+                              padding:"4px 11px", borderRadius:"20px", fontFamily:"inherit",
+                              border:`1.5px solid ${ougan===c.v?"var(--teal)":"var(--border)"}`,
+                              background: ougan===c.v?"rgba(13,148,136,.08)":"transparent",
+                              color: ougan===c.v?"var(--teal)":"var(--ink3)",
+                              fontSize:"11px", cursor:"pointer", fontWeight:600
+                            }}>{c.l}</button>
+                          ))}
                         </div>
                       </div>
-                    )
-                  })}
-                </>
-              )}
-            </div>
-          )}
+                      <div>
+                        <div style={{fontSize:"10px", fontWeight:700, color:"var(--ink3)", marginBottom:"4px"}}>共通テスト</div>
+                        <div style={{display:"flex", gap:"4px"}}>
+                          {[{v:"",l:"すべて"},{v:"あり",l:"あり"},{v:"なし",l:"なし"}].map(c => (
+                            <button key={c.v} onClick={() => setKyotsuu(c.v)} style={{
+                              padding:"4px 11px", borderRadius:"20px", fontFamily:"inherit",
+                              border:`1.5px solid ${kyotsuu===c.v?"var(--teal)":"var(--border)"}`,
+                              background: kyotsuu===c.v?"rgba(13,148,136,.08)":"transparent",
+                              color: kyotsuu===c.v?"var(--teal)":"var(--ink3)",
+                              fontSize:"11px", cursor:"pointer", fontWeight:600
+                            }}>{c.l}</button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-          {/* 大学リスト（検索・絞込タブ） - 展開可能 */}
-          <div className="sim-sidebar-list" style={{flex:1, overflowY:"auto", padding:"6px", display: sideTab === "m" ? "none" : undefined}}>
-            {loading ? (
-              <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100px", gap:"8px"}}>
-                <div style={{width:"24px", height:"24px", border:"3px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
-                <span style={{fontSize:"11px", color:"var(--ink3)"}}>読み込み中...</span>
+                {/* 検索結果リスト */}
+                <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px", overflow:"hidden", boxShadow:"var(--sh-sm)", maxHeight:"480px", overflowY:"auto"}}>
+                  {loading ? (
+                    <div style={{display:"flex", alignItems:"center", justifyContent:"center", height:"120px", gap:"8px"}}>
+                      <div style={{width:"20px", height:"20px", border:"3px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
+                      <span style={{fontSize:"12px", color:"var(--ink3)"}}>検索中...</span>
+                    </div>
+                  ) : uniNames.length === 0 ? (
+                    <div style={{padding:"40px 20px", textAlign:"center"}}>
+                      <div style={{fontSize:"36px", marginBottom:"10px", opacity:.5}}>🔍</div>
+                      <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink2)", marginBottom:"6px"}}>大学名で検索してください</div>
+                      <div style={{fontSize:"11px", color:"var(--ink3)", lineHeight:1.8}}>例：「早稲田」「看護」「東京」「国際」</div>
+                    </div>
+                  ) : (
+                    uniNames.map(u => {
+                      const sel = selected.has(u.name)
+                      const isExpanded = expandedUnis.has(u.name)
+                      const isLoading = deptLoadingSet.has(u.name)
+                      const currentFilter = deptFilter.get(u.name)
+                      const depts = uniDepts[u.name] || []
+                      const totalDepts = depts.length
+                      const selectedDeptCount = currentFilter ? currentFilter.size : totalDepts
+                      const isPartial = currentFilter && currentFilter.size > 0 && currentFilter.size < totalDepts
+                      const tagColor = (!u.hasHeigan && u.hasSengan) ? {bg:"rgba(239,68,68,.1)", color:"#e11d48"} : u.hasHeigan ? {bg:"rgba(13,148,136,.1)", color:"var(--teal2)"} : {bg:"var(--surface2)", color:"var(--ink3)"}
+                      const tagLabel = (!u.hasHeigan && u.hasSengan) ? "専願" : u.hasHeigan ? "併願可" : "要確認"
+
+                      return (
+                        <div key={u.name}>
+                          <div style={{
+                            padding:"10px 14px", display:"flex", alignItems:"center", gap:"8px",
+                            borderBottom:"1px solid var(--border)",
+                            background: sel ? "rgba(13,148,136,.04)" : "transparent", transition:".15s"
+                          }}>
+                            <div onClick={() => toggleUni(u.name)} style={{
+                              width:"20px", height:"20px", minWidth:"20px", borderRadius:"6px",
+                              border:`2px solid ${sel?"var(--teal)":isPartial?"var(--amber)":"var(--border)"}`,
+                              background: sel && !isPartial?"var(--teal)":isPartial?"rgba(245,158,11,.15)":"transparent",
+                              display:"flex", alignItems:"center", justifyContent:"center",
+                              fontSize:"10px", color: isPartial?"var(--amber)":"#fff", cursor:"pointer", flexShrink:0
+                            }}>{sel && !isPartial?"✓":isPartial?"—":""}</div>
+                            <div onClick={() => toggleExpand(u.name)} style={{flex:1, minWidth:0, cursor:"pointer"}}>
+                              <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink)"}}>{u.name}</div>
+                              <div style={{fontSize:"10px", color:"var(--ink3)", display:"flex", gap:"4px", marginTop:"2px", flexWrap:"wrap"}}>
+                                <span style={{padding:"1px 6px", borderRadius:"4px", fontSize:"9px", fontWeight:700, background:tagColor.bg, color:tagColor.color}}>{tagLabel}</span>
+                                {u.cats.slice(0,1).map(c => <span key={c} style={{padding:"1px 6px", borderRadius:"4px", fontSize:"9px", fontWeight:700, background:"var(--surface2)", color:"var(--ink3)"}}>{c}</span>)}
+                                {isPartial && <span style={{fontSize:"9px", color:"var(--amber)", fontWeight:700}}>{selectedDeptCount}学科選択中</span>}
+                              </div>
+                            </div>
+                            <button onClick={() => toggleExpand(u.name)} style={{
+                              background:"transparent", border:"none", cursor:"pointer", padding:"4px 6px",
+                              color:"var(--ink3)", fontSize:"11px", flexShrink:0, fontFamily:"inherit"
+                            }}>{isExpanded ? "▲" : "▼"}</button>
+                          </div>
+
+                          {isExpanded && (
+                            <div style={{background:"var(--surface2)", borderBottom:"1px solid var(--border)"}}>
+                              {isLoading ? (
+                                <div style={{padding:"12px", display:"flex", alignItems:"center", gap:"8px"}}>
+                                  <div style={{width:"14px", height:"14px", border:"2px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
+                                  <span style={{fontSize:"11px", color:"var(--ink3)"}}>学科を読み込み中...</span>
+                                </div>
+                              ) : depts.length === 0 ? (
+                                <div style={{padding:"12px 14px", fontSize:"11px", color:"var(--ink3)"}}>学科データがありません</div>
+                              ) : (
+                                Object.entries(depts.reduce((acc, r) => {
+                                  if (!acc[r.faculty_name]) acc[r.faculty_name] = []
+                                  if (!acc[r.faculty_name].includes(r.department_name)) acc[r.faculty_name].push(r.department_name)
+                                  return acc
+                                }, {} as Record<string, string[]>)).map(([faculty, deptNames], fi) => {
+                                  const facKeys = deptNames.map(d => `${faculty}||${d}`)
+                                  const allFacSelected = !currentFilter || facKeys.every(k => currentFilter.has(k))
+                                  const someFacSelected = !currentFilter || facKeys.some(k => currentFilter.has(k))
+                                  return (
+                                    <div key={faculty}>
+                                      <div onClick={() => toggleFaculty(u.name, faculty, deptNames)} style={{
+                                        display:"flex", alignItems:"center", gap:"7px", padding:"7px 14px",
+                                        cursor:"pointer", borderTop: fi > 0 ? "1px solid var(--border)" : "none",
+                                        background:"rgba(0,0,0,.02)"
+                                      }}>
+                                        <div style={{
+                                          width:"16px", height:"16px", minWidth:"16px", borderRadius:"4px",
+                                          border:`1.5px solid ${allFacSelected?"var(--teal)":someFacSelected?"var(--amber)":"var(--border)"}`,
+                                          background: allFacSelected?"var(--teal)":someFacSelected?"rgba(245,158,11,.15)":"transparent",
+                                          display:"flex", alignItems:"center", justifyContent:"center",
+                                          fontSize:"9px", color: someFacSelected&&!allFacSelected?"var(--amber)":"#fff", flexShrink:0
+                                        }}>{allFacSelected?"✓":someFacSelected?"—":""}</div>
+                                        <div style={{flex:1, fontSize:"12px", fontWeight:700, color:"var(--ink2)"}}>{faculty}</div>
+                                        <div style={{fontSize:"9px", color:"var(--ink3)"}}>{deptNames.length}学科</div>
+                                      </div>
+                                      {deptNames.map(dept => {
+                                        const deptKey = `${faculty}||${dept}`
+                                        const isDeptSel = !currentFilter || currentFilter.has(deptKey)
+                                        return (
+                                          <div key={dept} onClick={() => toggleDept(u.name, faculty, dept)} style={{
+                                            display:"flex", alignItems:"center", gap:"7px",
+                                            padding:"5px 14px 5px 32px", cursor:"pointer",
+                                            background: isDeptSel ? "rgba(13,148,136,.03)" : "transparent",
+                                            borderTop:"1px solid rgba(0,0,0,.04)"
+                                          }}>
+                                            <div style={{
+                                              width:"14px", height:"14px", minWidth:"14px", borderRadius:"3px",
+                                              border:`1.5px solid ${isDeptSel?"var(--teal)":"var(--border)"}`,
+                                              background: isDeptSel?"var(--teal)":"transparent",
+                                              display:"flex", alignItems:"center", justifyContent:"center",
+                                              fontSize:"8px", color:"#fff", flexShrink:0
+                                            }}>{isDeptSel?"✓":""}</div>
+                                            <div style={{fontSize:"11px", color:"var(--ink2)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{dept}</div>
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  )
+                                })
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
               </div>
-            ) : uniNames.length === 0 ? (
-              <div style={{padding:"30px 14px", textAlign:"center", color:"var(--ink3)"}}>
-                <div style={{fontSize:"32px", marginBottom:"10px"}}>🔍</div>
-                <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink2)", marginBottom:"6px"}}>大学名で検索してください</div>
-                <div style={{fontSize:"11px", lineHeight:1.8, color:"var(--ink3)"}}>
-                  例：「早稲田」「看護」「東京」<br/>
-                  「医療」「国際」など
+
+              {/* 右: 選択中の大学 + シミュレーション開始 */}
+              <div className="step2-right" style={{width:"340px", minWidth:"340px", position:"sticky", top:"80px"}}>
+                <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"16px", overflow:"hidden", boxShadow:"var(--sh-md)"}}>
+                  <div style={{padding:"16px 18px", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+                    <h3 style={{fontSize:"14px", fontWeight:700, color:"var(--ink)", margin:0}}>選択中の大学</h3>
+                    <span style={{fontSize:"20px", fontWeight:900, fontFamily:"DM Mono,monospace", color:"var(--teal)"}}>{selected.size}<span style={{fontSize:"11px", color:"var(--ink3)", fontWeight:600, marginLeft:"2px"}}>校</span></span>
+                  </div>
+
+                  <div style={{padding:"12px 18px", maxHeight:"280px", overflowY:"auto"}}>
+                    {selected.size === 0 ? (
+                      <div style={{padding:"24px 0", textAlign:"center"}}>
+                        <div style={{fontSize:"28px", marginBottom:"8px", opacity:.4}}>🏫</div>
+                        <div style={{fontSize:"12px", color:"var(--ink3)", lineHeight:1.7}}>左のリストから<br/>大学を追加してください</div>
+                      </div>
+                    ) : (
+                      [...selected].map(name => {
+                        const filter = deptFilter.get(name)
+                        const depts = uniDepts[name] || []
+                        const count = filter ? filter.size : (depts.length || 1)
+                        return (
+                          <div key={name} style={{display:"flex", alignItems:"center", gap:"8px", padding:"8px 0", borderBottom:"1px solid rgba(0,0,0,.04)"}}>
+                            <div style={{flex:1, minWidth:0}}>
+                              <div style={{fontSize:"12px", fontWeight:700, color:"var(--ink)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{name}</div>
+                              {depts.length > 0 && <div style={{fontSize:"10px", color:"var(--ink3)", marginTop:"1px"}}>{count}学科</div>}
+                            </div>
+                            <button onClick={() => toggleUni(name)} style={{
+                              background:"transparent", border:"none", fontSize:"14px", color:"var(--ink3)",
+                              cursor:"pointer", padding:"2px 6px", lineHeight:1
+                            }}>✕</button>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+
+                  <div style={{padding:"14px 18px", borderTop:"1px solid var(--border)"}}>
+                    <button onClick={runSimulation} disabled={selected.size === 0 || simLoading} style={{
+                      width:"100%", padding:"14px", borderRadius:"12px", border:"none",
+                      background: selected.size > 0 ? "linear-gradient(135deg,var(--teal),#06b6d4)" : "var(--surface2)",
+                      color: selected.size > 0 ? "#fff" : "var(--ink3)",
+                      fontSize:"14px", fontWeight:700, cursor: selected.size > 0 ? "pointer" : "not-allowed",
+                      fontFamily:"inherit", transition:".2s",
+                      boxShadow: selected.size > 0 ? "0 4px 16px rgba(13,148,136,.3)" : "none"
+                    }}>
+                      {simLoading ? "シミュレーション中..." : `${PURPOSE_CONFIG[purpose].icon} ${purposeLabel}シミュレーション開始 →`}
+                    </button>
+                    {selected.size > 0 && (
+                      <button onClick={() => { setSelected(new Set()); setDeptFilter(new Map()); setExpandedUnis(new Set()) }} style={{
+                        width:"100%", padding:"8px", marginTop:"8px", background:"transparent",
+                        border:"none", color:"var(--ink3)", fontSize:"11px", cursor:"pointer", fontFamily:"inherit"
+                      }}>選択をクリア</button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ━━━ STEP 3: 結果 ━━━ */}
+        {step === 3 && (
+          <div ref={step3Ref} style={{paddingBottom:"40px"}}>
+            <div style={{borderTop:"1px solid var(--border)", paddingTop:"32px", marginBottom:"20px"}}>
+              <div style={{display:"flex", alignItems:"center", gap:"12px", marginBottom:"6px"}}>
+                <div style={{fontSize:"11px", fontWeight:700, color:"var(--teal)", letterSpacing:".15em"}}>STEP 3</div>
+              </div>
+              <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"10px"}}>
+                <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", fontWeight:800, color:"var(--ink)", margin:0}}>
+                  {PURPOSE_CONFIG[purpose!].icon} シミュレーション結果
+                </h2>
+                <button onClick={() => { setStep(2); setTimeout(() => step2Ref.current?.scrollIntoView({ behavior: "smooth" }), 100) }} style={{
+                  padding:"7px 16px", borderRadius:"8px", border:"1.5px solid var(--border)",
+                  background:"var(--surface)", color:"var(--ink2)", fontSize:"12px", fontWeight:600,
+                  cursor:"pointer", fontFamily:"inherit"
+                }}>← 大学を変更する</button>
+              </div>
+            </div>
+
+            {simLoading ? (
+              <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"200px", gap:"16px"}}>
+                <div style={{width:"36px", height:"36px", border:"3px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
+                <div>
+                  <p style={{fontSize:"14px", fontWeight:700, color:"var(--ink)", marginBottom:"4px", textAlign:"center"}}>シミュレーション中...</p>
+                  <p style={{fontSize:"12px", color:"var(--ink3)", textAlign:"center"}}>{selected.size}校のデータを分析しています</p>
                 </div>
               </div>
             ) : (
-              uniNames.map(u => {
-                const sel = selected.has(u.name)
-                const isExpanded = expandedUnis.has(u.name)
-                const isLoading = deptLoadingSet.has(u.name)
-                const currentFilter = deptFilter.get(u.name)
-                const depts = uniDepts[u.name] || []
-                const totalDepts = depts.length
-                const selectedDepts = currentFilter ? currentFilter.size : totalDepts
-                const isPartial = currentFilter && currentFilter.size > 0 && currentFilter.size < totalDepts
-
-                const tagColor = (!u.hasHeigan && u.hasSengan) ? {bg:"rgba(239,68,68,.1)", color:"#e11d48"} :
-                  u.hasHeigan ? {bg:"rgba(13,148,136,.1)", color:"var(--teal2)"} :
-                  {bg:"var(--surface2)", color:"var(--ink3)"}
-                const tagLabel = (!u.hasHeigan && u.hasSengan) ? "専願" : u.hasHeigan ? "併願可" : "要確認"
-
-                return (
-                  <div key={u.name} style={{marginBottom: isExpanded ? "0" : "2px"}}>
-                    {/* 大学行 */}
-                    <div style={{
-                      padding:"7px 8px", borderRadius: isExpanded ? "8px 8px 0 0" : "8px",
-                      display:"flex", alignItems:"center", gap:"6px",
-                      border:`1.5px solid ${sel?"rgba(13,148,136,.22)":"transparent"}`,
-                      borderBottom: isExpanded ? `1px solid var(--border)` : undefined,
-                      background: sel?"rgba(13,148,136,.06)":"transparent",
-                      transition:".15s"
-                    }}>
-                      {/* チェックボックス */}
-                      <div onClick={() => toggleUni(u.name)} style={{
-                        width:"18px", height:"18px", minWidth:"18px", borderRadius:"5px",
-                        border:`1.5px solid ${sel?"var(--teal)":isPartial?"var(--amber)":"var(--border)"}`,
-                        background: sel && !isPartial?"var(--teal)":isPartial?"rgba(245,158,11,.15)":"transparent",
-                        display:"flex", alignItems:"center", justifyContent:"center",
-                        fontSize:"9px", color: isPartial?"var(--amber)":"#fff", transition:".15s", flexShrink:0, cursor:"pointer"
-                      }}>{sel && !isPartial?"✓":isPartial?"—":""}</div>
-                      {/* 大学名 */}
-                      <div onClick={() => toggleExpand(u.name)} style={{flex:1, minWidth:0, cursor:"pointer"}}>
-                        <div style={{fontSize:"12px", fontWeight:600, color:"var(--ink)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{u.name}</div>
-                        <div style={{fontSize:"10px", color:"var(--ink3)", display:"flex", gap:"4px", marginTop:"1px", flexWrap:"wrap"}}>
-                          <span style={{padding:"1px 5px", borderRadius:"3px", fontSize:"9px", fontWeight:700, background:tagColor.bg, color:tagColor.color}}>{tagLabel}</span>
-                          {u.cats.slice(0,1).map(c => <span key={c} style={{padding:"1px 5px", borderRadius:"3px", fontSize:"9px", fontWeight:700, background:"var(--surface2)", color:"var(--ink3)"}}>{c}</span>)}
-                          {isPartial && <span style={{fontSize:"9px", color:"var(--amber)", fontWeight:700}}>{selectedDepts}学科選択中</span>}
-                        </div>
-                      </div>
-                      {/* 展開ボタン */}
-                      <button onClick={() => toggleExpand(u.name)} style={{
-                        background:"transparent", border:"none", cursor:"pointer", padding:"2px 4px",
-                        color:"var(--ink3)", fontSize:"10px", flexShrink:0, fontFamily:"inherit"
-                      }}>{isExpanded ? "▲" : "▼"}</button>
-                    </div>
-
-                    {/* 展開: 学部・学科リスト */}
-                    {isExpanded && (
-                      <div style={{
-                        border:`1.5px solid ${sel?"rgba(13,148,136,.22)":"var(--border)"}`,
-                        borderTop:"none", borderRadius:"0 0 8px 8px", marginBottom:"2px",
-                        background:"var(--surface2)", overflow:"hidden"
-                      }}>
-                        {isLoading ? (
-                          <div style={{padding:"14px", textAlign:"center", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px"}}>
-                            <div style={{width:"14px", height:"14px", border:"2px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
-                            <span style={{fontSize:"11px", color:"var(--ink3)"}}>学科を読み込み中...</span>
-                          </div>
-                        ) : depts.length === 0 ? (
-                          <div style={{padding:"10px 12px", fontSize:"11px", color:"var(--ink3)"}}>学科データがありません</div>
-                        ) : (
-                          Object.entries(
-                            depts.reduce((acc, r) => {
-                              if (!acc[r.faculty_name]) acc[r.faculty_name] = []
-                              if (!acc[r.faculty_name].includes(r.department_name)) {
-                                acc[r.faculty_name].push(r.department_name)
-                              }
-                              return acc
-                            }, {} as Record<string, string[]>)
-                          ).map(([faculty, deptNames], fi) => {
-                            const facKeys = deptNames.map(d => `${faculty}||${d}`)
-                            const allFacSelected = !currentFilter || facKeys.every(k => currentFilter.has(k))
-                            const someFacSelected = !currentFilter || facKeys.some(k => currentFilter.has(k))
-                            return (
-                              <div key={faculty}>
-                                {/* 学部行 */}
-                                <div onClick={() => toggleFaculty(u.name, faculty, deptNames)} style={{
-                                  display:"flex", alignItems:"center", gap:"7px",
-                                  padding:"6px 10px 5px",
-                                  cursor:"pointer",
-                                  borderTop: fi > 0 ? "1px solid var(--border)" : "none",
-                                  background:"rgba(0,0,0,.015)"
-                                }}>
-                                  <div style={{
-                                    width:"15px", height:"15px", minWidth:"15px", borderRadius:"4px",
-                                    border:`1.5px solid ${allFacSelected?"var(--teal)":someFacSelected?"var(--amber)":"var(--border)"}`,
-                                    background: allFacSelected?"var(--teal)":someFacSelected?"rgba(245,158,11,.15)":"transparent",
-                                    display:"flex", alignItems:"center", justifyContent:"center",
-                                    fontSize:"8px", color: someFacSelected&&!allFacSelected?"var(--amber)":"#fff", flexShrink:0
-                                  }}>{allFacSelected?"✓":someFacSelected?"—":""}</div>
-                                  <div style={{flex:1, fontSize:"11px", fontWeight:700, color:"var(--ink2)"}}>{faculty}</div>
-                                  <div style={{fontSize:"9px", color:"var(--ink3)"}}>{deptNames.length}学科</div>
-                                </div>
-                                {/* 学科行 */}
-                                {deptNames.map(dept => {
-                                  const deptKey = `${faculty}||${dept}`
-                                  const isDeptSel = !currentFilter || currentFilter.has(deptKey)
-                                  return (
-                                    <div key={dept} onClick={() => toggleDept(u.name, faculty, dept)} style={{
-                                      display:"flex", alignItems:"center", gap:"7px",
-                                      padding:"4px 10px 4px 26px",
-                                      cursor:"pointer",
-                                      background: isDeptSel ? "rgba(13,148,136,.04)" : "transparent",
-                                      borderTop:"1px solid rgba(0,0,0,.04)"
-                                    }}>
-                                      <div style={{
-                                        width:"13px", height:"13px", minWidth:"13px", borderRadius:"3px",
-                                        border:`1.5px solid ${isDeptSel?"var(--teal)":"var(--border)"}`,
-                                        background: isDeptSel?"var(--teal)":"transparent",
-                                        display:"flex", alignItems:"center", justifyContent:"center",
-                                        fontSize:"8px", color:"#fff", flexShrink:0
-                                      }}>{isDeptSel?"✓":""}</div>
-                                      <div style={{fontSize:"11px", color:"var(--ink2)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{dept}</div>
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            )
-                          })
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )
-              })
+              <SimResult
+                data={simData} rightTab={rightTab} setRightTab={setRightTab}
+                userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={saveToTargets}
+                filterDeptMode={filterDeptMode} setFilterDeptMode={setFilterDeptMode}
+                hiddenDepts={hiddenDepts} setHiddenDepts={setHiddenDepts}
+                purpose={purpose}
+              />
             )}
-          </div>
 
-          {/* フッター */}
-          <div style={{padding:"12px", borderTop:"1px solid var(--border)", display:"flex", flexDirection:"column", gap:"7px"}}>
-            <div style={{display:"flex", alignItems:"center", justifyContent:"space-between"}}>
-              <span style={{fontSize:"11px", color:"var(--ink2)"}}>選択中</span>
-              <div style={{display:"flex", alignItems:"baseline", gap:"4px"}}>
-                <span style={{fontSize:"20px", fontWeight:900, color:"var(--teal)", fontFamily:"DM Mono,monospace"}}>{selected.size}</span>
-                <span style={{fontSize:"11px", color:"var(--ink3)"}}>校</span>
-                {deptFilter.size > 0 && (
-                  <span style={{fontSize:"10px", color:"var(--amber)", fontWeight:700, marginLeft:"4px"}}>
-                    ({[...selected].reduce((sum, n) => { const f = deptFilter.get(n); return sum + (f ? f.size : (uniDepts[n]?.length || 0)) }, 0)}学科)
-                  </span>
-                )}
+            {/* 他のシミュレーションへの誘導 */}
+            {!simLoading && purpose && (
+              <div style={{marginTop:"24px", padding:"20px", background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px"}}>
+                <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink)", marginBottom:"12px"}}>他の視点でもチェックしませんか？</div>
+                <div style={{display:"flex", gap:"10px", flexWrap:"wrap"}}>
+                  {(["cost","timeline","heigan"] as Purpose[]).filter(p => p !== purpose).map(p => {
+                    const c = PURPOSE_CONFIG[p]
+                    return (
+                      <button key={p} onClick={() => {
+                        setPurpose(p)
+                        if (p === "cost") setRightTab("cost")
+                        else if (p === "timeline") setRightTab("timeline")
+                        else setRightTab("heigan")
+                      }} style={{
+                        padding:"10px 18px", borderRadius:"10px", border:"1.5px solid var(--border)",
+                        background:"var(--surface)", cursor:"pointer", fontFamily:"inherit",
+                        fontSize:"13px", fontWeight:600, color:"var(--ink2)", display:"flex", alignItems:"center", gap:"6px"
+                      }}>
+                        {c.icon} {c.title}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* プレミアム CTA */}
+            <div style={{marginTop:"20px"}}>
+              <div style={{background:"linear-gradient(135deg,var(--premium),#2d2825)", borderRadius:"16px", padding:"24px", display:"flex", alignItems:"center", gap:"20px", flexWrap:"wrap"}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:"15px", fontWeight:800, color:"#fff", marginBottom:"4px"}}>✦ 「自分はどこを受ければいいの？」を解決しませんか？</div>
+                  <div style={{fontSize:"12px", color:"rgba(255,255,255,.6)", lineHeight:1.6}}>AI問診でプロフィールを作成すると、あなたに合った大学・選抜方法・穴場校をサジェストします。</div>
+                </div>
+                <Link href="/signup" style={{flexShrink:0, padding:"11px 24px", borderRadius:"9px", background:"linear-gradient(135deg,var(--teal),#06b6d4)", color:"#fff", fontSize:"13px", fontWeight:700, textDecoration:"none", whiteSpace:"nowrap"}}>プレミアムで診断する →</Link>
               </div>
             </div>
-            <button onClick={runSimulation} disabled={selected.size===0||simLoading} style={{
-              width:"100%", background:"linear-gradient(135deg,var(--teal),#06b6d4)",
-              border:"none", borderRadius:"10px", padding:"10px",
-              color:"#fff", fontSize:"12px", fontWeight:700, fontFamily:"inherit",
-              cursor: selected.size===0?"not-allowed":"pointer",
-              opacity: selected.size===0?0.4:1
-            }}>{simLoading?"読み込み中...":"シミュレーション開始 →"}</button>
-            <button onClick={() => { setSelected(new Set()); setSimRunning(false); setSimData([]); setDeptFilter(new Map()); setExpandedUnis(new Set()) }} style={{
-              width:"100%", background:"transparent", border:"1.5px solid var(--border)",
-              borderRadius:"8px", padding:"7px", color:"var(--ink3)", fontSize:"11px",
-              cursor:"pointer", fontFamily:"inherit"
-            }}>選択をクリア</button>
           </div>
-        </div>
-
-        {/* メインコンテンツ */}
-        <div className="sim-main" style={{flex:1, overflowY:"auto", background:"var(--bg)"}}>
-          {!simRunning ? (
-            <div style={{display:"flex", alignItems:"center", justifyContent:"center", height:"100%", padding:"40px"}}>
-              <div style={{textAlign:"center", maxWidth:"440px"}}>
-                <div style={{fontSize:"52px", marginBottom:"16px", opacity:.6}}>🗺️</div>
-                <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:800, color:"var(--ink)", marginBottom:"8px"}}>志望大学を選んでシミュレーション</div>
-                <div style={{fontSize:"13px", color:"var(--ink2)", lineHeight:1.8, marginBottom:"20px"}}>左のリストから大学を選択して「シミュレーション開始」を押すと、日程・費用・併願可否を一覧比較できます。<br/>▼ で展開すると学科単位で選べます。</div>
-                <Link href="/" style={{display:"inline-block", padding:"10px 22px", borderRadius:"10px", background:"linear-gradient(135deg,var(--teal),#06b6d4)", color:"#fff", fontSize:"12px", fontWeight:700, textDecoration:"none"}}>← ホームに戻る</Link>
-              </div>
-            </div>
-          ) : simLoading ? (
-            <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"200px", gap:"12px"}}>
-              <div style={{width:"32px", height:"32px", border:"3px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
-              <p style={{fontSize:"13px", color:"var(--ink3)"}}>シミュレーション中...</p>
-            </div>
-          ) : (
-            <SimResult
-              data={simData} rightTab={rightTab} setRightTab={setRightTab}
-              userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={saveToTargets}
-              filterDeptMode={filterDeptMode} setFilterDeptMode={setFilterDeptMode}
-              hiddenDepts={hiddenDepts} setHiddenDepts={setHiddenDepts}
-            />
-          )}
-        </div>
+        )}
       </div>
+
       {/* 未ログイン登録促進モーダル */}
       {showSignupModal && (
         <div onClick={() => setShowSignupModal(false)} style={{
@@ -770,7 +721,6 @@ export default function SimulatorPage() {
               position:"absolute", top:"14px", right:"16px", background:"transparent",
               border:"none", fontSize:"18px", color:"var(--ink3)", cursor:"pointer", lineHeight:1
             }}>✕</button>
-
             <div style={{fontSize:"48px", marginBottom:"14px"}}>⭐</div>
             <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:700, color:"var(--ink)", marginBottom:"10px"}}>
               志望校を保存しませんか？
@@ -779,30 +729,22 @@ export default function SimulatorPage() {
               アカウント登録（無料）で志望校を保存できます。<br/>
               タスク自動生成・AI診断など全機能が使えるプレミアムプランもあります。
             </p>
-
             <div style={{display:"flex", flexDirection:"column", gap:"10px", marginBottom:"16px"}}>
               <Link href="/signup" style={{
                 display:"block", padding:"13px", borderRadius:"10px",
                 background:"linear-gradient(135deg,var(--teal),#06b6d4)",
                 color:"#fff", fontSize:"14px", fontWeight:700, textDecoration:"none"
-              }}>
-                ✦ 無料登録して保存する →
-              </Link>
+              }}>✦ 無料登録して保存する →</Link>
               <Link href="/login" style={{
                 display:"block", padding:"12px", borderRadius:"10px",
                 border:"1.5px solid var(--border)", color:"var(--ink2)",
                 fontSize:"13px", fontWeight:600, textDecoration:"none"
-              }}>
-                ログインして保存する
-              </Link>
+              }}>ログインして保存する</Link>
             </div>
-
             <button onClick={() => setShowSignupModal(false)} style={{
               background:"transparent", border:"none", fontSize:"12px",
               color:"var(--ink3)", cursor:"pointer", fontFamily:"inherit"
-            }}>
-              今は登録しない
-            </button>
+            }}>今は登録しない</button>
           </div>
         </div>
       )}
@@ -810,19 +752,17 @@ export default function SimulatorPage() {
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
         @media (max-width: 767px) {
-          .sim-layout { flex-direction: column; height: auto; min-height: calc(100vh - 58px); }
-          .sim-sidebar { width: 100% !important; min-width: 0 !important; border-right: none !important; border-bottom: 1px solid var(--border); max-height: 55vh; }
-          .sim-sidebar-list { max-height: 160px; }
-          .sim-main { flex: 1; min-height: 0; }
+          .purpose-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .step2-layout { flex-direction: column !important; }
+          .step2-right { width: 100% !important; min-width: 0 !important; position: static !important; }
           .sim-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .sim-tabs { flex-shrink: 0; }
         }
       `}</style>
     </div>
   )
 }
 
-function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, onSave, filterDeptMode, setFilterDeptMode, hiddenDepts, setHiddenDepts }: {
+function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, onSave, filterDeptMode, setFilterDeptMode, hiddenDepts, setHiddenDepts, purpose }: {
   data: UniGroup[]
   rightTab: string
   setRightTab: (t: string) => void
@@ -834,8 +774,8 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
   setFilterDeptMode: (v: boolean) => void
   hiddenDepts: Set<string>
   setHiddenDepts: (v: Set<string>) => void
+  purpose: Purpose | null
 }) {
-  // 絞込モード時は hiddenDepts を除外したデータを他タブに渡す
   const filteredData = filterDeptMode
     ? data.map(u => ({
         ...u,
@@ -850,8 +790,7 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
 
   const toggleHidden = (key: string) => {
     const next = new Set(hiddenDepts)
-    if (next.has(key)) next.delete(key)
-    else next.add(key)
+    if (next.has(key)) next.delete(key); else next.add(key)
     setHiddenDepts(next)
   }
 
@@ -862,50 +801,8 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
 
   return (
     <div>
-      <div style={{background:"var(--surface)", borderBottom:"1px solid var(--border)", padding:"11px 20px", display:"flex", alignItems:"center", gap:"10px", flexWrap:"wrap", position:"sticky", top:0, zIndex:100, boxShadow:"var(--sh-sm)"}}>
-        <div style={{fontSize:"13px", fontWeight:700, marginRight:"auto"}}>
-          📊 {data.length}大学 / {filterDeptMode ? `${visibleDepts}/${totalDepts}学科` : `${totalDepts}学科`}
-        </div>
-        <div className="sim-tabs" style={{display:"flex", gap:"3px", background:"var(--surface2)", borderRadius:"9px", padding:"3px", overflowX:"auto"}}>
-          {[{id:"detail",l:"📋 詳細"},{id:"timeline",l:"📅 日程"},{id:"cost",l:"💰 費用"},{id:"heigan",l:"⚡ 併願"},{id:"parent",l:"👨‍👩‍👧 保護者"}].map(t => (
-            <button key={t.id} onClick={() => setRightTab(t.id)} style={{
-              padding:"6px 12px", borderRadius:"7px", border:"none", fontFamily:"inherit",
-              background: rightTab===t.id?"var(--surface)":"transparent",
-              color: rightTab===t.id?"var(--teal)":"var(--ink2)",
-              fontSize:"11px", fontWeight:700, cursor:"pointer", whiteSpace:"nowrap",
-              boxShadow: rightTab===t.id?"var(--sh-sm)":"none"
-            }}>{t.l}</button>
-          ))}
-        </div>
-        {rightTab === "detail" && (
-          <button onClick={() => {
-            setFilterDeptMode(!filterDeptMode)
-            if (filterDeptMode) setHiddenDepts(new Set())
-          }} style={{
-            padding:"6px 12px", borderRadius:"8px", fontFamily:"inherit",
-            background: filterDeptMode ? "rgba(13,148,136,.12)" : "var(--surface2)",
-            color: filterDeptMode ? "var(--teal2)" : "var(--ink3)",
-            fontSize:"11px", fontWeight:700, cursor:"pointer", whiteSpace:"nowrap",
-            border: filterDeptMode ? "1.5px solid rgba(13,148,136,.3)" : "1.5px solid var(--border)",
-          } as React.CSSProperties}>
-            {filterDeptMode ? "✕ 絞込解除" : "🔍 学科を絞る"}
-          </button>
-        )}
-      </div>
-
-      {sOnly.length > 0 && (
-        <div style={{margin:"16px 20px 0", background:"rgba(225,29,72,.07)", border:"1.5px solid rgba(225,29,72,.2)", borderRadius:"12px", padding:"12px 16px", display:"flex", alignItems:"center", gap:"12px"}}>
-          <span style={{fontSize:"20px", flexShrink:0}}>⚠️</span>
-          <div>
-            <div style={{fontSize:"13px", fontWeight:700, color:"#e11d48", marginBottom:"2px"}}>専願のみの大学が {sOnly.length} 校あります</div>
-            <div style={{fontSize:"11px", color:"#9f1239", lineHeight:1.6}}>
-              {sOnly.map(u => u.name).join("・")} は専願のみです。不合格時に他大学を受験できないため、出願前に十分ご確認ください。
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="sim-stats-grid" style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"10px", padding:"16px 20px"}}>
+      {/* サマリーカード */}
+      <div className="sim-stats-grid" style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"10px", marginBottom:"16px"}}>
         {[
           {l:"選択大学", v:data.length, sub:"校", color:"var(--blue)", grad:"linear-gradient(90deg,var(--blue),#818cf8)"},
           {l:"専願のみ", v:sOnly.length, sub:"校（要注意）", color:"#e11d48", grad:"linear-gradient(90deg,#e11d48,#ec4899)"},
@@ -921,21 +818,57 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
         ))}
       </div>
 
-      <div style={{padding:"0 20px 28px"}}>
-        {rightTab === "detail" && <DetailTab data={data} userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={onSave} filterDeptMode={filterDeptMode} hiddenDepts={hiddenDepts} onToggleHidden={toggleHidden} />}
-        {rightTab === "timeline" && <TimelineTab data={filteredData} />}
-        {rightTab === "cost" && <CostTab data={filteredData} />}
-        {rightTab === "heigan" && <HeiganTab data={filteredData} />}
-        {rightTab === "parent" && <ParentTab data={filteredData} />}
-      </div>
-
-      <div style={{padding:"0 20px 20px"}}>
-        <div style={{background:"linear-gradient(135deg,var(--premium),#2d2825)", borderRadius:"16px", padding:"24px", display:"flex", alignItems:"center", gap:"20px", flexWrap:"wrap"}}>
-          <div style={{flex:1}}>
-            <div style={{fontSize:"15px", fontWeight:800, color:"#fff", marginBottom:"4px"}}>✦ 「自分はどこを受ければいいの？」を解決しませんか？</div>
-            <div style={{fontSize:"12px", color:"rgba(255,255,255,.6)", lineHeight:1.6}}>AI問診でプロフィールを作成すると、あなたに合った大学・選抜方法・穴場校をサジェストします。</div>
+      {sOnly.length > 0 && (
+        <div style={{marginBottom:"16px", background:"rgba(225,29,72,.07)", border:"1.5px solid rgba(225,29,72,.2)", borderRadius:"12px", padding:"12px 16px", display:"flex", alignItems:"center", gap:"12px"}}>
+          <span style={{fontSize:"20px", flexShrink:0}}>⚠️</span>
+          <div>
+            <div style={{fontSize:"13px", fontWeight:700, color:"#e11d48", marginBottom:"2px"}}>専願のみの大学が {sOnly.length} 校あります</div>
+            <div style={{fontSize:"11px", color:"#9f1239", lineHeight:1.6}}>
+              {sOnly.map(u => u.name).join("・")} は専願のみです。不合格時に他大学を受験できないため、出願前に十分ご確認ください。
+            </div>
           </div>
-          <Link href="/signup" style={{flexShrink:0, padding:"11px 24px", borderRadius:"9px", background:"linear-gradient(135deg,var(--teal),#06b6d4)", color:"#fff", fontSize:"13px", fontWeight:700, textDecoration:"none", whiteSpace:"nowrap"}}>プレミアムで診断する →</Link>
+        </div>
+      )}
+
+      {/* タブ */}
+      <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px", overflow:"hidden", boxShadow:"var(--sh-sm)"}}>
+        <div style={{padding:"10px 16px", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", gap:"10px", flexWrap:"wrap"}}>
+          <div style={{fontSize:"12px", fontWeight:700, color:"var(--ink2)", marginRight:"auto"}}>
+            📊 {data.length}大学 / {filterDeptMode ? `${visibleDepts}/${totalDepts}学科` : `${totalDepts}学科`}
+          </div>
+          <div className="sim-tabs" style={{display:"flex", gap:"3px", background:"var(--surface2)", borderRadius:"9px", padding:"3px"}}>
+            {[{id:"detail",l:"📋 詳細"},{id:"timeline",l:"📅 日程"},{id:"cost",l:"💰 費用"},{id:"heigan",l:"⚡ 併願"},{id:"parent",l:"👨‍👩‍👧 保護者"}].map(t => (
+              <button key={t.id} onClick={() => setRightTab(t.id)} style={{
+                padding:"6px 12px", borderRadius:"7px", border:"none", fontFamily:"inherit",
+                background: rightTab===t.id?"var(--surface)":"transparent",
+                color: rightTab===t.id?"var(--teal)":"var(--ink2)",
+                fontSize:"11px", fontWeight:700, cursor:"pointer", whiteSpace:"nowrap",
+                boxShadow: rightTab===t.id?"var(--sh-sm)":"none"
+              }}>{t.l}</button>
+            ))}
+          </div>
+          {rightTab === "detail" && (
+            <button onClick={() => {
+              setFilterDeptMode(!filterDeptMode)
+              if (filterDeptMode) setHiddenDepts(new Set())
+            }} style={{
+              padding:"6px 12px", borderRadius:"8px", fontFamily:"inherit",
+              background: filterDeptMode ? "rgba(13,148,136,.12)" : "var(--surface2)",
+              color: filterDeptMode ? "var(--teal2)" : "var(--ink3)",
+              fontSize:"11px", fontWeight:700, cursor:"pointer", whiteSpace:"nowrap",
+              border: filterDeptMode ? "1.5px solid rgba(13,148,136,.3)" : "1.5px solid var(--border)",
+            } as React.CSSProperties}>
+              {filterDeptMode ? "✕ 絞込解除" : "🔍 学科を絞る"}
+            </button>
+          )}
+        </div>
+
+        <div style={{padding:"16px"}}>
+          {rightTab === "detail" && <DetailTab data={data} userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={onSave} filterDeptMode={filterDeptMode} hiddenDepts={hiddenDepts} onToggleHidden={toggleHidden} />}
+          {rightTab === "timeline" && <TimelineTab data={filteredData} />}
+          {rightTab === "cost" && <CostTab data={filteredData} />}
+          {rightTab === "heigan" && <HeiganTab data={filteredData} />}
+          {rightTab === "parent" && <ParentTab data={filteredData} />}
         </div>
       </div>
     </div>
@@ -993,9 +926,7 @@ function DetailTab({ data, userId, myTargets, savingUni, onSave, filterDeptMode,
                   const isHidden = hiddenDepts.has(deptKey)
                   if (filterDeptMode && isHidden) return null
                   const saveKey = `${name}||${r.faculty_name}||${r.department_name}`
-                  const isSaved = myTargets.some(t =>
-                    t.university_name === name && t.faculty_name === r.faculty_name && t.department === r.department_name
-                  )
+                  const isSaved = myTargets.some(t => t.university_name === name && t.faculty_name === r.faculty_name && t.department === r.department_name)
                   const isSaving = savingUni === saveKey
                   const c = parseCost(r.cost)
                   const cs = c.exam > 0 ? `受験料 ${fmt(c.exam)}円` : (r.cost?.slice(0,30) || "no data")
