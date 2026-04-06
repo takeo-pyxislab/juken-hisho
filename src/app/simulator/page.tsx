@@ -80,16 +80,19 @@ export default function SimulatorPage() {
   const [purpose, setPurpose] = useState<Purpose | null>(null)
   const [step, setStep] = useState<1 | 2 | 3>(1)
 
-  // Search / filter
+  // Search (name)
   const [uniNames, setUniNames] = useState<UniName[]>([])
   const [loading, setLoading] = useState(false)
   const [keyword, setKeyword] = useState("")
+  // Filter (separate)
+  const [filterNames, setFilterNames] = useState<UniName[]>([])
+  const [filterLoading, setFilterLoading] = useState(false)
   const [region, setRegion] = useState("")
   const [pref, setPref] = useState("")
   const [facCategory, setFacCategory] = useState("")
   const [ougan, setOugan] = useState("")
   const [kyotsuu, setKyotsuu] = useState("")
-  const [showFilters, setShowFilters] = useState(false)
+  const [searchMode, setSearchMode] = useState<"name" | "filter">("name")
 
   // Selection
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -118,7 +121,7 @@ export default function SimulatorPage() {
   // Auth check
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return
+      if (!user) { setAuthLoaded(true); return }
       setUserId(user.id)
       supabase.from("target_universities").select("*").eq("user_id", user.id).order("priority")
         .then(({ data }) => {
@@ -144,22 +147,18 @@ export default function SimulatorPage() {
               } catch {}
             })
           }
+          setAuthLoaded(true)
         })
     })
   }, [])
 
-  // Search
+  // Name search (separate)
   useEffect(() => {
-    const hasCondition = keyword || pref || facCategory || ougan || kyotsuu
-    if (!hasCondition) { setLoading(false); setUniNames([]); return }
+    if (!keyword) { setLoading(false); setUniNames([]); return }
     setLoading(true)
     const t = setTimeout(async () => {
       const params = new URLSearchParams()
-      if (keyword) params.set("keyword", keyword)
-      if (pref) params.set("prefecture", pref)
-      if (facCategory) params.set("category", facCategory)
-      if (ougan) params.set("app_type", ougan)
-      if (kyotsuu) params.set("kyotsuu", kyotsuu)
+      params.set("keyword", keyword)
       try {
         const res = await fetch(`/api/university-names?${params}`)
         const data = await res.json()
@@ -168,7 +167,28 @@ export default function SimulatorPage() {
       setLoading(false)
     }, 400)
     return () => clearTimeout(t)
-  }, [keyword, pref, facCategory, ougan, kyotsuu])
+  }, [keyword])
+
+  // Filter search (separate)
+  useEffect(() => {
+    const hasFilter = pref || facCategory || ougan || kyotsuu
+    if (!hasFilter) { setFilterLoading(false); setFilterNames([]); return }
+    setFilterLoading(true)
+    const t = setTimeout(async () => {
+      const params = new URLSearchParams()
+      if (pref) params.set("prefecture", pref)
+      if (facCategory) params.set("category", facCategory)
+      if (ougan) params.set("app_type", ougan)
+      if (kyotsuu) params.set("kyotsuu", kyotsuu)
+      try {
+        const res = await fetch(`/api/university-names?${params}`)
+        const data = await res.json()
+        setFilterNames(data.empty ? [] : (data.data || []))
+      } catch { setFilterNames([]) }
+      setFilterLoading(false)
+    }, 400)
+    return () => clearTimeout(t)
+  }, [pref, facCategory, ougan, kyotsuu])
 
   const toggleExpand = async (uniName: string) => {
     const next = new Set(expandedUnis)
@@ -248,6 +268,16 @@ export default function SimulatorPage() {
     }
     setSavingUni(null)
   }
+
+  // Logged-in users with saved targets: auto-advance to Step 2
+  const [authLoaded, setAuthLoaded] = useState(false)
+  useEffect(() => {
+    if (authLoaded && userId && myTargets.length > 0 && !purpose) {
+      setPurpose("search")
+      setStep(2)
+      setRightTab("detail")
+    }
+  }, [authLoaded, userId, myTargets.length])
 
   const selectPurpose = (p: Purpose) => {
     setPurpose(p)
@@ -361,26 +391,37 @@ export default function SimulatorPage() {
             </div>
 
             <div className="step2-layout" style={{display:"flex", gap:"20px", alignItems:"flex-start"}}>
-              {/* 左: 検索 + 結果 */}
+              {/* 左: 検索 / 絞り込み + 結果 */}
               <div style={{flex:1, minWidth:0}}>
-                {/* 検索バー */}
-                <div style={{marginBottom:"12px"}}>
-                  <input value={keyword} onChange={e => setKeyword(e.target.value)}
-                    placeholder="🔍 大学名・学部名で検索..."
-                    style={{width:"100%", padding:"12px 16px", border:"1.5px solid var(--border)", borderRadius:"12px", background:"var(--surface)", color:"var(--ink)", fontSize:"14px", fontFamily:"inherit", outline:"none", boxSizing:"border-box", boxShadow:"var(--sh-sm)"}} />
+                {/* タブ切替: 名前検索 / 条件で絞り込み */}
+                <div style={{display:"flex", gap:"3px", background:"var(--surface2)", borderRadius:"10px", padding:"3px", marginBottom:"14px"}}>
+                  <button onClick={() => setSearchMode("name")} style={{
+                    flex:1, padding:"9px", borderRadius:"8px", border:"none", fontFamily:"inherit",
+                    background: searchMode === "name" ? "var(--surface)" : "transparent",
+                    color: searchMode === "name" ? "var(--teal)" : "var(--ink3)",
+                    fontSize:"13px", fontWeight:700, cursor:"pointer",
+                    boxShadow: searchMode === "name" ? "var(--sh-sm)" : "none"
+                  }}>🔍 大学名で検索</button>
+                  <button onClick={() => setSearchMode("filter")} style={{
+                    flex:1, padding:"9px", borderRadius:"8px", border:"none", fontFamily:"inherit",
+                    background: searchMode === "filter" ? "var(--surface)" : "transparent",
+                    color: searchMode === "filter" ? "var(--teal)" : "var(--ink3)",
+                    fontSize:"13px", fontWeight:700, cursor:"pointer",
+                    boxShadow: searchMode === "filter" ? "var(--sh-sm)" : "none"
+                  }}>⚙ 条件で絞り込み</button>
                 </div>
 
-                {/* 絞り込みトグル */}
-                <div style={{marginBottom:"14px"}}>
-                  <button onClick={() => setShowFilters(!showFilters)} style={{
-                    padding:"6px 14px", borderRadius:"8px", border:"1.5px solid var(--border)",
-                    background: showFilters ? "rgba(13,148,136,.06)" : "var(--surface)",
-                    color: showFilters ? "var(--teal)" : "var(--ink3)",
-                    fontSize:"12px", fontWeight:600, cursor:"pointer", fontFamily:"inherit"
-                  }}>⚙ 絞り込み {showFilters ? "▲" : "▼"}</button>
-                </div>
+                {/* 名前検索 */}
+                {searchMode === "name" && (
+                  <div style={{marginBottom:"14px"}}>
+                    <input value={keyword} onChange={e => setKeyword(e.target.value)}
+                      placeholder="大学名・学部名を入力..."
+                      style={{width:"100%", padding:"12px 16px", border:"1.5px solid var(--border)", borderRadius:"12px", background:"var(--surface)", color:"var(--ink)", fontSize:"14px", fontFamily:"inherit", outline:"none", boxSizing:"border-box", boxShadow:"var(--sh-sm)"}} />
+                  </div>
+                )}
 
-                {showFilters && (
+                {/* 条件絞り込み */}
+                {searchMode === "filter" && (
                   <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"12px", padding:"16px", marginBottom:"14px", display:"flex", flexDirection:"column", gap:"12px"}}>
                     <div style={{display:"flex", gap:"12px", flexWrap:"wrap"}}>
                       <div style={{flex:1, minWidth:"140px"}}>
@@ -444,24 +485,39 @@ export default function SimulatorPage() {
                         </div>
                       </div>
                     </div>
+                    {(pref || facCategory || ougan || kyotsuu) && (
+                      <button onClick={() => { setRegion(""); setPref(""); setFacCategory(""); setOugan(""); setKyotsuu("") }} style={{
+                        alignSelf:"flex-start", padding:"5px 12px", borderRadius:"6px", border:"none",
+                        background:"var(--surface2)", color:"var(--ink3)", fontSize:"11px", cursor:"pointer", fontFamily:"inherit"
+                      }}>✕ 条件をクリア</button>
+                    )}
                   </div>
                 )}
 
                 {/* 検索結果リスト */}
+                {(() => {
+                  const displayNames = searchMode === "name" ? uniNames : filterNames
+                  const isLoading = searchMode === "name" ? loading : filterLoading
+                  const hasInput = searchMode === "name" ? !!keyword : !!(pref || facCategory || ougan || kyotsuu)
+                  return (
                 <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px", overflow:"hidden", boxShadow:"var(--sh-sm)", maxHeight:"480px", overflowY:"auto"}}>
-                  {loading ? (
+                  {isLoading ? (
                     <div style={{display:"flex", alignItems:"center", justifyContent:"center", height:"120px", gap:"8px"}}>
                       <div style={{width:"20px", height:"20px", border:"3px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
                       <span style={{fontSize:"12px", color:"var(--ink3)"}}>検索中...</span>
                     </div>
-                  ) : uniNames.length === 0 ? (
+                  ) : !hasInput || displayNames.length === 0 ? (
                     <div style={{padding:"40px 20px", textAlign:"center"}}>
-                      <div style={{fontSize:"36px", marginBottom:"10px", opacity:.5}}>🔍</div>
-                      <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink2)", marginBottom:"6px"}}>大学名で検索してください</div>
-                      <div style={{fontSize:"11px", color:"var(--ink3)", lineHeight:1.8}}>例：「早稲田」「看護」「東京」「国際」</div>
+                      <div style={{fontSize:"36px", marginBottom:"10px", opacity:.5}}>{searchMode === "name" ? "🔍" : "⚙"}</div>
+                      <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink2)", marginBottom:"6px"}}>
+                        {searchMode === "name" ? "大学名で検索してください" : hasInput ? "該当する大学がありません" : "条件を選択してください"}
+                      </div>
+                      <div style={{fontSize:"11px", color:"var(--ink3)", lineHeight:1.8}}>
+                        {searchMode === "name" ? "例：「早稲田」「看護」「東京」「国際」" : "地域・学部系統・出願区分で絞り込めます"}
+                      </div>
                     </div>
                   ) : (
-                    uniNames.map(u => {
+                    displayNames.map(u => {
                       const sel = selected.has(u.name)
                       const isExpanded = expandedUnis.has(u.name)
                       const isLoading = deptLoadingSet.has(u.name)
@@ -568,6 +624,8 @@ export default function SimulatorPage() {
                     })
                   )}
                 </div>
+                  )
+                })()}
               </div>
 
               {/* 右: 選択中の大学 + シミュレーション開始 */}
@@ -749,6 +807,26 @@ export default function SimulatorPage() {
         </div>
       )}
 
+      {/* スマホ用フローティングボタン（Step 2で大学選択中に表示） */}
+      {step === 2 && selected.size > 0 && (
+        <div className="mobile-float-btn" style={{
+          position:"fixed", bottom:0, left:0, right:0, zIndex:200,
+          padding:"12px 20px", paddingBottom:"calc(12px + env(safe-area-inset-bottom, 0px))",
+          background:"rgba(248,247,244,.96)", backdropFilter:"blur(12px)",
+          borderTop:"1px solid var(--border)", boxShadow:"0 -4px 20px rgba(0,0,0,.08)",
+          display:"none"
+        }}>
+          <button onClick={runSimulation} disabled={simLoading} style={{
+            width:"100%", padding:"14px", borderRadius:"12px", border:"none",
+            background:"linear-gradient(135deg,var(--teal),#06b6d4)",
+            color:"#fff", fontSize:"14px", fontWeight:700, cursor:"pointer",
+            fontFamily:"inherit", boxShadow:"0 4px 16px rgba(13,148,136,.3)"
+          }}>
+            {simLoading ? "シミュレーション中..." : `${PURPOSE_CONFIG[purpose!].icon} ${selected.size}校でシミュレーション開始 →`}
+          </button>
+        </div>
+      )}
+
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
         @media (max-width: 767px) {
@@ -756,6 +834,10 @@ export default function SimulatorPage() {
           .step2-layout { flex-direction: column !important; }
           .step2-right { width: 100% !important; min-width: 0 !important; position: static !important; }
           .sim-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .mobile-float-btn { display: block !important; }
+        }
+        @media (min-width: 768px) {
+          .mobile-float-btn { display: none !important; }
         }
       `}</style>
     </div>
