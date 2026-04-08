@@ -13,7 +13,7 @@ export default function Home() {
         borderBottom:"1px solid var(--border)"
       }}>
         <div style={{display:"flex", alignItems:"center", gap:"9px"}}>
-          <img src="/logo.png" alt="ユニパス" style={{width:"32px", height:"32px", objectFit:"contain"}} />
+          <img src="/logo.png" alt="ユニパス" style={{height:"44px", objectFit:"contain"}} />
           <div>
           </div>
         </div>

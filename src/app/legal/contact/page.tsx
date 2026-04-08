@@ -22,7 +22,7 @@ export default function ContactPage() {
         borderBottom:"1px solid var(--border)"
       }}>
         <Link href="/" style={{display:"flex", alignItems:"center", gap:"9px", textDecoration:"none"}}>
-          <img src="/logo.png" alt="ユニパス" style={{width:"32px", height:"32px", objectFit:"contain"}} />
+          <img src="/logo.png" alt="ユニパス" style={{height:"44px", objectFit:"contain"}} />
           <div>
           </div>
         </Link>
