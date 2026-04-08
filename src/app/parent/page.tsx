@@ -123,7 +123,7 @@ export default function ParentPage() {
       <header style={{background:"linear-gradient(135deg,#1c1917,#134e4a)", position:"sticky", top:0, zIndex:10}}>
         <div style={{maxWidth:"960px", margin:"0 auto", padding:"14px 20px", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
           <div style={{display:"flex", alignItems:"center", gap:"12px"}}>
-            <div style={{width:"32px", height:"32px", background:"linear-gradient(135deg,#0d9488,#06b6d4)", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px"}}>📖</div>
+            <img src="/logo.png" alt="ユニパス" style={{width:"32px", height:"32px", objectFit:"contain"}} />
             <div>
               <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"16px", fontWeight:700, color:"#fff"}}>ユニパス</div>
               <div style={{fontSize:"10px", color:"rgba(255,255,255,.5)"}}>保護者ダッシュボード</div>

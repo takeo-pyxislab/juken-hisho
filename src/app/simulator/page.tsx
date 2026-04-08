@@ -322,7 +322,7 @@ export default function SimulatorPage() {
         borderBottom:"1px solid var(--border)"
       }}>
         <Link href="/" style={{display:"flex", alignItems:"center", gap:"9px", textDecoration:"none"}}>
-          <div style={{width:"30px", height:"30px", background:"linear-gradient(135deg,var(--coral),#fb923c)", borderRadius:"10px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px"}}>📖</div>
+          <img src="/logo.png" alt="ユニパス" style={{width:"32px", height:"32px", objectFit:"contain"}} />
           <div>
             <div style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"16px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
             <div style={{fontSize:"10px", color:"var(--ink3)"}}>総合型選抜ナビ</div>

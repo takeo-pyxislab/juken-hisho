@@ -150,7 +150,7 @@ export default function MyPage() {
       <header style={{background:"linear-gradient(135deg,#1c1917,#134e4a)", position:"sticky", top:0, zIndex:10}}>
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div style={{width:"32px",height:"32px",background:"linear-gradient(135deg,#0d9488,#06b6d4)",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px"}}>📖</div>
+            <img src="/logo.png" alt="ユニパス" style={{width:"32px", height:"32px", objectFit:"contain"}} />
             <div>
               <div style={{fontFamily:"Kaisei Opti,serif",fontSize:"16px",fontWeight:700,color:"#fff"}}>ユニパス</div>
               <div style={{fontSize:"10px",color:"rgba(255,255,255,.5)"}}>プレミアムプラン</div>

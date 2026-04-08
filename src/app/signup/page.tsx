@@ -52,7 +52,7 @@ export default function SignupPage() {
         {/* ロゴ */}
         <div style={{textAlign:"center", marginBottom:"28px"}}>
           <Link href="/" style={{textDecoration:"none", display:"inline-block"}}>
-            <div style={{width:"52px", height:"52px", background:"linear-gradient(135deg,var(--premium),#3d3530)", borderRadius:"14px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"26px", margin:"0 auto 12px"}}>📖</div>
+            <img src="/logo.png" alt="ユニパス" style={{width:"56px", height:"56px", objectFit:"contain", margin:"0 auto 12px"}} />
             <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
           </Link>
         </div>
