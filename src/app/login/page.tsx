@@ -83,8 +83,7 @@ export default function LoginPage() {
       <div style={{width:"100%", maxWidth:"440px"}}>
         <div style={{textAlign:"center", marginBottom:"32px"}}>
           <Link href="/" style={{textDecoration:"none", display:"inline-block"}}>
-            <img src="/logo.png" alt="ユニパス" style={{width:"56px", height:"56px", objectFit:"contain", margin:"0 auto 12px"}} />
-            <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
+            <img src="/logo.png" alt="ユニパス" style={{height:"80px", objectFit:"contain", margin:"0 auto 12px", display:"block"}} />
           </Link>
           <h1 style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", fontWeight:700, color:"var(--ink)", marginTop:"16px", marginBottom:"6px"}}>ログイン</h1>
           <p style={{fontSize:"13px", color:"var(--ink3)", lineHeight:1.6}}>おかえりなさい</p>

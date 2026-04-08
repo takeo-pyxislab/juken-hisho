@@ -15,8 +15,6 @@ export default function Home() {
         <div style={{display:"flex", alignItems:"center", gap:"9px"}}>
           <img src="/logo.png" alt="ユニパス" style={{width:"32px", height:"32px", objectFit:"contain"}} />
           <div>
-            <div style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"16px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
-            <div style={{fontSize:"10px", color:"var(--ink3)"}}>総合型選抜ナビ</div>
           </div>
         </div>
         <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
@@ -335,7 +333,7 @@ export default function Home() {
 
       {/* フッター */}
       <footer style={{background:"var(--premium)", padding:"48px 24px 32px", textAlign:"center"}}>
-        <div style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"22px", color:"#fff", marginBottom:"8px"}}>ユニパス</div>
+        <img src="/logo.png" alt="ユニパス" style={{height:"48px", objectFit:"contain", margin:"0 auto 8px", display:"block", filter:"brightness(0) invert(1)"}} />
         <div style={{fontSize:"13px", color:"rgba(255,255,255,.4)", marginBottom:"24px"}}>総合型選抜ナビ · 2026年度対応</div>
         <div style={{display:"flex", gap:"20px", justifyContent:"center", flexWrap:"wrap", marginBottom:"24px"}}>
           {[

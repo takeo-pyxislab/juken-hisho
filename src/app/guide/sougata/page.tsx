@@ -19,8 +19,6 @@ export default function SougataGuidePage() {
         <Link href="/" style={{display:"flex", alignItems:"center", gap:"9px", textDecoration:"none"}}>
           <img src="/logo.png" alt="ユニパス" style={{width:"32px", height:"32px", objectFit:"contain"}} />
           <div>
-            <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"16px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
-            <div style={{fontSize:"10px", color:"var(--ink3)"}}>総合型選抜ナビ</div>
           </div>
         </Link>
         <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
@@ -341,7 +339,7 @@ export default function SougataGuidePage() {
 
       {/* フッター */}
       <footer style={{background:"var(--premium)", padding:"32px 24px", textAlign:"center"}}>
-        <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"18px", color:"#fff", marginBottom:"6px"}}>ユニパス</div>
+        <img src="/logo.png" alt="ユニパス" style={{height:"44px", objectFit:"contain", margin:"0 auto 6px", display:"block", filter:"brightness(0) invert(1)"}} />
         <div style={{fontSize:"12px", color:"rgba(255,255,255,.4)"}}>総合型選抜ナビ · 2026年度対応</div>
       </footer>
 

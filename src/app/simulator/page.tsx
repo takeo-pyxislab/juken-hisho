@@ -329,8 +329,6 @@ export default function SimulatorPage() {
         <Link href="/" style={{display:"flex", alignItems:"center", gap:"9px", textDecoration:"none"}}>
           <img src="/logo.png" alt="ユニパス" style={{width:"32px", height:"32px", objectFit:"contain"}} />
           <div>
-            <div style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"16px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
-            <div style={{fontSize:"10px", color:"var(--ink3)"}}>総合型選抜ナビ</div>
           </div>
         </Link>
         <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
