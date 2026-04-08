@@ -213,7 +213,7 @@ export default function PrivacyPage() {
             </p>
             <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"12px", padding:"16px 20px"}}>
               <p style={{fontSize:"13px", color:"var(--ink2)", lineHeight:1.8, margin:0}}>
-                メール：support@unipath.jp<br/>
+                メール：support@pyxislab.co.jp<br/>
                 お問い合わせフォーム：<Link href="/legal/contact" style={{color:"var(--teal)", textDecoration:"none"}}>こちら</Link>
               </p>
             </div>

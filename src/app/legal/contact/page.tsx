@@ -53,7 +53,7 @@ export default function ContactPage() {
           <div style={{display:"flex", gap:"12px", alignItems:"center", flexWrap:"wrap"}}>
             <div>
               <div style={{fontSize:"12px", color:"var(--ink3)", marginBottom:"4px"}}>メールでのお問い合わせ</div>
-              <div style={{fontSize:"14px", fontWeight:700, color:"var(--ink)"}}>support@unipath.jp</div>
+              <div style={{fontSize:"14px", fontWeight:700, color:"var(--ink)"}}>support@pyxislab.co.jp</div>
             </div>
             <div style={{marginLeft:"auto", background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"8px", padding:"6px 12px"}}>
               <div style={{fontSize:"11px", color:"var(--teal2)", fontWeight:600}}>回答目安：3営業日以内</div>

@@ -334,7 +334,8 @@ export default function Home() {
             <Link key={l.label} href={l.href} style={{fontSize:"12px", color:"rgba(255,255,255,.4)", textDecoration:"none"}}>{l.label}</Link>
           ))}
         </div>
-        <div style={{fontSize:"11px", color:"rgba(255,255,255,.25)"}}>© 2026 ユニパス. All rights reserved. · 本サービスの診断結果はAIによる参考情報です。</div>
+        <div style={{fontSize:"11px", color:"rgba(255,255,255,.25)", marginBottom:"8px"}}>© 2026 ユニパス. All rights reserved. · 本サービスの診断結果はAIによる参考情報です。</div>
+        <div style={{fontSize:"11px", color:"rgba(255,255,255,.25)"}}>運営：<a href="https://pyxislab.co.jp/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.4)", textDecoration:"none"}}>株式会社Pyxis Lab</a></div>
       </footer>
 
       <style>{`
