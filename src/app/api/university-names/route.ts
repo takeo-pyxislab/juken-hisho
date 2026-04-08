@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
     const supabase = await createClient()
     const { searchParams } = new URL(req.url)
     const keyword = searchParams.get("keyword") || ""
-    const prefecture = searchParams.get("prefecture") || ""
+    const prefecture = searchParams.get("prefecture") || "" // カンマ区切りで複数可
     const category = searchParams.get("category") || ""
     const kyotsuu = searchParams.get("kyotsuu") || ""
     const app_type = searchParams.get("app_type") || ""
@@ -21,7 +21,11 @@ export async function GET(req: NextRequest) {
       .select("university_name, faculty_category, application_type, prefecture")
 
     if (keyword) query = query.or(`university_name.ilike.%${keyword}%,faculty_name.ilike.%${keyword}%`)
-    if (prefecture) query = query.eq("prefecture", prefecture)
+    if (prefecture) {
+      const prefList = prefecture.split(",").map(p => p.trim()).filter(Boolean)
+      if (prefList.length === 1) query = query.eq("prefecture", prefList[0])
+      else if (prefList.length > 1) query = query.in("prefecture", prefList)
+    }
     if (category) query = query.eq("faculty_category", category)
     if (kyotsuu) query = query.eq("has_kyotsuu", kyotsuu)
     if (app_type) query = query.eq("application_type", app_type)

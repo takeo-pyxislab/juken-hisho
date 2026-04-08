@@ -88,7 +88,7 @@ export default function SimulatorPage() {
   const [filterNames, setFilterNames] = useState<UniName[]>([])
   const [filterLoading, setFilterLoading] = useState(false)
   const [region, setRegion] = useState("")
-  const [pref, setPref] = useState("")
+  const [prefs, setPrefs] = useState<Set<string>>(new Set())
   const [facCategory, setFacCategory] = useState("")
   const [ougan, setOugan] = useState("")
   const [kyotsuu, setKyotsuu] = useState("")
@@ -170,13 +170,14 @@ export default function SimulatorPage() {
   }, [keyword])
 
   // Filter search (separate)
+  const prefsKey = [...prefs].sort().join(",")
   useEffect(() => {
-    const hasFilter = pref || facCategory || ougan || kyotsuu
+    const hasFilter = prefs.size > 0 || facCategory || ougan || kyotsuu
     if (!hasFilter) { setFilterLoading(false); setFilterNames([]); return }
     setFilterLoading(true)
     const t = setTimeout(async () => {
       const params = new URLSearchParams()
-      if (pref) params.set("prefecture", pref)
+      if (prefs.size > 0) params.set("prefecture", [...prefs].join(","))
       if (facCategory) params.set("category", facCategory)
       if (ougan) params.set("app_type", ougan)
       if (kyotsuu) params.set("kyotsuu", kyotsuu)
@@ -188,7 +189,7 @@ export default function SimulatorPage() {
       setFilterLoading(false)
     }, 400)
     return () => clearTimeout(t)
-  }, [pref, facCategory, ougan, kyotsuu])
+  }, [prefsKey, facCategory, ougan, kyotsuu])
 
   const toggleExpand = async (uniName: string) => {
     const next = new Set(expandedUnis)
@@ -432,22 +433,35 @@ export default function SimulatorPage() {
                 {/* 条件絞り込み */}
                 {searchMode === "filter" && (
                   <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"16px", padding:"18px", marginBottom:"14px", display:"flex", flexDirection:"column", gap:"12px"}}>
-                    <div style={{display:"flex", gap:"12px", flexWrap:"wrap"}}>
-                      <div style={{flex:1, minWidth:"140px"}}>
-                        <div style={{fontSize:"10px", fontWeight:700, color:"var(--ink3)", marginBottom:"4px"}}>地域</div>
-                        <select value={region} onChange={e => { setRegion(e.target.value); setPref("") }}
-                          style={{width:"100%", padding:"8px 10px", border:"1.5px solid var(--border)", borderRadius:"10px", background:"var(--surface2)", color:"var(--ink)", fontSize:"12px", fontFamily:"inherit"}}>
-                          <option value="">すべての地域</option>
-                          {Object.keys(PREFS).map(r => <option key={r} value={r}>{r}</option>)}
-                        </select>
+                    <div>
+                      <div style={{fontSize:"10px", fontWeight:700, color:"var(--ink3)", marginBottom:"4px"}}>地域</div>
+                      <select value={region} onChange={e => { setRegion(e.target.value); setPrefs(new Set()) }}
+                        style={{width:"100%", maxWidth:"240px", padding:"8px 10px", border:"1.5px solid var(--border)", borderRadius:"10px", background:"var(--surface2)", color:"var(--ink)", fontSize:"12px", fontFamily:"inherit"}}>
+                        <option value="">すべての地域</option>
+                        {Object.keys(PREFS).map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <div style={{fontSize:"10px", fontWeight:700, color:"var(--ink3)", marginBottom:"4px"}}>
+                        都道府県{prefs.size > 0 && <span style={{color:"var(--coral)", marginLeft:"4px"}}>({prefs.size}件選択中)</span>}
                       </div>
-                      <div style={{flex:1, minWidth:"140px"}}>
-                        <div style={{fontSize:"10px", fontWeight:700, color:"var(--ink3)", marginBottom:"4px"}}>都道府県</div>
-                        <select value={pref} onChange={e => setPref(e.target.value)}
-                          style={{width:"100%", padding:"8px 10px", border:"1.5px solid var(--border)", borderRadius:"10px", background:"var(--surface2)", color:"var(--ink)", fontSize:"12px", fontFamily:"inherit"}}>
-                          <option value="">すべて</option>
-                          {(region ? PREFS[region] || [] : Object.values(PREFS).flat()).map(p => <option key={p} value={p}>{p}</option>)}
-                        </select>
+                      <div style={{display:"flex", flexWrap:"wrap", gap:"4px"}}>
+                        {(region ? PREFS[region] || [] : Object.values(PREFS).flat()).map(p => {
+                          const isOn = prefs.has(p)
+                          return (
+                            <button key={p} onClick={() => setPrefs(prev => {
+                              const next = new Set(prev)
+                              if (next.has(p)) next.delete(p); else next.add(p)
+                              return next
+                            })} style={{
+                              padding:"4px 10px", borderRadius:"20px", fontFamily:"inherit",
+                              border:`1.5px solid ${isOn ? "var(--teal)" : "var(--border)"}`,
+                              background: isOn ? "rgba(13,148,136,.08)" : "transparent",
+                              color: isOn ? "var(--teal)" : "var(--ink3)",
+                              fontSize:"11px", cursor:"pointer", fontWeight: isOn ? 700 : 500
+                            }}>{p}</button>
+                          )
+                        })}
                       </div>
                     </div>
                     <div>
@@ -494,8 +508,8 @@ export default function SimulatorPage() {
                         </div>
                       </div>
                     </div>
-                    {(pref || facCategory || ougan || kyotsuu) && (
-                      <button onClick={() => { setRegion(""); setPref(""); setFacCategory(""); setOugan(""); setKyotsuu("") }} style={{
+                    {(prefs.size > 0 || facCategory || ougan || kyotsuu) && (
+                      <button onClick={() => { setRegion(""); setPrefs(new Set()); setFacCategory(""); setOugan(""); setKyotsuu("") }} style={{
                         alignSelf:"flex-start", padding:"6px 14px", borderRadius:"10px", border:"none",
                         background:"var(--surface2)", color:"var(--ink3)", fontSize:"11px", cursor:"pointer", fontFamily:"inherit"
                       }}>✕ 条件をクリア</button>
@@ -507,7 +521,7 @@ export default function SimulatorPage() {
                 {(() => {
                   const displayNames = searchMode === "name" ? uniNames : filterNames
                   const isLoading = searchMode === "name" ? loading : filterLoading
-                  const hasInput = searchMode === "name" ? !!keyword : !!(pref || facCategory || ougan || kyotsuu)
+                  const hasInput = searchMode === "name" ? !!keyword : !!(prefs.size > 0 || facCategory || ougan || kyotsuu)
                   return (
                 <div style={{display:"flex", flexDirection:"column", gap:"10px", maxHeight:"520px", overflowY:"auto", paddingRight:"4px"}}>
                   {isLoading ? (
@@ -1123,11 +1137,11 @@ function DetailTab({ data, userId, myTargets, savingUni, onSave, filterDeptMode,
                           }}>{!isHidden?"✓":""}</div>
                         </td>
                       )}
-                      <td style={{padding:"10px 14px"}}><div style={{fontWeight:600,color:"var(--ink)",fontSize:"12px"}}>{r.faculty_name} {r.department_name}</div><div style={{fontSize:"10px",color:"var(--ink3)",marginTop:"1px"}}>{r.exam_type}</div></td>
-                      <td style={{padding:"10px 14px"}}>
-                        {r.application_type==="専願"?<span style={{fontSize:"9px",padding:"2px 8px",borderRadius:"20px",background:"rgba(225,29,72,.08)",color:"#e11d48",border:"1px solid rgba(225,29,72,.15)",fontWeight:700}}>専願</span>:
-                        r.application_type==="併願"?<span style={{fontSize:"9px",padding:"2px 8px",borderRadius:"20px",background:"rgba(13,148,136,.08)",color:"var(--teal2)",border:"1px solid rgba(13,148,136,.15)",fontWeight:700}}>併願</span>:
-                        <span style={{fontSize:"9px",padding:"2px 8px",borderRadius:"20px",background:"var(--surface2)",color:"var(--ink3)",fontWeight:700}}>{r.application_type}</span>}
+                      <td style={{padding:"10px 14px"}}><div style={{fontWeight:600,color:"var(--ink)",fontSize:"12px"}}>{r.faculty_name} {r.department_name}</div><div style={{fontSize:"10px",color:"var(--ink3)",marginTop:"2px"}}>{r.exam_type}</div></td>
+                      <td style={{padding:"10px 8px", whiteSpace:"nowrap"}}>
+                        {r.application_type==="専願"?<span style={{fontSize:"9px",padding:"2px 6px",borderRadius:"20px",background:"rgba(225,29,72,.08)",color:"#e11d48",border:"1px solid rgba(225,29,72,.15)",fontWeight:700}}>専願</span>:
+                        r.application_type==="併願"?<span style={{fontSize:"9px",padding:"2px 6px",borderRadius:"20px",background:"rgba(13,148,136,.08)",color:"var(--teal2)",border:"1px solid rgba(13,148,136,.15)",fontWeight:700}}>併願</span>:
+                        <span style={{fontSize:"9px",padding:"2px 6px",borderRadius:"20px",background:"var(--surface2)",color:"var(--ink3)",fontWeight:700}}>{r.application_type}</span>}
                       </td>
                       <td style={{padding:"10px 14px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.application_start?.slice(0,60)||"—"}</td>
                       <td style={{padding:"10px 14px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.exam_date?.slice(0,60)||"—"}</td>
