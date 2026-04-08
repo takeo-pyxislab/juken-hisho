@@ -79,6 +79,12 @@ export default function SimulatorPage() {
   // Step state
   const [purpose, setPurpose] = useState<Purpose | null>(null)
   const [step, setStep] = useState<1 | 2 | 3>(1)
+  // ガイド付き体験
+  const [guideMode, setGuideMode] = useState(false)
+  const [guideSearch, setGuideSearch] = useState("")
+  const [guideSuggestions, setGuideSuggestions] = useState<UniName[]>([])
+  const [guideLoading, setGuideLoading] = useState(false)
+  const [guideAdded, setGuideAdded] = useState<string | null>(null) // 1校追加済みの大学名
 
   // Search (name)
   const [uniNames, setUniNames] = useState<UniName[]>([])
@@ -270,6 +276,57 @@ export default function SimulatorPage() {
     setSavingUni(null)
   }
 
+  // ガイドモード: 検索
+  useEffect(() => {
+    if (!guideSearch) { setGuideSuggestions([]); return }
+    setGuideLoading(true)
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/university-names?keyword=${encodeURIComponent(guideSearch)}`)
+        const data = await res.json()
+        setGuideSuggestions(data.empty ? [] : (data.data || []).slice(0, 8))
+      } catch { setGuideSuggestions([]) }
+      setGuideLoading(false)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [guideSearch])
+
+  const guideAddUni = (name: string) => {
+    setSelected(prev => new Set([...prev, name]))
+    setGuideAdded(name)
+    setGuideSuggestions([])
+    setGuideSearch("")
+  }
+
+  const guideStartSim = (tab: string) => {
+    if (tab === "cost") { setPurpose("cost"); setRightTab("cost") }
+    else if (tab === "timeline") { setPurpose("timeline"); setRightTab("timeline") }
+    else if (tab === "heigan") { setPurpose("heigan"); setRightTab("heigan") }
+    else { setPurpose("search"); setRightTab("detail") }
+    setGuideMode(false)
+    setStep(3)
+    runSimulationDirect()
+  }
+
+  const runSimulationDirect = async () => {
+    setSimLoading(true)
+    setFilterDeptMode(false)
+    setHiddenDepts(new Set())
+    const names = [...selected]
+    const results: UniGroup[] = []
+    for (const name of names) {
+      const res = await fetch(`/api/universities?keyword=${encodeURIComponent(name)}&limit=50`)
+      const data = await res.json()
+      let records = (data.data || []).filter((r: URecord) => r.university_name === name)
+      const filter = deptFilter.get(name)
+      if (filter && filter.size > 0) records = records.filter((r: URecord) => filter.has(`${r.faculty_name}||${r.department_name}`))
+      results.push({ name, records })
+    }
+    setSimData(results)
+    setSimLoading(false)
+    setTimeout(() => step3Ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 200)
+  }
+
   // Logged-in users with saved targets: auto-advance to Step 2
   const [authLoaded, setAuthLoaded] = useState(false)
   useEffect(() => {
@@ -348,34 +405,28 @@ export default function SimulatorPage() {
 
       <div style={{maxWidth:"1100px", margin:"0 auto", padding:"0 20px"}}>
 
-        {/* ━━━ STEP 1: 目的を選ぶ ━━━ */}
+        {/* ━━━ STEP 1: 目的を選ぶ or ガイド体験 ━━━ */}
+        {!guideMode ? (
         <div style={{padding:"48px 0 32px", textAlign:"center"}}>
           <div style={{fontSize:"11px", fontWeight:700, color:"var(--coral)", letterSpacing:".15em", marginBottom:"10px"}}>STEP 1</div>
           <h1 style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"26px", fontWeight:800, color:"var(--ink)", marginBottom:"8px"}}>
             何を整理したいですか？
           </h1>
           <p style={{fontSize:"14px", color:"var(--ink3)", marginBottom:"24px"}}>知りたいことを選ぶと、大学選択に進みます</p>
-          <Link href="/guide/shiteiko-vs-sougata" style={{display:"inline-flex", alignItems:"center", gap:"6px", fontSize:"12px", color:"var(--teal)", fontWeight:600, textDecoration:"none", background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"20px", padding:"5px 14px", marginBottom:"24px"}}>
-            📖 指定校推薦と迷っている方はこちら →
-          </Link>
 
-          <div className="purpose-grid" style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:"14px", maxWidth:"800px", margin:"0 auto"}}>
+          <div className="purpose-grid" style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:"14px", maxWidth:"800px", margin:"0 auto", marginBottom:"24px"}}>
             {(["cost","timeline","heigan","search"] as Purpose[]).map(p => {
               const c = PURPOSE_CONFIG[p]
               const isSelected = purpose === p
               return (
                 <button key={p} onClick={() => selectPurpose(p)} className="purpose-card" style={{
                   padding:"28px 16px", borderRadius:"20px", cursor:"pointer", fontFamily:"inherit",
-                  border: isSelected ? "2px solid var(--coral)" : p === "search" ? "2px solid var(--teal-border)" : "1.5px solid var(--border)",
-                  background: isSelected ? "var(--coral-bg)" : p === "search" ? "var(--teal-bg)" : "var(--surface)",
+                  border: isSelected ? "2px solid var(--coral)" : "1.5px solid var(--border)",
+                  background: isSelected ? "var(--coral-bg)" : "var(--surface)",
                   boxShadow: isSelected ? "0 4px 20px rgba(249,112,102,.18)" : "var(--sh-sm)",
                   transition:"all .2s ease", textAlign:"center",
                   transform: isSelected ? "translateY(-3px)" : "none",
-                  position:"relative",
                 }}>
-                  {p === "search" && !isSelected && (
-                    <div style={{position:"absolute", top:"-10px", left:"50%", transform:"translateX(-50%)", background:"var(--teal)", color:"#fff", fontSize:"10px", fontWeight:700, padding:"2px 10px", borderRadius:"20px", whiteSpace:"nowrap"}}>はじめての方はこちら</div>
-                  )}
                   <div style={{fontSize:"48px", marginBottom:"14px", lineHeight:1}}>{c.icon}</div>
                   <div style={{fontSize:"14px", fontWeight:700, color: isSelected ? "var(--coral)" : "var(--ink)", marginBottom:"6px"}}>{c.title}</div>
                   <div style={{fontSize:"11px", color:"var(--ink3)", lineHeight:1.6, marginBottom: c.sample ? "8px" : "0"}}>{c.desc}</div>
@@ -384,7 +435,140 @@ export default function SimulatorPage() {
               )
             })}
           </div>
+
+          {/* はじめての方 + 指定校リンク */}
+          <div style={{display:"flex", flexDirection:"column", alignItems:"center", gap:"10px"}}>
+            <button onClick={() => setGuideMode(true)} style={{
+              display:"inline-flex", alignItems:"center", gap:"8px",
+              padding:"12px 28px", borderRadius:"14px",
+              background:"linear-gradient(135deg,var(--teal),#06b6d4)", color:"#fff",
+              fontSize:"14px", fontWeight:700, border:"none", cursor:"pointer", fontFamily:"inherit",
+              boxShadow:"0 4px 16px rgba(13,148,136,.25)"
+            }}>
+              🎓 はじめての方はこちら — まず1校で体験してみる
+            </button>
+            <Link href="/guide/shiteiko-vs-sougata" style={{display:"inline-flex", alignItems:"center", gap:"6px", fontSize:"12px", color:"var(--teal)", fontWeight:600, textDecoration:"none", background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"20px", padding:"5px 14px"}}>
+              📖 指定校推薦と迷っている方はこちら →
+            </Link>
+          </div>
         </div>
+        ) : (
+        /* ━━━ ガイド付き体験 ━━━ */
+        <div style={{padding:"48px 0 32px", maxWidth:"520px", margin:"0 auto"}}>
+          {!guideAdded ? (
+            /* フェーズ1: 大学を1つ入力 */
+            <div style={{textAlign:"center"}}>
+              <div style={{fontSize:"48px", marginBottom:"16px"}}>🎓</div>
+              <h1 style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"24px", fontWeight:800, color:"var(--ink)", marginBottom:"10px"}}>
+                体験してみましょう！
+              </h1>
+              <p style={{fontSize:"14px", color:"var(--ink2)", lineHeight:1.8, marginBottom:"28px"}}>
+                気になる大学を1つ入力してください。<br/>
+                まだ決まっていなくても、「東京」「看護」など<br/>キーワードでも探せます。
+              </p>
+
+              <div style={{position:"relative", marginBottom:"16px"}}>
+                <input
+                  value={guideSearch}
+                  onChange={e => setGuideSearch(e.target.value)}
+                  placeholder="例: 早稲田大学、看護、東京..."
+                  autoFocus
+                  style={{
+                    width:"100%", padding:"14px 18px", borderRadius:"14px",
+                    border:"2px solid var(--teal)", background:"var(--surface)",
+                    color:"var(--ink)", fontSize:"15px", fontFamily:"inherit",
+                    outline:"none", boxSizing:"border-box",
+                    boxShadow:"0 4px 16px rgba(13,148,136,.1)"
+                  }}
+                />
+                {guideLoading && (
+                  <div style={{position:"absolute", right:"14px", top:"50%", transform:"translateY(-50%)"}}>
+                    <div style={{width:"16px", height:"16px", border:"2px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
+                  </div>
+                )}
+              </div>
+
+              {/* 候補リスト */}
+              {guideSuggestions.length > 0 && (
+                <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px", overflow:"hidden", textAlign:"left"}}>
+                  {guideSuggestions.map(u => (
+                    <button key={u.name} onClick={() => guideAddUni(u.name)} style={{
+                      width:"100%", padding:"12px 16px", border:"none", borderBottom:"1px solid var(--border)",
+                      background:"transparent", cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+                      display:"flex", alignItems:"center", justifyContent:"space-between"
+                    }}>
+                      <div>
+                        <div style={{fontSize:"14px", fontWeight:700, color:"var(--ink)"}}>{u.name}</div>
+                        <div style={{fontSize:"10px", color:"var(--ink3)", marginTop:"2px", display:"flex", gap:"4px"}}>
+                          {u.hasHeigan && <span style={{color:"var(--teal2)"}}>併願可</span>}
+                          {u.hasSengan && !u.hasHeigan && <span style={{color:"#e11d48"}}>専願</span>}
+                          {u.cats.slice(0,2).map(c => <span key={c}>{c}</span>)}
+                        </div>
+                      </div>
+                      <span style={{fontSize:"12px", color:"var(--coral)", fontWeight:700}}>+ 追加</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <button onClick={() => { setGuideMode(false); setGuideSearch(""); setGuideSuggestions([]) }} style={{
+                marginTop:"20px", background:"transparent", border:"none",
+                color:"var(--ink3)", fontSize:"12px", cursor:"pointer", fontFamily:"inherit"
+              }}>← 目的から選ぶ画面に戻る</button>
+            </div>
+          ) : (
+            /* フェーズ2: 1校追加済み → 何を見る？ */
+            <div style={{textAlign:"center"}}>
+              <div style={{fontSize:"48px", marginBottom:"16px"}}>✅</div>
+              <h2 style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"22px", fontWeight:800, color:"var(--ink)", marginBottom:"6px"}}>
+                {guideAdded} を追加しました！
+              </h2>
+              <p style={{fontSize:"14px", color:"var(--ink2)", marginBottom:"28px"}}>
+                この大学について、こんなことがわかります
+              </p>
+
+              <div style={{display:"flex", flexDirection:"column", gap:"10px", marginBottom:"24px"}}>
+                {[
+                  {tab:"timeline", icon:"📅", title:"出願はいつから？", desc:"出願期間・試験日・結果発表を確認"},
+                  {tab:"heigan", icon:"⚡", title:"併願できる？", desc:"専願/併願の区分をチェック"},
+                  {tab:"cost", icon:"💰", title:"いくらかかる？", desc:"受験料・入学金・授業料を確認"},
+                  {tab:"detail", icon:"📋", title:"詳しい情報を全部見る", desc:"学部・学科ごとの詳細一覧"},
+                ].map(item => (
+                  <button key={item.tab} onClick={() => guideStartSim(item.tab)} style={{
+                    padding:"16px 20px", borderRadius:"14px",
+                    border:"1.5px solid var(--border)", background:"var(--surface)",
+                    cursor:"pointer", fontFamily:"inherit", textAlign:"left",
+                    display:"flex", alignItems:"center", gap:"14px",
+                    boxShadow:"var(--sh-sm)", transition:"all .15s",
+                  }} className="purpose-card">
+                    <span style={{fontSize:"28px", flexShrink:0}}>{item.icon}</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:"14px", fontWeight:700, color:"var(--ink)", marginBottom:"2px"}}>{item.title}</div>
+                      <div style={{fontSize:"11px", color:"var(--ink3)"}}>{item.desc}</div>
+                    </div>
+                    <span style={{fontSize:"12px", color:"var(--coral)", fontWeight:700, flexShrink:0}}>見てみる →</span>
+                  </button>
+                ))}
+              </div>
+
+              <div style={{padding:"14px 20px", background:"var(--surface2)", borderRadius:"12px", marginBottom:"20px"}}>
+                <p style={{fontSize:"12px", color:"var(--ink3)", lineHeight:1.7, margin:0}}>
+                  💡 もっと大学を追加して比較もできます。<br/>
+                  <button onClick={() => { setGuideMode(false); setPurpose("search"); setStep(2); setRightTab("detail"); setSearchMode("name"); setTimeout(() => step2Ref.current?.scrollIntoView({ behavior: "smooth" }), 100) }} style={{
+                    background:"transparent", border:"none", color:"var(--teal)", fontWeight:700,
+                    fontSize:"12px", cursor:"pointer", fontFamily:"inherit", padding:0, marginTop:"4px"
+                  }}>+ もっと大学を追加して比較する →</button>
+                </p>
+              </div>
+
+              <button onClick={() => { setGuideAdded(null); setGuideSearch(""); setSelected(new Set()) }} style={{
+                background:"transparent", border:"none",
+                color:"var(--ink3)", fontSize:"12px", cursor:"pointer", fontFamily:"inherit"
+              }}>← 別の大学を選び直す</button>
+            </div>
+          )}
+        </div>
+        )}
 
         {/* ━━━ STEP 2: 大学を選ぶ ━━━ */}
         {purpose && (
