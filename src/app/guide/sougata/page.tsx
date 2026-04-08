@@ -308,8 +308,20 @@ export default function SougataGuidePage() {
           </section>
         </div>
 
+        {/* 関連記事 */}
+        <div style={{marginTop:"48px", padding:"20px", background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"16px"}}>
+          <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink)", marginBottom:"12px"}}>📚 あわせて読みたい</div>
+          <Link href="/guide/shiteiko-vs-sougata" style={{display:"flex", alignItems:"center", gap:"12px", padding:"12px 16px", background:"var(--surface2)", borderRadius:"12px", textDecoration:"none"}}>
+            <span style={{fontSize:"24px"}}>🔀</span>
+            <div>
+              <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink)"}}>指定校推薦と総合型選抜、どっちを選ぶ？</div>
+              <div style={{fontSize:"11px", color:"var(--ink3)", marginTop:"2px"}}>判断基準をやさしく整理</div>
+            </div>
+          </Link>
+        </div>
+
         {/* CTA */}
-        <div style={{background:"linear-gradient(135deg,#134e4a,#0f766e)", borderRadius:"20px", padding:"32px", textAlign:"center", marginTop:"48px"}}>
+        <div style={{background:"linear-gradient(135deg,#134e4a,#0f766e)", borderRadius:"20px", padding:"32px", textAlign:"center", marginTop:"20px"}}>
           <h3 style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:700, color:"#fff", marginBottom:"10px"}}>
             まずは大学を比較してみませんか？
           </h3>

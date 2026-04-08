@@ -351,9 +351,12 @@ export default function SimulatorPage() {
         <div style={{padding:"48px 0 32px", textAlign:"center"}}>
           <div style={{fontSize:"11px", fontWeight:700, color:"var(--coral)", letterSpacing:".15em", marginBottom:"10px"}}>STEP 1</div>
           <h1 style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"26px", fontWeight:800, color:"var(--ink)", marginBottom:"8px"}}>
-            あなたの受験、何を整理したいですか？
+            何を整理したいですか？
           </h1>
-          <p style={{fontSize:"14px", color:"var(--ink3)", marginBottom:"32px"}}>知りたいことを選ぶと、大学選択に進みます</p>
+          <p style={{fontSize:"14px", color:"var(--ink3)", marginBottom:"24px"}}>知りたいことを選ぶと、大学選択に進みます</p>
+          <Link href="/guide/shiteiko-vs-sougata" style={{display:"inline-flex", alignItems:"center", gap:"6px", fontSize:"12px", color:"var(--teal)", fontWeight:600, textDecoration:"none", background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"20px", padding:"5px 14px", marginBottom:"24px"}}>
+            📖 指定校推薦と迷っている方はこちら →
+          </Link>
 
           <div className="purpose-grid" style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:"14px", maxWidth:"800px", margin:"0 auto"}}>
             {(["cost","timeline","heigan","search"] as Purpose[]).map(p => {
@@ -836,6 +839,11 @@ export default function SimulatorPage() {
                 </div>
                 <Link href="/signup" style={{flexShrink:0, padding:"11px 24px", borderRadius:"12px", background:"linear-gradient(135deg,var(--coral),var(--coral2))", color:"#fff", fontSize:"13px", fontWeight:700, textDecoration:"none", whiteSpace:"nowrap"}}>プレミアムで診断する →</Link>
               </div>
+            </div>
+
+            {/* データ出典 */}
+            <div style={{marginTop:"16px", padding:"12px 16px", background:"var(--surface2)", borderRadius:"10px", fontSize:"11px", color:"var(--ink3)", lineHeight:1.7}}>
+              📋 データ出典：各大学が公開する2026年度募集要項に基づいています。最新の正確な情報は必ず<a href="https://www.mext.go.jp/" target="_blank" rel="noopener noreferrer" style={{color:"var(--teal)", textDecoration:"none"}}>各大学の公式サイト</a>でご確認ください。
             </div>
           </div>
         )}
