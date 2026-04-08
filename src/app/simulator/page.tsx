@@ -630,17 +630,27 @@ export default function SimulatorPage() {
 
               {/* 右: 選択中の大学 + シミュレーション開始 */}
               <div className="step2-right" style={{width:"340px", minWidth:"340px", position:"sticky", top:"80px"}}>
-                <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"16px", overflow:"hidden", boxShadow:"var(--sh-md)"}}>
-                  <div style={{padding:"16px 18px", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
-                    <h3 style={{fontSize:"14px", fontWeight:700, color:"var(--ink)", margin:0}}>選択中の大学</h3>
-                    <span style={{fontSize:"20px", fontWeight:900, fontFamily:"DM Mono,monospace", color:"var(--teal)"}}>{selected.size}<span style={{fontSize:"11px", color:"var(--ink3)", fontWeight:600, marginLeft:"2px"}}>校</span></span>
+                <div style={{
+                  background:"linear-gradient(135deg,#134e4a,#0f766e)",
+                  borderRadius:"16px", overflow:"hidden",
+                  boxShadow:"0 8px 32px rgba(13,78,74,.25), 0 2px 8px rgba(0,0,0,.1)"
+                }}>
+                  <div style={{padding:"18px 20px", borderBottom:"1px solid rgba(255,255,255,.1)", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+                    <h3 style={{fontSize:"14px", fontWeight:700, color:"#fff", margin:0}}>🎯 選択中の大学</h3>
+                    <div style={{
+                      background:"rgba(255,255,255,.15)", borderRadius:"20px", padding:"4px 14px",
+                      display:"flex", alignItems:"baseline", gap:"2px"
+                    }}>
+                      <span style={{fontSize:"22px", fontWeight:900, fontFamily:"DM Mono,monospace", color:"#5eead4"}}>{selected.size}</span>
+                      <span style={{fontSize:"11px", color:"rgba(255,255,255,.6)", fontWeight:600}}>校</span>
+                    </div>
                   </div>
 
-                  <div style={{padding:"12px 18px", maxHeight:"280px", overflowY:"auto"}}>
+                  <div style={{padding:"12px 20px", maxHeight:"280px", overflowY:"auto"}}>
                     {selected.size === 0 ? (
-                      <div style={{padding:"24px 0", textAlign:"center"}}>
-                        <div style={{fontSize:"28px", marginBottom:"8px", opacity:.4}}>🏫</div>
-                        <div style={{fontSize:"12px", color:"var(--ink3)", lineHeight:1.7}}>左のリストから<br/>大学を追加してください</div>
+                      <div style={{padding:"28px 0", textAlign:"center"}}>
+                        <div style={{fontSize:"32px", marginBottom:"10px"}}>🏫</div>
+                        <div style={{fontSize:"13px", color:"rgba(255,255,255,.7)", lineHeight:1.7, fontWeight:600}}>左のリストから<br/>大学を追加してください</div>
                       </div>
                     ) : (
                       [...selected].map(name => {
@@ -648,14 +658,22 @@ export default function SimulatorPage() {
                         const depts = uniDepts[name] || []
                         const count = filter ? filter.size : (depts.length || 1)
                         return (
-                          <div key={name} style={{display:"flex", alignItems:"center", gap:"8px", padding:"8px 0", borderBottom:"1px solid rgba(0,0,0,.04)"}}>
+                          <div key={name} style={{
+                            display:"flex", alignItems:"center", gap:"8px", padding:"9px 12px", marginBottom:"6px",
+                            background:"rgba(255,255,255,.08)", borderRadius:"10px", border:"1px solid rgba(255,255,255,.1)"
+                          }}>
+                            <div style={{
+                              width:"24px", height:"24px", minWidth:"24px", borderRadius:"6px",
+                              background:"rgba(94,234,212,.2)", display:"flex", alignItems:"center", justifyContent:"center",
+                              fontSize:"11px", fontWeight:700, color:"#5eead4"
+                            }}>✓</div>
                             <div style={{flex:1, minWidth:0}}>
-                              <div style={{fontSize:"12px", fontWeight:700, color:"var(--ink)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{name}</div>
-                              {depts.length > 0 && <div style={{fontSize:"10px", color:"var(--ink3)", marginTop:"1px"}}>{count}学科</div>}
+                              <div style={{fontSize:"12px", fontWeight:700, color:"#fff", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{name}</div>
+                              {depts.length > 0 && <div style={{fontSize:"10px", color:"rgba(255,255,255,.5)", marginTop:"1px"}}>{count}学科</div>}
                             </div>
                             <button onClick={() => toggleUni(name)} style={{
-                              background:"transparent", border:"none", fontSize:"14px", color:"var(--ink3)",
-                              cursor:"pointer", padding:"2px 6px", lineHeight:1
+                              background:"rgba(255,255,255,.1)", border:"none", fontSize:"12px", color:"rgba(255,255,255,.5)",
+                              cursor:"pointer", padding:"3px 7px", lineHeight:1, borderRadius:"6px"
                             }}>✕</button>
                           </div>
                         )
@@ -663,21 +681,21 @@ export default function SimulatorPage() {
                     )}
                   </div>
 
-                  <div style={{padding:"14px 18px", borderTop:"1px solid var(--border)"}}>
+                  <div style={{padding:"16px 20px", borderTop:"1px solid rgba(255,255,255,.1)"}}>
                     <button onClick={runSimulation} disabled={selected.size === 0 || simLoading} style={{
-                      width:"100%", padding:"14px", borderRadius:"12px", border:"none",
-                      background: selected.size > 0 ? "linear-gradient(135deg,var(--teal),#06b6d4)" : "var(--surface2)",
-                      color: selected.size > 0 ? "#fff" : "var(--ink3)",
-                      fontSize:"14px", fontWeight:700, cursor: selected.size > 0 ? "pointer" : "not-allowed",
+                      width:"100%", padding:"15px", borderRadius:"12px", border:"none",
+                      background: selected.size > 0 ? "linear-gradient(135deg,#5eead4,#06b6d4)" : "rgba(255,255,255,.1)",
+                      color: selected.size > 0 ? "#134e4a" : "rgba(255,255,255,.3)",
+                      fontSize:"14px", fontWeight:800, cursor: selected.size > 0 ? "pointer" : "not-allowed",
                       fontFamily:"inherit", transition:".2s",
-                      boxShadow: selected.size > 0 ? "0 4px 16px rgba(13,148,136,.3)" : "none"
+                      boxShadow: selected.size > 0 ? "0 4px 20px rgba(94,234,212,.3)" : "none"
                     }}>
-                      {simLoading ? "シミュレーション中..." : `${PURPOSE_CONFIG[purpose].icon} ${purposeLabel}シミュレーション開始 →`}
+                      {simLoading ? "シミュレーション中..." : `${PURPOSE_CONFIG[purpose!].icon} ${purposeLabel}シミュレーション開始 →`}
                     </button>
                     {selected.size > 0 && (
                       <button onClick={() => { setSelected(new Set()); setDeptFilter(new Map()); setExpandedUnis(new Set()) }} style={{
                         width:"100%", padding:"8px", marginTop:"8px", background:"transparent",
-                        border:"none", color:"var(--ink3)", fontSize:"11px", cursor:"pointer", fontFamily:"inherit"
+                        border:"none", color:"rgba(255,255,255,.4)", fontSize:"11px", cursor:"pointer", fontFamily:"inherit"
                       }}>選択をクリア</button>
                     )}
                   </div>
