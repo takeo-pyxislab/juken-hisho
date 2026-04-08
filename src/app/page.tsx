@@ -49,6 +49,19 @@ export default function Home() {
           <p style={{fontSize:"16px", color:"var(--ink2)", lineHeight:1.8, maxWidth:"520px", margin:"0 auto 32px"}}>
             522大学 · 7,980学科の最新データから、<br className="hidden sm:inline"/>あなたの受験を整理します。
           </p>
+          {/* ヒーローCTA */}
+          <div style={{display:"flex", flexDirection:"column", alignItems:"center", gap:"12px", marginBottom:"20px"}}>
+            <Link href="/simulator" style={{
+              display:"inline-block", padding:"16px 40px", borderRadius:"14px",
+              background:"linear-gradient(135deg,#f97066,#fb923c)",
+              color:"#fff", fontSize:"16px", fontWeight:700, textDecoration:"none",
+              boxShadow:"0 4px 20px rgba(249,112,102,.3)", textAlign:"center"
+            }}>
+              🔍 無料で大学を比較してみる →
+            </Link>
+            <span style={{fontSize:"12px", color:"var(--ink3)"}}>登録不要 · 522大学対応 · 2分で完了</span>
+          </div>
+
           <Link href="/guide/sougata" style={{
             display:"inline-flex", alignItems:"center", gap:"6px",
             fontSize:"13px", color:"var(--teal)", fontWeight:600, textDecoration:"none",

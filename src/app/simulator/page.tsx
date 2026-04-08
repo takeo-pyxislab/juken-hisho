@@ -286,6 +286,8 @@ export default function SimulatorPage() {
     else if (p === "timeline") setRightTab("timeline")
     else if (p === "heigan") setRightTab("heigan")
     else setRightTab("detail")
+    // 改善5: 目的に応じてデフォルトの検索モードを切替
+    setSearchMode(p === "search" ? "filter" : "name")
     setTimeout(() => step2Ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100)
   }
 
@@ -360,12 +362,16 @@ export default function SimulatorPage() {
               return (
                 <button key={p} onClick={() => selectPurpose(p)} className="purpose-card" style={{
                   padding:"28px 16px", borderRadius:"20px", cursor:"pointer", fontFamily:"inherit",
-                  border: isSelected ? "2px solid var(--coral)" : "1.5px solid var(--border)",
-                  background: isSelected ? "var(--coral-bg)" : "var(--surface)",
+                  border: isSelected ? "2px solid var(--coral)" : p === "search" ? "2px solid var(--teal-border)" : "1.5px solid var(--border)",
+                  background: isSelected ? "var(--coral-bg)" : p === "search" ? "var(--teal-bg)" : "var(--surface)",
                   boxShadow: isSelected ? "0 4px 20px rgba(249,112,102,.18)" : "var(--sh-sm)",
                   transition:"all .2s ease", textAlign:"center",
                   transform: isSelected ? "translateY(-3px)" : "none",
+                  position:"relative",
                 }}>
+                  {p === "search" && !isSelected && (
+                    <div style={{position:"absolute", top:"-10px", left:"50%", transform:"translateX(-50%)", background:"var(--teal)", color:"#fff", fontSize:"10px", fontWeight:700, padding:"2px 10px", borderRadius:"20px", whiteSpace:"nowrap"}}>はじめての方はこちら</div>
+                  )}
                   <div style={{fontSize:"48px", marginBottom:"14px", lineHeight:1}}>{c.icon}</div>
                   <div style={{fontSize:"14px", fontWeight:700, color: isSelected ? "var(--coral)" : "var(--ink)", marginBottom:"6px"}}>{c.title}</div>
                   <div style={{fontSize:"11px", color:"var(--ink3)", lineHeight:1.6, marginBottom: c.sample ? "8px" : "0"}}>{c.desc}</div>
@@ -745,13 +751,53 @@ export default function SimulatorPage() {
                 </div>
               </div>
             ) : (
-              <SimResult
-                data={simData} rightTab={rightTab} setRightTab={setRightTab}
-                userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={saveToTargets}
-                filterDeptMode={filterDeptMode} setFilterDeptMode={setFilterDeptMode}
-                hiddenDepts={hiddenDepts} setHiddenDepts={setHiddenDepts}
-                purpose={purpose}
-              />
+              <>
+                {/* 改善4: 達成感サマリーカード */}
+                {simData.length > 0 && (() => {
+                  const sOnly = simData.filter(u => u.records.every(r => r.application_type === "専願"))
+                  const hOk = simData.filter(u => u.records.some(r => r.application_type === "併願"))
+                  let eSum = 0
+                  simData.forEach(u => { const c = parseCost(u.records[0]?.cost || ""); eSum += c.exam || 0 })
+                  return (
+                    <div style={{
+                      background:"linear-gradient(135deg,#134e4a,#0f766e)", borderRadius:"20px",
+                      padding:"24px 28px", marginBottom:"20px", color:"#fff", position:"relative", overflow:"hidden"
+                    }}>
+                      <div style={{position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(45deg,rgba(255,255,255,.02) 0,rgba(255,255,255,.02) 1px,transparent 1px,transparent 8px)", pointerEvents:"none"}}/>
+                      <div style={{position:"relative", zIndex:1}}>
+                        <div style={{fontSize:"18px", fontWeight:700, marginBottom:"12px"}}>
+                          🎉 {simData.length}校の比較が完成しました！
+                        </div>
+                        <div style={{display:"flex", gap:"16px", flexWrap:"wrap"}}>
+                          {eSum > 0 && (
+                            <div style={{background:"rgba(255,255,255,.1)", borderRadius:"12px", padding:"10px 16px", textAlign:"center"}}>
+                              <div style={{fontSize:"20px", fontWeight:900, fontFamily:"DM Mono,monospace", color:"#5eead4"}}>{Math.round(eSum/10000)}万円</div>
+                              <div style={{fontSize:"10px", color:"rgba(255,255,255,.6)", marginTop:"2px"}}>受験料合計</div>
+                            </div>
+                          )}
+                          <div style={{background:"rgba(255,255,255,.1)", borderRadius:"12px", padding:"10px 16px", textAlign:"center"}}>
+                            <div style={{fontSize:"20px", fontWeight:900, fontFamily:"DM Mono,monospace", color:"#5eead4"}}>{hOk.length}校</div>
+                            <div style={{fontSize:"10px", color:"rgba(255,255,255,.6)", marginTop:"2px"}}>併願可能</div>
+                          </div>
+                          {sOnly.length > 0 && (
+                            <div style={{background:"rgba(225,29,72,.2)", borderRadius:"12px", padding:"10px 16px", textAlign:"center"}}>
+                              <div style={{fontSize:"20px", fontWeight:900, fontFamily:"DM Mono,monospace", color:"#fca5a5"}}>{sOnly.length}校</div>
+                              <div style={{fontSize:"10px", color:"rgba(255,255,255,.6)", marginTop:"2px"}}>専願のみ（要注意）</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })()}
+                <SimResult
+                  data={simData} rightTab={rightTab} setRightTab={setRightTab}
+                  userId={userId} myTargets={myTargets} savingUni={savingUni} onSave={saveToTargets}
+                  filterDeptMode={filterDeptMode} setFilterDeptMode={setFilterDeptMode}
+                  hiddenDepts={hiddenDepts} setHiddenDepts={setHiddenDepts}
+                  purpose={purpose}
+                />
+              </>
             )}
 
             {/* 他のシミュレーションへの誘導 */}
@@ -839,8 +885,8 @@ export default function SimulatorPage() {
         </div>
       )}
 
-      {/* スマホ用フローティングボタン（Step 2で大学選択中に表示） */}
-      {step === 2 && selected.size > 0 && (
+      {/* スマホ用フローティングボタン（Step 2: シミュレーション開始 / Step 3: 大学を変更） */}
+      {purpose && (step === 2 && selected.size > 0 || step === 3) && (
         <div className="mobile-float-btn" style={{
           position:"fixed", bottom:0, left:0, right:0, zIndex:200,
           padding:"12px 20px", paddingBottom:"calc(12px + env(safe-area-inset-bottom, 0px))",
@@ -848,14 +894,24 @@ export default function SimulatorPage() {
           borderTop:"1px solid var(--border)", boxShadow:"0 -4px 20px rgba(0,0,0,.08)",
           display:"none"
         }}>
-          <button onClick={runSimulation} disabled={simLoading} style={{
-            width:"100%", padding:"14px", borderRadius:"14px", border:"none",
-            background:"linear-gradient(135deg,var(--coral),var(--coral2))",
-            color:"#fff", fontSize:"14px", fontWeight:700, cursor:"pointer",
-            fontFamily:"inherit", boxShadow:"0 4px 16px rgba(249,112,102,.3)"
-          }}>
-            {simLoading ? "シミュレーション中..." : `${PURPOSE_CONFIG[purpose!].icon} ${selected.size}校でシミュレーション開始`}
-          </button>
+          {step === 2 ? (
+            <button onClick={runSimulation} disabled={simLoading} style={{
+              width:"100%", padding:"14px", borderRadius:"14px", border:"none",
+              background:"linear-gradient(135deg,var(--coral),var(--coral2))",
+              color:"#fff", fontSize:"14px", fontWeight:700, cursor:"pointer",
+              fontFamily:"inherit", boxShadow:"0 4px 16px rgba(249,112,102,.3)"
+            }}>
+              {simLoading ? "シミュレーション中..." : `${PURPOSE_CONFIG[purpose!].icon} ${selected.size}校でシミュレーション開始`}
+            </button>
+          ) : (
+            <button onClick={() => { setStep(2); setTimeout(() => step2Ref.current?.scrollIntoView({ behavior: "smooth" }), 100) }} style={{
+              width:"100%", padding:"14px", borderRadius:"14px", border:"1.5px solid var(--border)",
+              background:"var(--surface)", color:"var(--ink2)", fontSize:"14px", fontWeight:700,
+              cursor:"pointer", fontFamily:"inherit"
+            }}>
+              ← 大学を変更して再シミュレーション
+            </button>
+          )}
         </div>
       )}
 
