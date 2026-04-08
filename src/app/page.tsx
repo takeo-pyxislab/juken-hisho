@@ -46,9 +46,17 @@ export default function Home() {
             <span style={{background:"linear-gradient(135deg,var(--teal),#06b6d4)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent"}}>「わからない」</span>を<br className="sm:hidden" />
             ゼロにする。
           </h1>
-          <p style={{fontSize:"16px", color:"var(--ink2)", lineHeight:1.8, maxWidth:"520px", margin:"0 auto 48px"}}>
+          <p style={{fontSize:"16px", color:"var(--ink2)", lineHeight:1.8, maxWidth:"520px", margin:"0 auto 32px"}}>
             522大学 · 7,980学科の最新データから、<br className="hidden sm:inline"/>あなたの受験を整理します。
           </p>
+          <Link href="/guide/sougata" style={{
+            display:"inline-flex", alignItems:"center", gap:"6px",
+            fontSize:"13px", color:"var(--teal)", fontWeight:600, textDecoration:"none",
+            background:"var(--teal-bg)", border:"1px solid var(--teal-border)",
+            borderRadius:"20px", padding:"6px 16px", marginBottom:"48px"
+          }}>
+            📖 そもそも総合型選抜とは？ →
+          </Link>
         </div>
       </section>
 
