@@ -84,7 +84,7 @@ export default function LoginPage() {
         <div style={{textAlign:"center", marginBottom:"32px"}}>
           <Link href="/" style={{textDecoration:"none", display:"inline-block"}}>
             <div style={{width:"52px", height:"52px", background:"linear-gradient(135deg,var(--premium),#3d3530)", borderRadius:"14px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"26px", margin:"0 auto 12px"}}>📖</div>
-            <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", fontWeight:700, color:"var(--ink)"}}>受験秘書</div>
+            <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
           </Link>
           <h1 style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", fontWeight:700, color:"var(--ink)", marginTop:"16px", marginBottom:"6px"}}>ログイン</h1>
           <p style={{fontSize:"13px", color:"var(--ink3)", lineHeight:1.6}}>おかえりなさい</p>

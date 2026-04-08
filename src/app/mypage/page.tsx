@@ -152,7 +152,7 @@ export default function MyPage() {
           <div className="flex items-center gap-3">
             <div style={{width:"32px",height:"32px",background:"linear-gradient(135deg,#0d9488,#06b6d4)",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px"}}>📖</div>
             <div>
-              <div style={{fontFamily:"Kaisei Opti,serif",fontSize:"16px",fontWeight:700,color:"#fff"}}>受験秘書</div>
+              <div style={{fontFamily:"Kaisei Opti,serif",fontSize:"16px",fontWeight:700,color:"#fff"}}>ユニパス</div>
               <div style={{fontSize:"10px",color:"rgba(255,255,255,.5)"}}>プレミアムプラン</div>
             </div>
           </div>

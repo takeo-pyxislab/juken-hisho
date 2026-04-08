@@ -125,7 +125,7 @@ export default function ParentPage() {
           <div style={{display:"flex", alignItems:"center", gap:"12px"}}>
             <div style={{width:"32px", height:"32px", background:"linear-gradient(135deg,#0d9488,#06b6d4)", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px"}}>📖</div>
             <div>
-              <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"16px", fontWeight:700, color:"#fff"}}>受験秘書</div>
+              <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"16px", fontWeight:700, color:"#fff"}}>ユニパス</div>
               <div style={{fontSize:"10px", color:"rgba(255,255,255,.5)"}}>保護者ダッシュボード</div>
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function ParentPage() {
               ))}
             </div>
             <p style={{fontSize:"11px", color:"var(--ink3)"}}>
-              お子さんがまだ受験秘書を使っていない場合は、<br/>
+              お子さんがまだユニパスを使っていない場合は、<br/>
               <Link href="/simulator" style={{color:"var(--teal)", fontWeight:600}}>シミュレーター</Link>を一緒に試してみてください
             </p>
           </div>

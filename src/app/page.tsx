@@ -15,7 +15,7 @@ export default function Home() {
         <div style={{display:"flex", alignItems:"center", gap:"9px"}}>
           <div style={{width:"30px", height:"30px", background:"linear-gradient(135deg,var(--teal),#06b6d4)", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px"}}>📖</div>
           <div>
-            <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"16px", fontWeight:700, color:"var(--ink)"}}>受験秘書</div>
+            <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"16px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
             <div style={{fontSize:"10px", color:"var(--ink3)"}}>総合型選抜ナビ</div>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function Home() {
             </h2>
             <p style={{fontSize:"14px", color:"var(--ink2)", lineHeight:1.9, marginBottom:"28px"}}>
               「うちの子、ちゃんと準備できてるの？」<br/>
-              総合型選抜は出願スケジュール・費用・専願リスクが複雑。受験秘書なら、保護者の方も一緒に把握できます。
+              総合型選抜は出願スケジュール・費用・専願リスクが複雑。ユニパスなら、保護者の方も一緒に把握できます。
             </p>
             <div style={{display:"flex", flexDirection:"column", gap:"12px", marginBottom:"32px"}}>
               {[
@@ -314,14 +314,14 @@ export default function Home() {
 
       {/* フッター */}
       <footer style={{background:"var(--premium)", padding:"48px 24px 32px", textAlign:"center"}}>
-        <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", color:"#fff", marginBottom:"8px"}}>受験秘書</div>
+        <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", color:"#fff", marginBottom:"8px"}}>ユニパス</div>
         <div style={{fontSize:"13px", color:"rgba(255,255,255,.4)", marginBottom:"24px"}}>総合型選抜ナビ · 2026年度対応</div>
         <div style={{display:"flex", gap:"20px", justifyContent:"center", flexWrap:"wrap", marginBottom:"24px"}}>
           {["利用規約","プライバシーポリシー","免責事項","お問い合わせ"].map(l => (
             <span key={l} style={{fontSize:"12px", color:"rgba(255,255,255,.4)", cursor:"pointer"}}>{l}</span>
           ))}
         </div>
-        <div style={{fontSize:"11px", color:"rgba(255,255,255,.25)"}}>© 2026 受験秘書. All rights reserved. · 本サービスの診断結果はAIによる参考情報です。</div>
+        <div style={{fontSize:"11px", color:"rgba(255,255,255,.25)"}}>© 2026 ユニパス. All rights reserved. · 本サービスの診断結果はAIによる参考情報です。</div>
       </footer>
 
       <style>{`

@@ -53,7 +53,7 @@ export default function SignupPage() {
         <div style={{textAlign:"center", marginBottom:"28px"}}>
           <Link href="/" style={{textDecoration:"none", display:"inline-block"}}>
             <div style={{width:"52px", height:"52px", background:"linear-gradient(135deg,var(--premium),#3d3530)", borderRadius:"14px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"26px", margin:"0 auto 12px"}}>📖</div>
-            <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:700, color:"var(--ink)"}}>受験秘書</div>
+            <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
           </Link>
         </div>
 
@@ -143,7 +143,7 @@ export default function SignupPage() {
 
             <h1 style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:700, color:"var(--ink)", marginBottom:"6px"}}>アカウント登録</h1>
             <p style={{fontSize:"13px", color:"var(--ink3)", marginBottom:"24px", lineHeight:1.6}}>
-              {userType === "parent" ? "お子さんへの共有方法は登録後にご案内します" : "自分だけの受験秘書を作りましょう"}
+              {userType === "parent" ? "お子さんへの共有方法は登録後にご案内します" : "自分だけのユニパスを作りましょう"}
             </p>
 
             <form onSubmit={handleRegister} style={{display:"flex", flexDirection:"column", gap:"16px"}}>
@@ -263,7 +263,7 @@ export default function SignupPage() {
             <p style={{fontSize:"14px", color:"var(--ink2)", lineHeight:1.8, marginBottom:"28px"}}>
               {userType === "parent"
                 ? "保護者ダッシュボードへようこそ。お子さんのアカウントと連携して見守りを始めましょう。"
-                : "受験秘書へようこそ。まずはAI問診でプロフィールを作成しましょう。"}
+                : "ユニパスへようこそ。まずはAI問診でプロフィールを作成しましょう。"}
             </p>
 
             {userType === "parent" && (

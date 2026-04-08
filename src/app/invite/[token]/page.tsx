@@ -58,7 +58,7 @@ export default function InvitePage() {
       <div style={{width:"100%", maxWidth:"440px"}}>
         <div style={{textAlign:"center", marginBottom:"28px"}}>
           <div style={{width:"52px", height:"52px", background:"linear-gradient(135deg,var(--premium),#3d3530)", borderRadius:"14px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"26px", margin:"0 auto 12px"}}>📖</div>
-          <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:700, color:"var(--ink)"}}>受験秘書</div>
+          <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
         </div>
 
         <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"var(--r-lg)", padding:"36px", boxShadow:"var(--sh-lg)", textAlign:"center"}}>
