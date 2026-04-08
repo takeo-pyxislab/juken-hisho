@@ -544,31 +544,33 @@ export default function SimulatorPage() {
                           border: sel ? "2px solid var(--teal)" : "1.5px solid var(--border)",
                           boxShadow:"var(--sh-sm)", overflow:"hidden", transition:"all .2s ease"
                         }}>
-                          <div style={{
-                            padding:"14px 16px", display:"flex", alignItems:"center", gap:"10px",
-                          }}>
-                            <div onClick={() => toggleExpand(u.name)} style={{flex:1, minWidth:0, cursor:"pointer"}}>
-                              <div style={{fontSize:"14px", fontWeight:700, color:"var(--ink)", marginBottom:"4px"}}>{u.name}</div>
-                              <div style={{fontSize:"10px", color:"var(--ink3)", display:"flex", gap:"5px", flexWrap:"wrap", alignItems:"center"}}>
-                                <span style={{padding:"2px 8px", borderRadius:"6px", fontSize:"9px", fontWeight:700, background:tagColor.bg, color:tagColor.color}}>{tagLabel}</span>
-                                {u.cats.slice(0,1).map(c => <span key={c} style={{padding:"2px 8px", borderRadius:"6px", fontSize:"9px", fontWeight:700, background:"var(--surface2)", color:"var(--ink3)"}}>{c}</span>)}
-                                {isPartial && <span style={{fontSize:"9px", color:"var(--amber)", fontWeight:700}}>{selectedDeptCount}学科選択中</span>}
+                          <div style={{padding:"12px 14px"}}>
+                            <div style={{display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px"}}>
+                              <div onClick={() => toggleExpand(u.name)} style={{flex:1, minWidth:0, cursor:"pointer"}}>
+                                <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{u.name}</div>
                               </div>
+                              <button onClick={() => toggleExpand(u.name)} style={{
+                                background:"var(--surface2)", border:"none", cursor:"pointer", padding:"4px 7px",
+                                color:"var(--ink3)", fontSize:"10px", flexShrink:0, fontFamily:"inherit",
+                                borderRadius:"6px"
+                              }}>{isExpanded ? "▲" : "▼"}</button>
                             </div>
-                            <button onClick={() => toggleUni(u.name)} style={{
-                              padding:"7px 16px", borderRadius:"10px", cursor:"pointer", fontFamily:"inherit",
-                              fontSize:"12px", fontWeight:700, border:"none", transition:"all .15s",
-                              background: sel ? "var(--teal)" : "linear-gradient(135deg,var(--coral),var(--coral2))",
-                              color: "#fff",
-                              boxShadow: sel ? "0 2px 8px rgba(13,148,136,.25)" : "0 2px 8px rgba(249,112,102,.25)"
-                            }}>
-                              {sel ? "✓ 追加済み" : "+ 追加"}
-                            </button>
-                            <button onClick={() => toggleExpand(u.name)} style={{
-                              background:"var(--surface2)", border:"none", cursor:"pointer", padding:"6px 8px",
-                              color:"var(--ink3)", fontSize:"11px", flexShrink:0, fontFamily:"inherit",
-                              borderRadius:"8px", transition:".15s"
-                            }}>{isExpanded ? "▲" : "▼"}</button>
+                            <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", gap:"8px"}}>
+                              <div style={{display:"flex", gap:"4px", flexWrap:"wrap", alignItems:"center"}}>
+                                <span style={{padding:"2px 7px", borderRadius:"6px", fontSize:"9px", fontWeight:700, background:tagColor.bg, color:tagColor.color}}>{tagLabel}</span>
+                                {u.cats.slice(0,1).map(c => <span key={c} style={{padding:"2px 7px", borderRadius:"6px", fontSize:"9px", fontWeight:700, background:"var(--surface2)", color:"var(--ink3)"}}>{c}</span>)}
+                                {isPartial && <span style={{fontSize:"9px", color:"var(--amber)", fontWeight:700}}>{selectedDeptCount}学科</span>}
+                              </div>
+                              <button onClick={() => toggleUni(u.name)} style={{
+                                padding:"5px 12px", borderRadius:"8px", cursor:"pointer", fontFamily:"inherit",
+                                fontSize:"11px", fontWeight:700, border:"none", transition:"all .15s", flexShrink:0, whiteSpace:"nowrap",
+                                background: sel ? "var(--teal)" : "linear-gradient(135deg,var(--coral),var(--coral2))",
+                                color: "#fff",
+                                boxShadow: sel ? "0 2px 6px rgba(13,148,136,.2)" : "0 2px 6px rgba(249,112,102,.2)"
+                              }}>
+                                {sel ? "✓ 済" : "+ 追加"}
+                              </button>
+                            </div>
                           </div>
 
                           {isExpanded && (
