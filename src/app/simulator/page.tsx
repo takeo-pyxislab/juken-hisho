@@ -382,14 +382,19 @@ export default function SimulatorPage() {
 
           {/* はじめての方 + 指定校リンク */}
           <div style={{display:"flex", flexDirection:"column", alignItems:"center", gap:"10px"}}>
-            <button onClick={() => { setIsFirstTimer(true); selectPurpose("search"); setSearchMode("name") }} style={{
+            <button onClick={() => {
+              setIsFirstTimer(true)
+              setSelected(new Set(["中央大学", "亜細亜大学"]))
+              selectPurpose("search")
+              setSearchMode("name")
+            }} style={{
               display:"inline-flex", alignItems:"center", gap:"8px",
               padding:"12px 28px", borderRadius:"14px",
               background:"linear-gradient(135deg,var(--teal),#06b6d4)", color:"#fff",
               fontSize:"14px", fontWeight:700, border:"none", cursor:"pointer", fontFamily:"inherit",
               boxShadow:"0 4px 16px rgba(13,148,136,.25)"
             }}>
-              🎓 はじめての方はこちら — まず1校で体験してみる
+              🎓 はじめての方はこちら — サンプル2校で体験してみる
             </button>
             <Link href="/guide/shiteiko-vs-sougata" style={{display:"inline-flex", alignItems:"center", gap:"6px", fontSize:"12px", color:"var(--teal)", fontWeight:600, textDecoration:"none", background:"var(--teal-bg)", border:"1px solid var(--teal-border)", borderRadius:"20px", padding:"5px 14px"}}>
               📖 指定校推薦と迷っている方はこちら →
@@ -546,18 +551,16 @@ export default function SimulatorPage() {
                         <>
                           <div style={{fontSize:"40px", marginBottom:"12px"}}>🎓</div>
                           <div style={{fontSize:"15px", fontWeight:700, color:"var(--ink)", marginBottom:"8px"}}>
-                            まず1校、気になる大学を検索してみましょう！
+                            サンプル2校を用意しました！
                           </div>
-                          <div style={{fontSize:"12px", color:"var(--ink3)", lineHeight:1.8, marginBottom:"16px"}}>
-                            大学名を入力すると候補が出てきます。<br/>
-                            「東京」「看護」などキーワードでもOK！
+                          <div style={{fontSize:"12px", color:"var(--ink2)", lineHeight:1.8, marginBottom:"12px"}}>
+                            右の「シミュレーション開始」を押して、<br/>
+                            費用・日程・併願の比較を体験してみましょう。
                           </div>
-                          <div style={{display:"flex", justifyContent:"center", gap:"8px", flexWrap:"wrap"}}>
-                            {["📅 出願日程","⚡ 併願可否","💰 費用"].map(f => (
-                              <span key={f} style={{padding:"4px 10px", borderRadius:"20px", fontSize:"11px", fontWeight:600, background:"var(--teal-bg)", color:"var(--teal2)", border:"1px solid var(--teal-border)"}}>{f}</span>
-                            ))}
+                          <div style={{fontSize:"12px", color:"var(--ink3)", lineHeight:1.8}}>
+                            自分の気になる大学に入れ替えたい場合は、<br/>
+                            上の検索バーから追加・削除できます。
                           </div>
-                          <div style={{fontSize:"11px", color:"var(--ink3)", marginTop:"10px"}}>↑ 大学を追加するとこれらがわかります</div>
                         </>
                       ) : (
                         <>
