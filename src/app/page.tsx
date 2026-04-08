@@ -325,8 +325,13 @@ export default function Home() {
         <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", color:"#fff", marginBottom:"8px"}}>ユニパス</div>
         <div style={{fontSize:"13px", color:"rgba(255,255,255,.4)", marginBottom:"24px"}}>総合型選抜ナビ · 2026年度対応</div>
         <div style={{display:"flex", gap:"20px", justifyContent:"center", flexWrap:"wrap", marginBottom:"24px"}}>
-          {["利用規約","プライバシーポリシー","免責事項","お問い合わせ"].map(l => (
-            <span key={l} style={{fontSize:"12px", color:"rgba(255,255,255,.4)", cursor:"pointer"}}>{l}</span>
+          {[
+            {label:"利用規約", href:"/legal/terms"},
+            {label:"プライバシーポリシー", href:"/legal/privacy"},
+            {label:"免責事項", href:"/legal/disclaimer"},
+            {label:"お問い合わせ", href:"/legal/contact"},
+          ].map(l => (
+            <Link key={l.label} href={l.href} style={{fontSize:"12px", color:"rgba(255,255,255,.4)", textDecoration:"none"}}>{l.label}</Link>
           ))}
         </div>
         <div style={{fontSize:"11px", color:"rgba(255,255,255,.25)"}}>© 2026 ユニパス. All rights reserved. · 本サービスの診断結果はAIによる参考情報です。</div>

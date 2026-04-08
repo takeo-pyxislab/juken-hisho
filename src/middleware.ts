@@ -29,6 +29,7 @@ export async function middleware(request: NextRequest) {
   const publicPaths = ['/', '/login', '/signup', '/simulator']
   const isPublic = publicPaths.some(p => pathname === p || pathname.startsWith('/simulator'))
     || pathname.startsWith('/guide')
+    || pathname.startsWith('/legal')
     || pathname.startsWith('/api/universities')
     || pathname.startsWith('/api/university-names')
 
