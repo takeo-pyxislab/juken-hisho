@@ -11,13 +11,13 @@ export default function SougataGuidePage() {
     <div style={{background:"var(--bg)", minHeight:"100vh", fontFamily:"Noto Sans JP,sans-serif"}}>
       {/* ナビ */}
       <nav style={{
-        position:"sticky", top:0, zIndex:300, height:"58px", padding:"0 24px",
+        position:"sticky", top:0, zIndex:300, height:"auto", minHeight:"58px", padding:"0 24px",
         display:"flex", alignItems:"center", justifyContent:"space-between",
         background:"rgba(248,247,244,.96)", backdropFilter:"blur(16px)",
         borderBottom:"1px solid var(--border)"
       }}>
         <Link href="/" style={{display:"flex", alignItems:"center", gap:"9px", textDecoration:"none"}}>
-          <img src="/logo.png" alt="ユニパス" style={{height:"44px", objectFit:"contain"}} />
+          <img src="/logo.png" alt="ユニパス" className="nav-logo" style={{objectFit:"contain"}} />
           <div>
           </div>
         </Link>
@@ -339,7 +339,7 @@ export default function SougataGuidePage() {
 
       {/* フッター */}
       <footer style={{background:"var(--premium)", padding:"32px 24px", textAlign:"center"}}>
-        <img src="/logo.png" alt="ユニパス" style={{height:"44px", objectFit:"contain", margin:"0 auto 6px", display:"block", filter:"brightness(0) invert(1)"}} />
+        <img src="/logo.png" alt="ユニパス" style={{height:"80px", objectFit:"contain", margin:"0 auto 6px", display:"block", filter:"brightness(0) invert(1)"}} />
         <div style={{fontSize:"12px", color:"rgba(255,255,255,.4)"}}>総合型選抜ナビ · 2026年度対応</div>
       </footer>
 

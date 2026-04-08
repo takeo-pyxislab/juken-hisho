@@ -321,13 +321,13 @@ export default function SimulatorPage() {
     <div style={{background:"var(--bg)", minHeight:"100vh"}}>
       {/* ナビ */}
       <nav style={{
-        position:"sticky", top:0, zIndex:300, height:"58px", padding:"0 24px",
+        position:"sticky", top:0, zIndex:300, height:"auto", minHeight:"58px", padding:"0 24px",
         display:"flex", alignItems:"center", justifyContent:"space-between",
         background:"rgba(250,250,250,.94)", backdropFilter:"blur(16px)",
         borderBottom:"1px solid var(--border)"
       }}>
         <Link href="/" style={{display:"flex", alignItems:"center", gap:"9px", textDecoration:"none"}}>
-          <img src="/logo.png" alt="ユニパス" style={{height:"44px", objectFit:"contain"}} />
+          <img src="/logo.png" alt="ユニパス" className="nav-logo" style={{objectFit:"contain"}} />
           <div>
           </div>
         </Link>

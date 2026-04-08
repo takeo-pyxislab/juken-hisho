@@ -35,3 +35,11 @@ body {
 }
 .font-display { font-family: 'Zen Maru Gothic', sans-serif; }
 .font-mono { font-family: 'DM Mono', monospace; }
+
+/* ロゴサイズ */
+.nav-logo { height: 80px; }
+.nav-logo-dark { height: 70px; }
+@media (max-width: 767px) {
+  .nav-logo { height: 48px !important; }
+  .nav-logo-dark { height: 40px !important; }
+}

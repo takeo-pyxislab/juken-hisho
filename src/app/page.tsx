@@ -7,13 +7,13 @@ export default function Home() {
 
       {/* ナビゲーション */}
       <nav style={{
-        position:"sticky", top:0, zIndex:300, height:"58px", padding:"0 24px",
+        position:"sticky", top:0, zIndex:300, height:"auto", minHeight:"58px", padding:"0 24px",
         display:"flex", alignItems:"center", justifyContent:"space-between",
         background:"rgba(250,250,250,.96)", backdropFilter:"blur(16px)",
         borderBottom:"1px solid var(--border)"
       }}>
         <div style={{display:"flex", alignItems:"center", gap:"9px"}}>
-          <img src="/logo.png" alt="ユニパス" style={{height:"44px", objectFit:"contain"}} />
+          <img src="/logo.png" alt="ユニパス" className="nav-logo" style={{objectFit:"contain"}} />
           <div>
           </div>
         </div>

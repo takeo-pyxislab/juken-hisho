@@ -57,7 +57,7 @@ export default function InvitePage() {
     <div style={{minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", padding:"40px 24px", background:"var(--bg)"}}>
       <div style={{width:"100%", maxWidth:"440px"}}>
         <div style={{textAlign:"center", marginBottom:"28px"}}>
-          <img src="/logo.png" alt="ユニパス" style={{height:"80px", objectFit:"contain", margin:"0 auto 12px", display:"block"}} />
+          <img src="/logo.png" alt="ユニパス" style={{height:"120px", objectFit:"contain", margin:"0 auto 12px", display:"block"}} />
         </div>
 
         <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"var(--r-lg)", padding:"36px", boxShadow:"var(--sh-lg)", textAlign:"center"}}>
