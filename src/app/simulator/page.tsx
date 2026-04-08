@@ -318,26 +318,26 @@ export default function SimulatorPage() {
       <nav style={{
         position:"sticky", top:0, zIndex:300, height:"58px", padding:"0 24px",
         display:"flex", alignItems:"center", justifyContent:"space-between",
-        background:"rgba(248,247,244,.94)", backdropFilter:"blur(16px)",
+        background:"rgba(250,250,250,.94)", backdropFilter:"blur(16px)",
         borderBottom:"1px solid var(--border)"
       }}>
         <Link href="/" style={{display:"flex", alignItems:"center", gap:"9px", textDecoration:"none"}}>
-          <div style={{width:"30px", height:"30px", background:"linear-gradient(135deg,var(--teal),#06b6d4)", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px"}}>📖</div>
+          <div style={{width:"30px", height:"30px", background:"linear-gradient(135deg,var(--coral),#fb923c)", borderRadius:"10px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px"}}>📖</div>
           <div>
-            <div style={{fontFamily:"Kaisei Opti,serif", fontSize:"16px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
+            <div style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"16px", fontWeight:700, color:"var(--ink)"}}>ユニパス</div>
             <div style={{fontSize:"10px", color:"var(--ink3)"}}>総合型選抜ナビ</div>
           </div>
         </Link>
         <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
           {userId ? (
             <>
-              <Link href="/mypage" style={{padding:"6px 12px", borderRadius:"8px", color:"var(--ink2)", fontSize:"12px", fontWeight:600, textDecoration:"none", border:"1px solid var(--border)"}}>マイページ</Link>
-              <Link href="/questionnaire" style={{padding:"7px 16px", borderRadius:"8px", background:"var(--teal)", color:"#fff", fontSize:"12px", fontWeight:700, textDecoration:"none"}}>✦ AI診断</Link>
+              <Link href="/mypage" style={{padding:"6px 12px", borderRadius:"10px", color:"var(--ink2)", fontSize:"12px", fontWeight:600, textDecoration:"none", border:"1px solid var(--border)"}}>マイページ</Link>
+              <Link href="/questionnaire" style={{padding:"7px 16px", borderRadius:"10px", background:"var(--teal)", color:"#fff", fontSize:"12px", fontWeight:700, textDecoration:"none"}}>AI診断</Link>
             </>
           ) : (
             <>
-              <Link href="/login" style={{padding:"6px 12px", borderRadius:"8px", color:"var(--ink2)", fontSize:"12px", fontWeight:600, textDecoration:"none"}}>ログイン</Link>
-              <Link href="/signup" style={{padding:"7px 16px", borderRadius:"8px", background:"var(--premium)", color:"#fff", fontSize:"12px", fontWeight:700, textDecoration:"none"}}>✦ プレミアム登録</Link>
+              <Link href="/login" style={{padding:"6px 12px", borderRadius:"10px", color:"var(--ink2)", fontSize:"12px", fontWeight:600, textDecoration:"none"}}>ログイン</Link>
+              <Link href="/signup" style={{padding:"7px 16px", borderRadius:"10px", background:"linear-gradient(135deg,var(--coral),var(--coral2))", color:"#fff", fontSize:"12px", fontWeight:700, textDecoration:"none"}}>プレミアム登録</Link>
             </>
           )}
         </div>
@@ -347,8 +347,8 @@ export default function SimulatorPage() {
 
         {/* ━━━ STEP 1: 目的を選ぶ ━━━ */}
         <div style={{padding:"48px 0 32px", textAlign:"center"}}>
-          <div style={{fontSize:"11px", fontWeight:700, color:"var(--teal)", letterSpacing:".15em", marginBottom:"10px"}}>STEP 1</div>
-          <h1 style={{fontFamily:"Kaisei Opti,serif", fontSize:"26px", fontWeight:800, color:"var(--ink)", marginBottom:"8px"}}>
+          <div style={{fontSize:"11px", fontWeight:700, color:"var(--coral)", letterSpacing:".15em", marginBottom:"10px"}}>STEP 1</div>
+          <h1 style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"26px", fontWeight:800, color:"var(--ink)", marginBottom:"8px"}}>
             あなたの受験、何を整理したいですか？
           </h1>
           <p style={{fontSize:"14px", color:"var(--ink3)", marginBottom:"32px"}}>知りたいことを選ぶと、大学選択に進みます</p>
@@ -358,18 +358,18 @@ export default function SimulatorPage() {
               const c = PURPOSE_CONFIG[p]
               const isSelected = purpose === p
               return (
-                <button key={p} onClick={() => selectPurpose(p)} style={{
-                  padding:"24px 16px", borderRadius:"16px", cursor:"pointer", fontFamily:"inherit",
-                  border: isSelected ? "2px solid var(--teal)" : "1.5px solid var(--border)",
-                  background: isSelected ? "rgba(13,148,136,.06)" : "var(--surface)",
-                  boxShadow: isSelected ? "0 4px 20px rgba(13,148,136,.15)" : "var(--sh-sm)",
-                  transition:".2s", textAlign:"center",
-                  transform: isSelected ? "translateY(-2px)" : "none",
+                <button key={p} onClick={() => selectPurpose(p)} className="purpose-card" style={{
+                  padding:"28px 16px", borderRadius:"20px", cursor:"pointer", fontFamily:"inherit",
+                  border: isSelected ? "2px solid var(--coral)" : "1.5px solid var(--border)",
+                  background: isSelected ? "var(--coral-bg)" : "var(--surface)",
+                  boxShadow: isSelected ? "0 4px 20px rgba(249,112,102,.18)" : "var(--sh-sm)",
+                  transition:"all .2s ease", textAlign:"center",
+                  transform: isSelected ? "translateY(-3px)" : "none",
                 }}>
-                  <div style={{fontSize:"36px", marginBottom:"12px"}}>{c.icon}</div>
-                  <div style={{fontSize:"14px", fontWeight:700, color: isSelected ? "var(--teal)" : "var(--ink)", marginBottom:"6px"}}>{c.title}</div>
+                  <div style={{fontSize:"48px", marginBottom:"14px", lineHeight:1}}>{c.icon}</div>
+                  <div style={{fontSize:"14px", fontWeight:700, color: isSelected ? "var(--coral)" : "var(--ink)", marginBottom:"6px"}}>{c.title}</div>
                   <div style={{fontSize:"11px", color:"var(--ink3)", lineHeight:1.6, marginBottom: c.sample ? "8px" : "0"}}>{c.desc}</div>
-                  {c.sample && <div style={{fontSize:"10px", color:"var(--teal)", fontWeight:600, background:"var(--teal-bg)", borderRadius:"20px", padding:"3px 10px", display:"inline-block"}}>{c.sample}</div>}
+                  {c.sample && <div style={{fontSize:"10px", color:"var(--coral)", fontWeight:600, background:"var(--coral-bg)", borderRadius:"20px", padding:"3px 10px", display:"inline-block"}}>{c.sample}</div>}
                 </button>
               )
             })}
@@ -381,12 +381,12 @@ export default function SimulatorPage() {
           <div ref={step2Ref} style={{paddingBottom:"32px"}}>
             <div style={{borderTop:"1px solid var(--border)", paddingTop:"32px", marginBottom:"24px"}}>
               <div style={{display:"flex", alignItems:"center", gap:"12px", marginBottom:"6px"}}>
-                <div style={{fontSize:"11px", fontWeight:700, color:"var(--teal)", letterSpacing:".15em"}}>STEP 2</div>
+                <div style={{fontSize:"11px", fontWeight:700, color:"var(--coral)", letterSpacing:".15em"}}>STEP 2</div>
                 <div style={{fontSize:"10px", color:"var(--ink3)", background:"var(--surface2)", borderRadius:"20px", padding:"2px 10px"}}>
                   {PURPOSE_CONFIG[purpose].icon} {purposeLabel}
                 </div>
               </div>
-              <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", fontWeight:800, color:"var(--ink)", marginBottom:"6px"}}>比較したい大学を選んでください</h2>
+              <h2 style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"22px", fontWeight:800, color:"var(--ink)", marginBottom:"6px"}}>比較したい大学を選んでください</h2>
               <p style={{fontSize:"13px", color:"var(--ink3)"}}>検索して大学を追加。▼ で学科単位の絞り込みもできます。</p>
             </div>
 
@@ -394,18 +394,18 @@ export default function SimulatorPage() {
               {/* 左: 検索 / 絞り込み + 結果 */}
               <div style={{flex:1, minWidth:0}}>
                 {/* タブ切替: 名前検索 / 条件で絞り込み */}
-                <div style={{display:"flex", gap:"3px", background:"var(--surface2)", borderRadius:"10px", padding:"3px", marginBottom:"14px"}}>
+                <div style={{display:"flex", gap:"3px", background:"var(--surface2)", borderRadius:"14px", padding:"4px", marginBottom:"14px"}}>
                   <button onClick={() => setSearchMode("name")} style={{
-                    flex:1, padding:"9px", borderRadius:"8px", border:"none", fontFamily:"inherit",
+                    flex:1, padding:"10px", borderRadius:"12px", border:"none", fontFamily:"inherit",
                     background: searchMode === "name" ? "var(--surface)" : "transparent",
-                    color: searchMode === "name" ? "var(--teal)" : "var(--ink3)",
+                    color: searchMode === "name" ? "var(--coral)" : "var(--ink3)",
                     fontSize:"13px", fontWeight:700, cursor:"pointer",
                     boxShadow: searchMode === "name" ? "var(--sh-sm)" : "none"
                   }}>🔍 大学名で検索</button>
                   <button onClick={() => setSearchMode("filter")} style={{
-                    flex:1, padding:"9px", borderRadius:"8px", border:"none", fontFamily:"inherit",
+                    flex:1, padding:"10px", borderRadius:"12px", border:"none", fontFamily:"inherit",
                     background: searchMode === "filter" ? "var(--surface)" : "transparent",
-                    color: searchMode === "filter" ? "var(--teal)" : "var(--ink3)",
+                    color: searchMode === "filter" ? "var(--coral)" : "var(--ink3)",
                     fontSize:"13px", fontWeight:700, cursor:"pointer",
                     boxShadow: searchMode === "filter" ? "var(--sh-sm)" : "none"
                   }}>⚙ 条件で絞り込み</button>
@@ -416,18 +416,18 @@ export default function SimulatorPage() {
                   <div style={{marginBottom:"14px"}}>
                     <input value={keyword} onChange={e => setKeyword(e.target.value)}
                       placeholder="大学名・学部名を入力..."
-                      style={{width:"100%", padding:"12px 16px", border:"1.5px solid var(--border)", borderRadius:"12px", background:"var(--surface)", color:"var(--ink)", fontSize:"14px", fontFamily:"inherit", outline:"none", boxSizing:"border-box", boxShadow:"var(--sh-sm)"}} />
+                      style={{width:"100%", padding:"13px 18px", border:"1.5px solid var(--border)", borderRadius:"16px", background:"var(--surface)", color:"var(--ink)", fontSize:"14px", fontFamily:"inherit", outline:"none", boxSizing:"border-box", boxShadow:"var(--sh-sm)"}} />
                   </div>
                 )}
 
                 {/* 条件絞り込み */}
                 {searchMode === "filter" && (
-                  <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"12px", padding:"16px", marginBottom:"14px", display:"flex", flexDirection:"column", gap:"12px"}}>
+                  <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"16px", padding:"18px", marginBottom:"14px", display:"flex", flexDirection:"column", gap:"12px"}}>
                     <div style={{display:"flex", gap:"12px", flexWrap:"wrap"}}>
                       <div style={{flex:1, minWidth:"140px"}}>
                         <div style={{fontSize:"10px", fontWeight:700, color:"var(--ink3)", marginBottom:"4px"}}>地域</div>
                         <select value={region} onChange={e => { setRegion(e.target.value); setPref("") }}
-                          style={{width:"100%", padding:"7px 10px", border:"1.5px solid var(--border)", borderRadius:"8px", background:"var(--surface2)", color:"var(--ink)", fontSize:"12px", fontFamily:"inherit"}}>
+                          style={{width:"100%", padding:"8px 10px", border:"1.5px solid var(--border)", borderRadius:"10px", background:"var(--surface2)", color:"var(--ink)", fontSize:"12px", fontFamily:"inherit"}}>
                           <option value="">すべての地域</option>
                           {Object.keys(PREFS).map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
@@ -435,7 +435,7 @@ export default function SimulatorPage() {
                       <div style={{flex:1, minWidth:"140px"}}>
                         <div style={{fontSize:"10px", fontWeight:700, color:"var(--ink3)", marginBottom:"4px"}}>都道府県</div>
                         <select value={pref} onChange={e => setPref(e.target.value)}
-                          style={{width:"100%", padding:"7px 10px", border:"1.5px solid var(--border)", borderRadius:"8px", background:"var(--surface2)", color:"var(--ink)", fontSize:"12px", fontFamily:"inherit"}}>
+                          style={{width:"100%", padding:"8px 10px", border:"1.5px solid var(--border)", borderRadius:"10px", background:"var(--surface2)", color:"var(--ink)", fontSize:"12px", fontFamily:"inherit"}}>
                           <option value="">すべて</option>
                           {(region ? PREFS[region] || [] : Object.values(PREFS).flat()).map(p => <option key={p} value={p}>{p}</option>)}
                         </select>
@@ -446,10 +446,10 @@ export default function SimulatorPage() {
                       <div style={{display:"flex", flexWrap:"wrap", gap:"5px"}}>
                         {[{v:"",l:"すべて"},{v:"文系・国際",l:"文系"},{v:"理工・情報",l:"理系"},{v:"医療・保健",l:"医療"},{v:"教育",l:"教育"},{v:"芸術・スポーツ",l:"芸術"},{v:"農・食・環境",l:"農食"}].map(c => (
                           <button key={c.v} onClick={() => setFacCategory(c.v)} style={{
-                            padding:"4px 11px", borderRadius:"20px", fontFamily:"inherit",
-                            border:`1.5px solid ${facCategory===c.v?"var(--teal)":"var(--border)"}`,
-                            background: facCategory===c.v?"rgba(13,148,136,.08)":"transparent",
-                            color: facCategory===c.v?"var(--teal)":"var(--ink3)",
+                            padding:"5px 12px", borderRadius:"20px", fontFamily:"inherit",
+                            border:`1.5px solid ${facCategory===c.v?"var(--coral)":"var(--border)"}`,
+                            background: facCategory===c.v?"var(--coral-bg)":"transparent",
+                            color: facCategory===c.v?"var(--coral)":"var(--ink3)",
                             fontSize:"11px", cursor:"pointer", fontWeight:600
                           }}>{c.l}</button>
                         ))}
@@ -461,10 +461,10 @@ export default function SimulatorPage() {
                         <div style={{display:"flex", gap:"4px"}}>
                           {[{v:"",l:"すべて"},{v:"専願",l:"専願のみ"},{v:"併願",l:"併願可"}].map(c => (
                             <button key={c.v} onClick={() => setOugan(c.v)} style={{
-                              padding:"4px 11px", borderRadius:"20px", fontFamily:"inherit",
-                              border:`1.5px solid ${ougan===c.v?"var(--teal)":"var(--border)"}`,
-                              background: ougan===c.v?"rgba(13,148,136,.08)":"transparent",
-                              color: ougan===c.v?"var(--teal)":"var(--ink3)",
+                              padding:"5px 12px", borderRadius:"20px", fontFamily:"inherit",
+                              border:`1.5px solid ${ougan===c.v?"var(--coral)":"var(--border)"}`,
+                              background: ougan===c.v?"var(--coral-bg)":"transparent",
+                              color: ougan===c.v?"var(--coral)":"var(--ink3)",
                               fontSize:"11px", cursor:"pointer", fontWeight:600
                             }}>{c.l}</button>
                           ))}
@@ -475,10 +475,10 @@ export default function SimulatorPage() {
                         <div style={{display:"flex", gap:"4px"}}>
                           {[{v:"",l:"すべて"},{v:"あり",l:"あり"},{v:"なし",l:"なし"}].map(c => (
                             <button key={c.v} onClick={() => setKyotsuu(c.v)} style={{
-                              padding:"4px 11px", borderRadius:"20px", fontFamily:"inherit",
-                              border:`1.5px solid ${kyotsuu===c.v?"var(--teal)":"var(--border)"}`,
-                              background: kyotsuu===c.v?"rgba(13,148,136,.08)":"transparent",
-                              color: kyotsuu===c.v?"var(--teal)":"var(--ink3)",
+                              padding:"5px 12px", borderRadius:"20px", fontFamily:"inherit",
+                              border:`1.5px solid ${kyotsuu===c.v?"var(--coral)":"var(--border)"}`,
+                              background: kyotsuu===c.v?"var(--coral-bg)":"transparent",
+                              color: kyotsuu===c.v?"var(--coral)":"var(--ink3)",
                               fontSize:"11px", cursor:"pointer", fontWeight:600
                             }}>{c.l}</button>
                           ))}
@@ -487,28 +487,28 @@ export default function SimulatorPage() {
                     </div>
                     {(pref || facCategory || ougan || kyotsuu) && (
                       <button onClick={() => { setRegion(""); setPref(""); setFacCategory(""); setOugan(""); setKyotsuu("") }} style={{
-                        alignSelf:"flex-start", padding:"5px 12px", borderRadius:"6px", border:"none",
+                        alignSelf:"flex-start", padding:"6px 14px", borderRadius:"10px", border:"none",
                         background:"var(--surface2)", color:"var(--ink3)", fontSize:"11px", cursor:"pointer", fontFamily:"inherit"
                       }}>✕ 条件をクリア</button>
                     )}
                   </div>
                 )}
 
-                {/* 検索結果リスト */}
+                {/* 検索結果リスト - card based */}
                 {(() => {
                   const displayNames = searchMode === "name" ? uniNames : filterNames
                   const isLoading = searchMode === "name" ? loading : filterLoading
                   const hasInput = searchMode === "name" ? !!keyword : !!(pref || facCategory || ougan || kyotsuu)
                   return (
-                <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px", overflow:"hidden", boxShadow:"var(--sh-sm)", maxHeight:"480px", overflowY:"auto"}}>
+                <div style={{display:"flex", flexDirection:"column", gap:"10px", maxHeight:"520px", overflowY:"auto", paddingRight:"4px"}}>
                   {isLoading ? (
-                    <div style={{display:"flex", alignItems:"center", justifyContent:"center", height:"120px", gap:"8px"}}>
-                      <div style={{width:"20px", height:"20px", border:"3px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
+                    <div style={{display:"flex", alignItems:"center", justifyContent:"center", height:"120px", gap:"8px", background:"var(--surface)", borderRadius:"16px", border:"1.5px solid var(--border)"}}>
+                      <div style={{width:"20px", height:"20px", border:"3px solid var(--border)", borderTopColor:"var(--coral)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
                       <span style={{fontSize:"12px", color:"var(--ink3)"}}>検索中...</span>
                     </div>
                   ) : !hasInput || displayNames.length === 0 ? (
-                    <div style={{padding:"40px 20px", textAlign:"center"}}>
-                      <div style={{fontSize:"36px", marginBottom:"10px", opacity:.5}}>{searchMode === "name" ? "🔍" : "⚙"}</div>
+                    <div style={{padding:"44px 20px", textAlign:"center", background:"var(--surface)", borderRadius:"20px", border:"1.5px dashed var(--border)"}}>
+                      <div style={{fontSize:"40px", marginBottom:"12px", opacity:.4}}>{searchMode === "name" ? "🔍" : "⚙"}</div>
                       <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink2)", marginBottom:"6px"}}>
                         {searchMode === "name" ? "大学名で検索してください" : hasInput ? "該当する大学がありません" : "条件を選択してください"}
                       </div>
@@ -520,7 +520,7 @@ export default function SimulatorPage() {
                     displayNames.map(u => {
                       const sel = selected.has(u.name)
                       const isExpanded = expandedUnis.has(u.name)
-                      const isLoading = deptLoadingSet.has(u.name)
+                      const isLoadingDept = deptLoadingSet.has(u.name)
                       const currentFilter = deptFilter.get(u.name)
                       const depts = uniDepts[u.name] || []
                       const totalDepts = depts.length
@@ -530,44 +530,50 @@ export default function SimulatorPage() {
                       const tagLabel = (!u.hasHeigan && u.hasSengan) ? "専願" : u.hasHeigan ? "併願可" : "要確認"
 
                       return (
-                        <div key={u.name}>
+                        <div key={u.name} className="uni-card" style={{
+                          background:"var(--surface)", borderRadius:"16px",
+                          border: sel ? "2px solid var(--teal)" : "1.5px solid var(--border)",
+                          boxShadow:"var(--sh-sm)", overflow:"hidden", transition:"all .2s ease"
+                        }}>
                           <div style={{
-                            padding:"10px 14px", display:"flex", alignItems:"center", gap:"8px",
-                            borderBottom:"1px solid var(--border)",
-                            background: sel ? "rgba(13,148,136,.04)" : "transparent", transition:".15s"
+                            padding:"14px 16px", display:"flex", alignItems:"center", gap:"10px",
                           }}>
-                            <div onClick={() => toggleUni(u.name)} style={{
-                              width:"20px", height:"20px", minWidth:"20px", borderRadius:"6px",
-                              border:`2px solid ${sel?"var(--teal)":isPartial?"var(--amber)":"var(--border)"}`,
-                              background: sel && !isPartial?"var(--teal)":isPartial?"rgba(245,158,11,.15)":"transparent",
-                              display:"flex", alignItems:"center", justifyContent:"center",
-                              fontSize:"10px", color: isPartial?"var(--amber)":"#fff", cursor:"pointer", flexShrink:0
-                            }}>{sel && !isPartial?"✓":isPartial?"—":""}</div>
                             <div onClick={() => toggleExpand(u.name)} style={{flex:1, minWidth:0, cursor:"pointer"}}>
-                              <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink)"}}>{u.name}</div>
-                              <div style={{fontSize:"10px", color:"var(--ink3)", display:"flex", gap:"4px", marginTop:"2px", flexWrap:"wrap"}}>
-                                <span style={{padding:"1px 6px", borderRadius:"4px", fontSize:"9px", fontWeight:700, background:tagColor.bg, color:tagColor.color}}>{tagLabel}</span>
-                                {u.cats.slice(0,1).map(c => <span key={c} style={{padding:"1px 6px", borderRadius:"4px", fontSize:"9px", fontWeight:700, background:"var(--surface2)", color:"var(--ink3)"}}>{c}</span>)}
+                              <div style={{fontSize:"14px", fontWeight:700, color:"var(--ink)", marginBottom:"4px"}}>{u.name}</div>
+                              <div style={{fontSize:"10px", color:"var(--ink3)", display:"flex", gap:"5px", flexWrap:"wrap", alignItems:"center"}}>
+                                <span style={{padding:"2px 8px", borderRadius:"6px", fontSize:"9px", fontWeight:700, background:tagColor.bg, color:tagColor.color}}>{tagLabel}</span>
+                                {u.cats.slice(0,1).map(c => <span key={c} style={{padding:"2px 8px", borderRadius:"6px", fontSize:"9px", fontWeight:700, background:"var(--surface2)", color:"var(--ink3)"}}>{c}</span>)}
                                 {isPartial && <span style={{fontSize:"9px", color:"var(--amber)", fontWeight:700}}>{selectedDeptCount}学科選択中</span>}
                               </div>
                             </div>
+                            <button onClick={() => toggleUni(u.name)} style={{
+                              padding:"7px 16px", borderRadius:"10px", cursor:"pointer", fontFamily:"inherit",
+                              fontSize:"12px", fontWeight:700, border:"none", transition:"all .15s",
+                              background: sel ? "var(--teal)" : "linear-gradient(135deg,var(--coral),var(--coral2))",
+                              color: "#fff",
+                              boxShadow: sel ? "0 2px 8px rgba(13,148,136,.25)" : "0 2px 8px rgba(249,112,102,.25)"
+                            }}>
+                              {sel ? "✓ 追加済み" : "+ 追加"}
+                            </button>
                             <button onClick={() => toggleExpand(u.name)} style={{
-                              background:"transparent", border:"none", cursor:"pointer", padding:"4px 6px",
-                              color:"var(--ink3)", fontSize:"11px", flexShrink:0, fontFamily:"inherit"
+                              background:"var(--surface2)", border:"none", cursor:"pointer", padding:"6px 8px",
+                              color:"var(--ink3)", fontSize:"11px", flexShrink:0, fontFamily:"inherit",
+                              borderRadius:"8px", transition:".15s"
                             }}>{isExpanded ? "▲" : "▼"}</button>
                           </div>
 
                           {isExpanded && (
-                            <div style={{background:"var(--surface2)", borderBottom:"1px solid var(--border)"}}>
-                              {isLoading ? (
-                                <div style={{padding:"12px", display:"flex", alignItems:"center", gap:"8px"}}>
-                                  <div style={{width:"14px", height:"14px", border:"2px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
+                            <div style={{borderTop:"1px solid var(--border)", background:"var(--surface2)"}}>
+                              {isLoadingDept ? (
+                                <div style={{padding:"14px", display:"flex", alignItems:"center", gap:"8px"}}>
+                                  <div style={{width:"14px", height:"14px", border:"2px solid var(--border)", borderTopColor:"var(--coral)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
                                   <span style={{fontSize:"11px", color:"var(--ink3)"}}>学科を読み込み中...</span>
                                 </div>
                               ) : depts.length === 0 ? (
-                                <div style={{padding:"12px 14px", fontSize:"11px", color:"var(--ink3)"}}>学科データがありません</div>
+                                <div style={{padding:"14px 16px", fontSize:"11px", color:"var(--ink3)"}}>学科データがありません</div>
                               ) : (
-                                Object.entries(depts.reduce((acc, r) => {
+                                <div style={{padding:"8px"}}>
+                                {Object.entries(depts.reduce((acc, r) => {
                                   if (!acc[r.faculty_name]) acc[r.faculty_name] = []
                                   if (!acc[r.faculty_name].includes(r.department_name)) acc[r.faculty_name].push(r.department_name)
                                   return acc
@@ -576,34 +582,35 @@ export default function SimulatorPage() {
                                   const allFacSelected = !currentFilter || facKeys.every(k => currentFilter.has(k))
                                   const someFacSelected = !currentFilter || facKeys.some(k => currentFilter.has(k))
                                   return (
-                                    <div key={faculty}>
+                                    <div key={faculty} style={{marginBottom: fi < Object.keys(depts.reduce((acc, r) => { acc[r.faculty_name]=1; return acc }, {} as Record<string, number>)).length - 1 ? "6px" : 0}}>
                                       <div onClick={() => toggleFaculty(u.name, faculty, deptNames)} style={{
-                                        display:"flex", alignItems:"center", gap:"7px", padding:"7px 14px",
-                                        cursor:"pointer", borderTop: fi > 0 ? "1px solid var(--border)" : "none",
-                                        background:"rgba(0,0,0,.02)"
+                                        display:"flex", alignItems:"center", gap:"8px", padding:"8px 12px",
+                                        cursor:"pointer", borderRadius:"10px", background:"rgba(255,255,255,.6)",
+                                        marginBottom:"4px"
                                       }}>
                                         <div style={{
-                                          width:"16px", height:"16px", minWidth:"16px", borderRadius:"4px",
+                                          width:"18px", height:"18px", minWidth:"18px", borderRadius:"6px",
                                           border:`1.5px solid ${allFacSelected?"var(--teal)":someFacSelected?"var(--amber)":"var(--border)"}`,
                                           background: allFacSelected?"var(--teal)":someFacSelected?"rgba(245,158,11,.15)":"transparent",
                                           display:"flex", alignItems:"center", justifyContent:"center",
                                           fontSize:"9px", color: someFacSelected&&!allFacSelected?"var(--amber)":"#fff", flexShrink:0
                                         }}>{allFacSelected?"✓":someFacSelected?"—":""}</div>
                                         <div style={{flex:1, fontSize:"12px", fontWeight:700, color:"var(--ink2)"}}>{faculty}</div>
-                                        <div style={{fontSize:"9px", color:"var(--ink3)"}}>{deptNames.length}学科</div>
+                                        <div style={{fontSize:"9px", color:"var(--ink3)", background:"var(--surface2)", borderRadius:"8px", padding:"2px 7px"}}>{deptNames.length}学科</div>
                                       </div>
                                       {deptNames.map(dept => {
                                         const deptKey = `${faculty}||${dept}`
                                         const isDeptSel = !currentFilter || currentFilter.has(deptKey)
                                         return (
                                           <div key={dept} onClick={() => toggleDept(u.name, faculty, dept)} style={{
-                                            display:"flex", alignItems:"center", gap:"7px",
-                                            padding:"5px 14px 5px 32px", cursor:"pointer",
-                                            background: isDeptSel ? "rgba(13,148,136,.03)" : "transparent",
-                                            borderTop:"1px solid rgba(0,0,0,.04)"
+                                            display:"flex", alignItems:"center", gap:"8px",
+                                            padding:"6px 12px 6px 36px", cursor:"pointer",
+                                            borderRadius:"8px", marginBottom:"2px",
+                                            background: isDeptSel ? "rgba(13,148,136,.04)" : "transparent",
+                                            transition:".1s"
                                           }}>
                                             <div style={{
-                                              width:"14px", height:"14px", minWidth:"14px", borderRadius:"3px",
+                                              width:"15px", height:"15px", minWidth:"15px", borderRadius:"5px",
                                               border:`1.5px solid ${isDeptSel?"var(--teal)":"var(--border)"}`,
                                               background: isDeptSel?"var(--teal)":"transparent",
                                               display:"flex", alignItems:"center", justifyContent:"center",
@@ -615,7 +622,8 @@ export default function SimulatorPage() {
                                       })}
                                     </div>
                                   )
-                                })
+                                })}
+                                </div>
                               )}
                             </div>
                           )}
@@ -631,71 +639,75 @@ export default function SimulatorPage() {
               {/* 右: 選択中の大学 + シミュレーション開始 */}
               <div className="step2-right" style={{width:"340px", minWidth:"340px", position:"sticky", top:"80px"}}>
                 <div style={{
-                  background:"linear-gradient(135deg,#134e4a,#0f766e)",
-                  borderRadius:"16px", overflow:"hidden",
-                  boxShadow:"0 8px 32px rgba(13,78,74,.25), 0 2px 8px rgba(0,0,0,.1)"
+                  background:"var(--surface)",
+                  borderRadius:"20px", overflow:"hidden",
+                  border:"1.5px solid var(--border)",
+                  boxShadow:"0 4px 20px rgba(0,0,0,.06)"
                 }}>
-                  <div style={{padding:"18px 20px", borderBottom:"1px solid rgba(255,255,255,.1)", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
-                    <h3 style={{fontSize:"14px", fontWeight:700, color:"#fff", margin:0}}>🎯 選択中の大学</h3>
+                  {/* Coral accent top bar */}
+                  <div style={{height:"4px", background:"linear-gradient(90deg,var(--coral),#fb923c)"}} />
+                  <div style={{padding:"16px 20px", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+                    <h3 style={{fontSize:"14px", fontWeight:700, color:"var(--ink)", margin:0}}>選択中の大学</h3>
                     <div style={{
-                      background:"rgba(255,255,255,.15)", borderRadius:"20px", padding:"4px 14px",
+                      background:"var(--coral-bg)", borderRadius:"20px", padding:"4px 14px",
                       display:"flex", alignItems:"baseline", gap:"2px"
                     }}>
-                      <span style={{fontSize:"22px", fontWeight:900, fontFamily:"DM Mono,monospace", color:"#5eead4"}}>{selected.size}</span>
-                      <span style={{fontSize:"11px", color:"rgba(255,255,255,.6)", fontWeight:600}}>校</span>
+                      <span style={{fontSize:"22px", fontWeight:900, fontFamily:"DM Mono,monospace", color:"var(--coral)"}}>{selected.size}</span>
+                      <span style={{fontSize:"11px", color:"var(--ink3)", fontWeight:600}}>校</span>
                     </div>
                   </div>
 
-                  <div style={{padding:"12px 20px", maxHeight:"280px", overflowY:"auto"}}>
+                  <div style={{padding:"12px 16px", maxHeight:"280px", overflowY:"auto"}}>
                     {selected.size === 0 ? (
                       <div style={{padding:"28px 0", textAlign:"center"}}>
-                        <div style={{fontSize:"32px", marginBottom:"10px"}}>🏫</div>
-                        <div style={{fontSize:"13px", color:"rgba(255,255,255,.7)", lineHeight:1.7, fontWeight:600}}>左のリストから<br/>大学を追加してください</div>
+                        <div style={{fontSize:"36px", marginBottom:"10px", opacity:.4}}>👈</div>
+                        <div style={{fontSize:"13px", color:"var(--ink3)", lineHeight:1.7, fontWeight:600}}>
+                          大学を追加してみよう！
+                        </div>
+                        <div style={{fontSize:"11px", color:"var(--ink4)", marginTop:"4px"}}>左のリストから「+ 追加」ボタンを押してね</div>
                       </div>
                     ) : (
-                      [...selected].map(name => {
-                        const filter = deptFilter.get(name)
-                        const depts = uniDepts[name] || []
-                        const count = filter ? filter.size : (depts.length || 1)
-                        return (
-                          <div key={name} style={{
-                            display:"flex", alignItems:"center", gap:"8px", padding:"9px 12px", marginBottom:"6px",
-                            background:"rgba(255,255,255,.08)", borderRadius:"10px", border:"1px solid rgba(255,255,255,.1)"
-                          }}>
-                            <div style={{
-                              width:"24px", height:"24px", minWidth:"24px", borderRadius:"6px",
-                              background:"rgba(94,234,212,.2)", display:"flex", alignItems:"center", justifyContent:"center",
-                              fontSize:"11px", fontWeight:700, color:"#5eead4"
-                            }}>✓</div>
-                            <div style={{flex:1, minWidth:0}}>
-                              <div style={{fontSize:"12px", fontWeight:700, color:"#fff", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{name}</div>
-                              {depts.length > 0 && <div style={{fontSize:"10px", color:"rgba(255,255,255,.5)", marginTop:"1px"}}>{count}学科</div>}
+                      <div style={{display:"flex", flexWrap:"wrap", gap:"8px"}}>
+                        {[...selected].map(name => {
+                          const filter = deptFilter.get(name)
+                          const depts = uniDepts[name] || []
+                          const count = filter ? filter.size : (depts.length || 1)
+                          return (
+                            <div key={name} style={{
+                              display:"inline-flex", alignItems:"center", gap:"6px", padding:"7px 12px",
+                              background:"var(--coral-bg)", borderRadius:"12px", border:"1px solid var(--coral-border)",
+                              maxWidth:"100%"
+                            }}>
+                              <div style={{fontSize:"12px", fontWeight:600, color:"var(--coral)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>
+                                {name}
+                                {depts.length > 0 && <span style={{fontSize:"10px", color:"var(--coral2)", marginLeft:"4px", opacity:.7}}>{count}学科</span>}
+                              </div>
+                              <button onClick={() => toggleUni(name)} style={{
+                                background:"transparent", border:"none", fontSize:"13px", color:"var(--coral2)",
+                                cursor:"pointer", padding:"0 2px", lineHeight:1, flexShrink:0, opacity:.7
+                              }}>✕</button>
                             </div>
-                            <button onClick={() => toggleUni(name)} style={{
-                              background:"rgba(255,255,255,.1)", border:"none", fontSize:"12px", color:"rgba(255,255,255,.5)",
-                              cursor:"pointer", padding:"3px 7px", lineHeight:1, borderRadius:"6px"
-                            }}>✕</button>
-                          </div>
-                        )
-                      })
+                          )
+                        })}
+                      </div>
                     )}
                   </div>
 
-                  <div style={{padding:"16px 20px", borderTop:"1px solid rgba(255,255,255,.1)"}}>
+                  <div style={{padding:"16px 20px", borderTop:"1px solid var(--border)"}}>
                     <button onClick={runSimulation} disabled={selected.size === 0 || simLoading} style={{
-                      width:"100%", padding:"15px", borderRadius:"12px", border:"none",
-                      background: selected.size > 0 ? "linear-gradient(135deg,#5eead4,#06b6d4)" : "rgba(255,255,255,.1)",
-                      color: selected.size > 0 ? "#134e4a" : "rgba(255,255,255,.3)",
+                      width:"100%", padding:"15px", borderRadius:"14px", border:"none",
+                      background: selected.size > 0 ? "linear-gradient(135deg,var(--coral),var(--coral2))" : "var(--surface2)",
+                      color: selected.size > 0 ? "#fff" : "var(--ink4)",
                       fontSize:"14px", fontWeight:800, cursor: selected.size > 0 ? "pointer" : "not-allowed",
                       fontFamily:"inherit", transition:".2s",
-                      boxShadow: selected.size > 0 ? "0 4px 20px rgba(94,234,212,.3)" : "none"
+                      boxShadow: selected.size > 0 ? "0 4px 20px rgba(249,112,102,.3)" : "none"
                     }}>
-                      {simLoading ? "シミュレーション中..." : `${PURPOSE_CONFIG[purpose!].icon} ${purposeLabel}シミュレーション開始 →`}
+                      {simLoading ? "シミュレーション中..." : `${PURPOSE_CONFIG[purpose!].icon} ${purposeLabel}シミュレーション開始`}
                     </button>
                     {selected.size > 0 && (
                       <button onClick={() => { setSelected(new Set()); setDeptFilter(new Map()); setExpandedUnis(new Set()) }} style={{
                         width:"100%", padding:"8px", marginTop:"8px", background:"transparent",
-                        border:"none", color:"rgba(255,255,255,.4)", fontSize:"11px", cursor:"pointer", fontFamily:"inherit"
+                        border:"none", color:"var(--ink4)", fontSize:"11px", cursor:"pointer", fontFamily:"inherit"
                       }}>選択をクリア</button>
                     )}
                   </div>
@@ -710,14 +722,14 @@ export default function SimulatorPage() {
           <div ref={step3Ref} style={{paddingBottom:"40px"}}>
             <div style={{borderTop:"1px solid var(--border)", paddingTop:"32px", marginBottom:"20px"}}>
               <div style={{display:"flex", alignItems:"center", gap:"12px", marginBottom:"6px"}}>
-                <div style={{fontSize:"11px", fontWeight:700, color:"var(--teal)", letterSpacing:".15em"}}>STEP 3</div>
+                <div style={{fontSize:"11px", fontWeight:700, color:"var(--coral)", letterSpacing:".15em"}}>STEP 3</div>
               </div>
               <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"10px"}}>
-                <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"22px", fontWeight:800, color:"var(--ink)", margin:0}}>
+                <h2 style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"22px", fontWeight:800, color:"var(--ink)", margin:0}}>
                   {PURPOSE_CONFIG[purpose!].icon} シミュレーション結果
                 </h2>
                 <button onClick={() => { setStep(2); setTimeout(() => step2Ref.current?.scrollIntoView({ behavior: "smooth" }), 100) }} style={{
-                  padding:"7px 16px", borderRadius:"8px", border:"1.5px solid var(--border)",
+                  padding:"7px 16px", borderRadius:"10px", border:"1.5px solid var(--border)",
                   background:"var(--surface)", color:"var(--ink2)", fontSize:"12px", fontWeight:600,
                   cursor:"pointer", fontFamily:"inherit"
                 }}>← 大学を変更する</button>
@@ -726,7 +738,7 @@ export default function SimulatorPage() {
 
             {simLoading ? (
               <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"200px", gap:"16px"}}>
-                <div style={{width:"36px", height:"36px", border:"3px solid var(--border)", borderTopColor:"var(--teal)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
+                <div style={{width:"36px", height:"36px", border:"3px solid var(--border)", borderTopColor:"var(--coral)", borderRadius:"50%", animation:"spin .7s linear infinite"}}/>
                 <div>
                   <p style={{fontSize:"14px", fontWeight:700, color:"var(--ink)", marginBottom:"4px", textAlign:"center"}}>シミュレーション中...</p>
                   <p style={{fontSize:"12px", color:"var(--ink3)", textAlign:"center"}}>{selected.size}校のデータを分析しています</p>
@@ -744,7 +756,7 @@ export default function SimulatorPage() {
 
             {/* 他のシミュレーションへの誘導 */}
             {!simLoading && purpose && (
-              <div style={{marginTop:"24px", padding:"20px", background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px"}}>
+              <div style={{marginTop:"24px", padding:"20px", background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"18px"}}>
                 <div style={{fontSize:"13px", fontWeight:700, color:"var(--ink)", marginBottom:"12px"}}>他の視点でもチェックしませんか？</div>
                 <div style={{display:"flex", gap:"10px", flexWrap:"wrap"}}>
                   {(["cost","timeline","heigan"] as Purpose[]).filter(p => p !== purpose).map(p => {
@@ -755,10 +767,11 @@ export default function SimulatorPage() {
                         if (p === "cost") setRightTab("cost")
                         else if (p === "timeline") setRightTab("timeline")
                         else setRightTab("heigan")
-                      }} style={{
-                        padding:"10px 18px", borderRadius:"10px", border:"1.5px solid var(--border)",
+                      }} className="purpose-card" style={{
+                        padding:"10px 18px", borderRadius:"12px", border:"1.5px solid var(--border)",
                         background:"var(--surface)", cursor:"pointer", fontFamily:"inherit",
-                        fontSize:"13px", fontWeight:600, color:"var(--ink2)", display:"flex", alignItems:"center", gap:"6px"
+                        fontSize:"13px", fontWeight:600, color:"var(--ink2)", display:"flex", alignItems:"center", gap:"6px",
+                        transition:"all .2s ease"
                       }}>
                         {c.icon} {c.title}
                       </button>
@@ -770,12 +783,12 @@ export default function SimulatorPage() {
 
             {/* プレミアム CTA */}
             <div style={{marginTop:"20px"}}>
-              <div style={{background:"linear-gradient(135deg,var(--premium),#2d2825)", borderRadius:"16px", padding:"24px", display:"flex", alignItems:"center", gap:"20px", flexWrap:"wrap"}}>
+              <div style={{background:"linear-gradient(135deg,var(--premium),#2d2825)", borderRadius:"20px", padding:"24px", display:"flex", alignItems:"center", gap:"20px", flexWrap:"wrap"}}>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:"15px", fontWeight:800, color:"#fff", marginBottom:"4px"}}>✦ 「自分はどこを受ければいいの？」を解決しませんか？</div>
+                  <div style={{fontSize:"15px", fontWeight:800, color:"#fff", marginBottom:"4px"}}>「自分はどこを受ければいいの？」を解決しませんか？</div>
                   <div style={{fontSize:"12px", color:"rgba(255,255,255,.6)", lineHeight:1.6}}>AI問診でプロフィールを作成すると、あなたに合った大学・選抜方法・穴場校をサジェストします。</div>
                 </div>
-                <Link href="/signup" style={{flexShrink:0, padding:"11px 24px", borderRadius:"9px", background:"linear-gradient(135deg,var(--teal),#06b6d4)", color:"#fff", fontSize:"13px", fontWeight:700, textDecoration:"none", whiteSpace:"nowrap"}}>プレミアムで診断する →</Link>
+                <Link href="/signup" style={{flexShrink:0, padding:"11px 24px", borderRadius:"12px", background:"linear-gradient(135deg,var(--coral),var(--coral2))", color:"#fff", fontSize:"13px", fontWeight:700, textDecoration:"none", whiteSpace:"nowrap"}}>プレミアムで診断する →</Link>
               </div>
             </div>
           </div>
@@ -789,16 +802,16 @@ export default function SimulatorPage() {
           display:"flex", alignItems:"center", justifyContent:"center", padding:"24px"
         }}>
           <div onClick={e => e.stopPropagation()} style={{
-            background:"var(--surface)", borderRadius:"20px", padding:"36px 32px",
+            background:"var(--surface)", borderRadius:"24px", padding:"40px 32px",
             maxWidth:"400px", width:"100%", boxShadow:"0 24px 60px rgba(0,0,0,.3)",
             textAlign:"center", position:"relative"
           }}>
             <button onClick={() => setShowSignupModal(false)} style={{
-              position:"absolute", top:"14px", right:"16px", background:"transparent",
+              position:"absolute", top:"16px", right:"18px", background:"transparent",
               border:"none", fontSize:"18px", color:"var(--ink3)", cursor:"pointer", lineHeight:1
             }}>✕</button>
-            <div style={{fontSize:"48px", marginBottom:"14px"}}>⭐</div>
-            <h2 style={{fontFamily:"Kaisei Opti,serif", fontSize:"20px", fontWeight:700, color:"var(--ink)", marginBottom:"10px"}}>
+            <div style={{fontSize:"48px", marginBottom:"14px"}}>🔖</div>
+            <h2 style={{fontFamily:"Zen Maru Gothic,sans-serif", fontSize:"20px", fontWeight:700, color:"var(--ink)", marginBottom:"10px"}}>
               志望校を保存しませんか？
             </h2>
             <p style={{fontSize:"13px", color:"var(--ink2)", lineHeight:1.8, marginBottom:"24px"}}>
@@ -807,12 +820,13 @@ export default function SimulatorPage() {
             </p>
             <div style={{display:"flex", flexDirection:"column", gap:"10px", marginBottom:"16px"}}>
               <Link href="/signup" style={{
-                display:"block", padding:"13px", borderRadius:"10px",
-                background:"linear-gradient(135deg,var(--teal),#06b6d4)",
-                color:"#fff", fontSize:"14px", fontWeight:700, textDecoration:"none"
-              }}>✦ 無料登録して保存する →</Link>
+                display:"block", padding:"14px", borderRadius:"14px",
+                background:"linear-gradient(135deg,var(--coral),var(--coral2))",
+                color:"#fff", fontSize:"14px", fontWeight:700, textDecoration:"none",
+                boxShadow:"0 4px 16px rgba(249,112,102,.3)"
+              }}>無料登録して保存する →</Link>
               <Link href="/login" style={{
-                display:"block", padding:"12px", borderRadius:"10px",
+                display:"block", padding:"12px", borderRadius:"14px",
                 border:"1.5px solid var(--border)", color:"var(--ink2)",
                 fontSize:"13px", fontWeight:600, textDecoration:"none"
               }}>ログインして保存する</Link>
@@ -830,23 +844,25 @@ export default function SimulatorPage() {
         <div className="mobile-float-btn" style={{
           position:"fixed", bottom:0, left:0, right:0, zIndex:200,
           padding:"12px 20px", paddingBottom:"calc(12px + env(safe-area-inset-bottom, 0px))",
-          background:"rgba(248,247,244,.96)", backdropFilter:"blur(12px)",
+          background:"rgba(250,250,250,.96)", backdropFilter:"blur(12px)",
           borderTop:"1px solid var(--border)", boxShadow:"0 -4px 20px rgba(0,0,0,.08)",
           display:"none"
         }}>
           <button onClick={runSimulation} disabled={simLoading} style={{
-            width:"100%", padding:"14px", borderRadius:"12px", border:"none",
-            background:"linear-gradient(135deg,var(--teal),#06b6d4)",
+            width:"100%", padding:"14px", borderRadius:"14px", border:"none",
+            background:"linear-gradient(135deg,var(--coral),var(--coral2))",
             color:"#fff", fontSize:"14px", fontWeight:700, cursor:"pointer",
-            fontFamily:"inherit", boxShadow:"0 4px 16px rgba(13,148,136,.3)"
+            fontFamily:"inherit", boxShadow:"0 4px 16px rgba(249,112,102,.3)"
           }}>
-            {simLoading ? "シミュレーション中..." : `${PURPOSE_CONFIG[purpose!].icon} ${selected.size}校でシミュレーション開始 →`}
+            {simLoading ? "シミュレーション中..." : `${PURPOSE_CONFIG[purpose!].icon} ${selected.size}校でシミュレーション開始`}
           </button>
         </div>
       )}
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
+        .purpose-card:hover { transform: translateY(-3px) !important; box-shadow: 0 6px 24px rgba(249,112,102,.15) !important; }
+        .uni-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.08) !important; }
         @media (max-width: 767px) {
           .purpose-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .step2-layout { flex-direction: column !important; }
@@ -902,15 +918,15 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
   return (
     <div>
       {/* サマリーカード */}
-      <div className="sim-stats-grid" style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"10px", marginBottom:"16px"}}>
+      <div className="sim-stats-grid" style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"12px", marginBottom:"18px"}}>
         {[
           {l:"選択大学", v:data.length, sub:"校", color:"var(--blue)", grad:"linear-gradient(90deg,var(--blue),#818cf8)"},
           {l:"専願のみ", v:sOnly.length, sub:"校（要注意）", color:"#e11d48", grad:"linear-gradient(90deg,#e11d48,#ec4899)"},
           {l:"併願可能", v:hOk.length, sub:"校", color:"var(--teal)", grad:"linear-gradient(90deg,var(--teal),#06b6d4)"},
           {l:"受験料目安", v:eSum>0?Math.round(eSum/10000)+"万":"—", sub:eSum>0?"円（概算）":"", color:"var(--amber)", grad:"linear-gradient(90deg,var(--amber),#f97316)"},
         ].map((k,i) => (
-          <div key={i} style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"12px", padding:"14px", position:"relative", overflow:"hidden"}}>
-            <div style={{position:"absolute", top:0, left:0, right:0, height:"2px", background:k.grad}}/>
+          <div key={i} style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"16px", padding:"16px", position:"relative", overflow:"hidden"}}>
+            <div style={{position:"absolute", top:0, left:0, right:0, height:"3px", background:k.grad, borderRadius:"16px 16px 0 0"}}/>
             <div style={{fontSize:"9px", color:"var(--ink3)", fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", marginBottom:"6px"}}>{k.l}</div>
             <div style={{fontSize:"26px", fontWeight:900, fontFamily:"DM Mono,monospace", lineHeight:1, color:k.color}}>{k.v}</div>
             <div style={{fontSize:"10px", color:"var(--ink3)", marginTop:"3px"}}>{k.sub}</div>
@@ -919,7 +935,7 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
       </div>
 
       {sOnly.length > 0 && (
-        <div style={{marginBottom:"16px", background:"rgba(225,29,72,.07)", border:"1.5px solid rgba(225,29,72,.2)", borderRadius:"12px", padding:"12px 16px", display:"flex", alignItems:"center", gap:"12px"}}>
+        <div style={{marginBottom:"16px", background:"rgba(225,29,72,.07)", border:"1.5px solid rgba(225,29,72,.2)", borderRadius:"16px", padding:"14px 18px", display:"flex", alignItems:"center", gap:"12px"}}>
           <span style={{fontSize:"20px", flexShrink:0}}>⚠️</span>
           <div>
             <div style={{fontSize:"13px", fontWeight:700, color:"#e11d48", marginBottom:"2px"}}>専願のみの大学が {sOnly.length} 校あります</div>
@@ -931,19 +947,20 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
       )}
 
       {/* タブ */}
-      <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px", overflow:"hidden", boxShadow:"var(--sh-sm)"}}>
-        <div style={{padding:"10px 16px", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", gap:"10px", flexWrap:"wrap"}}>
+      <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"18px", overflow:"hidden", boxShadow:"var(--sh-sm)"}}>
+        <div style={{padding:"12px 16px", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", gap:"10px", flexWrap:"wrap"}}>
           <div style={{fontSize:"12px", fontWeight:700, color:"var(--ink2)", marginRight:"auto"}}>
-            📊 {data.length}大学 / {filterDeptMode ? `${visibleDepts}/${totalDepts}学科` : `${totalDepts}学科`}
+            {data.length}大学 / {filterDeptMode ? `${visibleDepts}/${totalDepts}学科` : `${totalDepts}学科`}
           </div>
-          <div className="sim-tabs" style={{display:"flex", gap:"3px", background:"var(--surface2)", borderRadius:"9px", padding:"3px"}}>
+          <div className="sim-tabs" style={{display:"flex", gap:"4px", background:"var(--surface2)", borderRadius:"12px", padding:"4px"}}>
             {[{id:"detail",l:"📋 詳細"},{id:"timeline",l:"📅 日程"},{id:"cost",l:"💰 費用"},{id:"heigan",l:"⚡ 併願"},{id:"parent",l:"👨‍👩‍👧 保護者"}].map(t => (
               <button key={t.id} onClick={() => setRightTab(t.id)} style={{
-                padding:"6px 12px", borderRadius:"7px", border:"none", fontFamily:"inherit",
+                padding:"7px 14px", borderRadius:"10px", border:"none", fontFamily:"inherit",
                 background: rightTab===t.id?"var(--surface)":"transparent",
-                color: rightTab===t.id?"var(--teal)":"var(--ink2)",
+                color: rightTab===t.id?"var(--coral)":"var(--ink2)",
                 fontSize:"11px", fontWeight:700, cursor:"pointer", whiteSpace:"nowrap",
-                boxShadow: rightTab===t.id?"var(--sh-sm)":"none"
+                boxShadow: rightTab===t.id?"var(--sh-sm)":"none",
+                transition:".15s"
               }}>{t.l}</button>
             ))}
           </div>
@@ -952,11 +969,11 @@ function SimResult({ data, rightTab, setRightTab, userId, myTargets, savingUni, 
               setFilterDeptMode(!filterDeptMode)
               if (filterDeptMode) setHiddenDepts(new Set())
             }} style={{
-              padding:"6px 12px", borderRadius:"8px", fontFamily:"inherit",
-              background: filterDeptMode ? "rgba(13,148,136,.12)" : "var(--surface2)",
-              color: filterDeptMode ? "var(--teal2)" : "var(--ink3)",
+              padding:"7px 14px", borderRadius:"10px", fontFamily:"inherit",
+              background: filterDeptMode ? "var(--coral-bg)" : "var(--surface2)",
+              color: filterDeptMode ? "var(--coral)" : "var(--ink3)",
               fontSize:"11px", fontWeight:700, cursor:"pointer", whiteSpace:"nowrap",
-              border: filterDeptMode ? "1.5px solid rgba(13,148,136,.3)" : "1.5px solid var(--border)",
+              border: filterDeptMode ? "1.5px solid var(--coral-border)" : "1.5px solid var(--border)",
             } as React.CSSProperties}>
               {filterDeptMode ? "✕ 絞込解除" : "🔍 学科を絞る"}
             </button>
@@ -988,7 +1005,7 @@ function DetailTab({ data, userId, myTargets, savingUni, onSave, filterDeptMode,
   return (
     <div>
       {filterDeptMode && (
-        <div style={{marginBottom:"10px", padding:"10px 14px", background:"rgba(13,148,136,.06)", border:"1.5px solid rgba(13,148,136,.2)", borderRadius:"10px", fontSize:"12px", color:"var(--teal2)", fontWeight:600}}>
+        <div style={{marginBottom:"10px", padding:"10px 14px", background:"var(--coral-bg)", border:"1.5px solid var(--coral-border)", borderRadius:"12px", fontSize:"12px", color:"var(--coral)", fontWeight:600}}>
           🔍 絞込モード：チェックを外した学科は非表示になります
         </div>
       )}
@@ -1000,12 +1017,12 @@ function DetailTab({ data, userId, myTargets, savingUni, onSave, filterDeptMode,
           : records
         if (filterDeptMode && visibleRecords.length === 0) return null
         return (
-          <div key={name} style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px", marginBottom:"12px", overflow:"hidden", boxShadow:"var(--sh-sm)"}}>
-            <div style={{padding:"12px 16px", background:"linear-gradient(135deg,rgba(13,148,136,.03),rgba(6,182,212,.03))", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"8px", flexWrap:"wrap"}}>
+          <div key={name} style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"16px", marginBottom:"14px", overflow:"hidden", boxShadow:"var(--sh-sm)"}}>
+            <div style={{padding:"14px 18px", background:"linear-gradient(135deg,rgba(249,112,102,.03),rgba(251,146,60,.03))", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"8px", flexWrap:"wrap"}}>
               <div style={{fontSize:"14px", fontWeight:800, color:"var(--ink)", display:"flex", alignItems:"center", gap:"6px", flexWrap:"wrap"}}>
-                🏫 {name}
-                {(!hasH && hasS) ? <span style={{fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"rgba(225,29,72,.08)",color:"#e11d48",border:"1px solid rgba(225,29,72,.15)",fontWeight:700}}>⚠ 専願のみ</span> :
-                  hasH ? <span style={{fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"rgba(13,148,136,.08)",color:"var(--teal2)",border:"1px solid rgba(13,148,136,.15)",fontWeight:700}}>✓ 併願可</span> : null}
+                {name}
+                {(!hasH && hasS) ? <span style={{fontSize:"9px",padding:"2px 8px",borderRadius:"20px",background:"rgba(225,29,72,.08)",color:"#e11d48",border:"1px solid rgba(225,29,72,.15)",fontWeight:700}}>⚠ 専願のみ</span> :
+                  hasH ? <span style={{fontSize:"9px",padding:"2px 8px",borderRadius:"20px",background:"rgba(13,148,136,.08)",color:"var(--teal2)",border:"1px solid rgba(13,148,136,.15)",fontWeight:700}}>✓ 併願可</span> : null}
               </div>
               <div style={{fontSize:"11px", color:"var(--ink3)"}}>{filterDeptMode ? `${visibleRecords.length}/${records.length}` : records.length}学科</div>
             </div>
@@ -1013,11 +1030,11 @@ function DetailTab({ data, userId, myTargets, savingUni, onSave, filterDeptMode,
             <table style={{width:"100%", borderCollapse:"collapse", minWidth:"600px"}}>
               <thead>
                 <tr>
-                  {filterDeptMode && <th style={{padding:"7px 8px", textAlign:"center", fontSize:"9px", fontWeight:700, color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)", width:"28px"}}>表示</th>}
+                  {filterDeptMode && <th style={{padding:"8px 8px", textAlign:"center", fontSize:"9px", fontWeight:700, color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)", width:"28px"}}>表示</th>}
                   {["学部・学科","区分","出願期間","試験日程","結果発表","費用概算"].map(h => (
-                    <th key={h} style={{padding:"7px 12px", textAlign:"left", fontSize:"9px", fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)"}}>{h}</th>
+                    <th key={h} style={{padding:"8px 14px", textAlign:"left", fontSize:"9px", fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)"}}>{h}</th>
                   ))}
-                  <th style={{padding:"7px 8px", textAlign:"center", fontSize:"9px", fontWeight:700, color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)", width:"72px"}}>志望校</th>
+                  <th style={{padding:"8px 8px", textAlign:"center", fontSize:"9px", fontWeight:700, color:"var(--ink3)", background:"var(--surface2)", borderBottom:"1px solid var(--border)", width:"80px"}}>志望校</th>
                 </tr>
               </thead>
               <tbody>
@@ -1035,7 +1052,7 @@ function DetailTab({ data, userId, myTargets, savingUni, onSave, filterDeptMode,
                       {filterDeptMode && (
                         <td style={{padding:"10px 8px", textAlign:"center"}}>
                           <div onClick={() => onToggleHidden(deptKey)} style={{
-                            width:"15px", height:"15px", margin:"auto", borderRadius:"4px", cursor:"pointer",
+                            width:"16px", height:"16px", margin:"auto", borderRadius:"5px", cursor:"pointer",
                             border:`1.5px solid ${!isHidden?"var(--teal)":"var(--border)"}`,
                             background: !isHidden?"var(--teal)":"transparent",
                             display:"flex", alignItems:"center", justifyContent:"center",
@@ -1043,26 +1060,26 @@ function DetailTab({ data, userId, myTargets, savingUni, onSave, filterDeptMode,
                           }}>{!isHidden?"✓":""}</div>
                         </td>
                       )}
-                      <td style={{padding:"10px 12px"}}><div style={{fontWeight:600,color:"var(--ink)",fontSize:"12px"}}>{r.faculty_name} {r.department_name}</div><div style={{fontSize:"10px",color:"var(--ink3)",marginTop:"1px"}}>{r.exam_type}</div></td>
-                      <td style={{padding:"10px 12px"}}>
-                        {r.application_type==="専願"?<span style={{fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"rgba(225,29,72,.08)",color:"#e11d48",border:"1px solid rgba(225,29,72,.15)",fontWeight:700}}>専願</span>:
-                        r.application_type==="併願"?<span style={{fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"rgba(13,148,136,.08)",color:"var(--teal2)",border:"1px solid rgba(13,148,136,.15)",fontWeight:700}}>併願</span>:
-                        <span style={{fontSize:"9px",padding:"2px 7px",borderRadius:"20px",background:"var(--surface2)",color:"var(--ink3)",fontWeight:700}}>{r.application_type}</span>}
+                      <td style={{padding:"10px 14px"}}><div style={{fontWeight:600,color:"var(--ink)",fontSize:"12px"}}>{r.faculty_name} {r.department_name}</div><div style={{fontSize:"10px",color:"var(--ink3)",marginTop:"1px"}}>{r.exam_type}</div></td>
+                      <td style={{padding:"10px 14px"}}>
+                        {r.application_type==="専願"?<span style={{fontSize:"9px",padding:"2px 8px",borderRadius:"20px",background:"rgba(225,29,72,.08)",color:"#e11d48",border:"1px solid rgba(225,29,72,.15)",fontWeight:700}}>専願</span>:
+                        r.application_type==="併願"?<span style={{fontSize:"9px",padding:"2px 8px",borderRadius:"20px",background:"rgba(13,148,136,.08)",color:"var(--teal2)",border:"1px solid rgba(13,148,136,.15)",fontWeight:700}}>併願</span>:
+                        <span style={{fontSize:"9px",padding:"2px 8px",borderRadius:"20px",background:"var(--surface2)",color:"var(--ink3)",fontWeight:700}}>{r.application_type}</span>}
                       </td>
-                      <td style={{padding:"10px 12px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.application_start?.slice(0,60)||"—"}</td>
-                      <td style={{padding:"10px 12px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.exam_date?.slice(0,60)||"—"}</td>
-                      <td style={{padding:"10px 12px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.result_date?.slice(0,40)||"—"}</td>
-                      <td style={{padding:"10px 12px",fontSize:"10px",color:"var(--ink2)",fontFamily:"DM Mono,monospace"}}>{cs}</td>
+                      <td style={{padding:"10px 14px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.application_start?.slice(0,60)||"—"}</td>
+                      <td style={{padding:"10px 14px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.exam_date?.slice(0,60)||"—"}</td>
+                      <td style={{padding:"10px 14px",fontSize:"11px",color:"var(--ink2)",whiteSpace:"pre-line",lineHeight:1.6}}>{r.result_date?.slice(0,40)||"—"}</td>
+                      <td style={{padding:"10px 14px",fontSize:"10px",color:"var(--ink2)",fontFamily:"DM Mono,monospace"}}>{cs}</td>
                       <td style={{padding:"10px 8px", textAlign:"center"}}>
                         <button onClick={() => onSave(name, r.faculty_name, r.department_name)} disabled={isSaving} style={{
-                          padding:"3px 8px", borderRadius:"20px", cursor:"pointer", fontFamily:"inherit",
-                          background: isSaved ? "var(--teal-bg)" : "var(--surface2)",
-                          color: isSaved ? "var(--teal2)" : "var(--ink3)",
+                          padding:"5px 12px", borderRadius:"10px", cursor:"pointer", fontFamily:"inherit",
+                          background: isSaved ? "var(--coral-bg)" : "var(--surface2)",
+                          color: isSaved ? "var(--coral)" : "var(--ink3)",
                           fontSize:"10px", fontWeight:700,
-                          border: isSaved ? "1px solid var(--teal-border)" : "1px solid var(--border)",
+                          border: isSaved ? "1.5px solid var(--coral-border)" : "1.5px solid var(--border)",
                           opacity: isSaving ? 0.5 : 1, transition:".15s", whiteSpace:"nowrap"
                         } as React.CSSProperties}>
-                          {isSaving ? "..." : isSaved ? "⭐" : "☆"}
+                          {isSaving ? "..." : isSaved ? "🔖 保存済" : "🔖 保存"}
                         </button>
                       </td>
                     </tr>
@@ -1086,8 +1103,8 @@ function TimelineTab({ data }: { data: UniGroup[] }) {
       .map(r => ({name, dept:`${r.faculty_name||""} ${r.department_name||""}`.trim(), ougan:mRange(r.application_start), shiken:mRange(r.exam_date)}))
   })
   return (
-    <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"14px", overflow:"hidden"}}>
-      <div style={{display:"flex", gap:"14px", padding:"9px 14px", borderBottom:"1px solid var(--border)", background:"var(--surface2)", flexWrap:"wrap"}}>
+    <div style={{background:"var(--surface)", border:"1.5px solid var(--border)", borderRadius:"16px", overflow:"hidden"}}>
+      <div style={{display:"flex", gap:"14px", padding:"10px 16px", borderBottom:"1px solid var(--border)", background:"var(--surface2)", flexWrap:"wrap"}}>
         {[{c:"linear-gradient(90deg,var(--blue),#818cf8)",l:"出願期間"},{c:"linear-gradient(90deg,var(--amber),#f97316)",l:"試験日程"}].map(x => (
           <span key={x.l} style={{display:"flex", alignItems:"center", gap:"5px", fontSize:"11px", color:"var(--ink2)"}}>
             <span style={{width:"18px", height:"7px", borderRadius:"4px", background:x.c, display:"inline-block"}}/>{x.l}
@@ -1123,30 +1140,32 @@ function CostTab({ data }: { data: UniGroup[] }) {
   const fy = rows.reduce((s,r)=>s+(r.exam||0)+(r.nyuugaku||0)+(r.jugyou||0),0)
   return (
     <div>
-      <div style={{background:"var(--blue-bg)", border:"1.5px solid var(--blue-border)", borderRadius:"12px", padding:"14px 16px", marginBottom:"12px"}}>
+      <div style={{background:"var(--blue-bg)", border:"1.5px solid var(--blue-border)", borderRadius:"16px", padding:"16px 18px", marginBottom:"14px"}}>
         <div style={{fontSize:"13px", fontWeight:700, color:"var(--blue)", marginBottom:"6px"}}>💡 費用シミュレーション</div>
         <div style={{fontSize:"12px", color:"var(--ink2)", lineHeight:1.7}}>データは各大学の募集要項に基づきます。必ず公式サイトでご確認ください。</div>
       </div>
-      <table style={{width:"100%", borderCollapse:"collapse", background:"var(--surface)", borderRadius:"14px", overflow:"hidden", border:"1.5px solid var(--border)"}}>
-        <thead><tr>{["大学名","受験料","入学金","授業料（年額）","詳細"].map(h=><th key={h} style={{padding:"9px 12px",textAlign:"left",fontSize:"9px",fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--ink3)",background:"var(--surface2)",borderBottom:"1px solid var(--border)"}}>{h}</th>)}</tr></thead>
+      <div style={{borderRadius:"16px", overflow:"hidden", border:"1.5px solid var(--border)"}}>
+      <table style={{width:"100%", borderCollapse:"collapse", background:"var(--surface)"}}>
+        <thead><tr>{["大学名","受験料","入学金","授業料（年額）","詳細"].map(h=><th key={h} style={{padding:"10px 14px",textAlign:"left",fontSize:"9px",fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--ink3)",background:"var(--surface2)",borderBottom:"1px solid var(--border)"}}>{h}</th>)}</tr></thead>
         <tbody>
           {rows.map((r,i)=>(
             <tr key={i} style={{borderBottom:"1px solid rgba(0,0,0,.04)"}}>
-              <td style={{padding:"10px 12px",fontWeight:700,color:"var(--ink)",fontSize:"12px"}}>{r.name}</td>
-              <td style={{padding:"10px 12px",fontFamily:"DM Mono,monospace",color:"var(--ink)",fontWeight:600}}>{r.exam>0?fmt(r.exam)+"円":"—"}</td>
-              <td style={{padding:"10px 12px",fontFamily:"DM Mono,monospace",color:"var(--ink)",fontWeight:600}}>{r.nyuugaku>0?fmt(r.nyuugaku)+"円":"—"}</td>
-              <td style={{padding:"10px 12px",fontFamily:"DM Mono,monospace",color:"var(--ink)",fontWeight:600}}>{r.jugyou>0?fmt(r.jugyou)+"円":"—"}</td>
-              <td style={{padding:"10px 12px",fontSize:"10px",color:"var(--ink3)",whiteSpace:"pre-line",lineHeight:1.5}}>{String(r.raw).slice(0,60)}</td>
+              <td style={{padding:"10px 14px",fontWeight:700,color:"var(--ink)",fontSize:"12px"}}>{r.name}</td>
+              <td style={{padding:"10px 14px",fontFamily:"DM Mono,monospace",color:"var(--ink)",fontWeight:600}}>{r.exam>0?fmt(r.exam)+"円":"—"}</td>
+              <td style={{padding:"10px 14px",fontFamily:"DM Mono,monospace",color:"var(--ink)",fontWeight:600}}>{r.nyuugaku>0?fmt(r.nyuugaku)+"円":"—"}</td>
+              <td style={{padding:"10px 14px",fontFamily:"DM Mono,monospace",color:"var(--ink)",fontWeight:600}}>{r.jugyou>0?fmt(r.jugyou)+"円":"—"}</td>
+              <td style={{padding:"10px 14px",fontSize:"10px",color:"var(--ink3)",whiteSpace:"pre-line",lineHeight:1.5}}>{String(r.raw).slice(0,60)}</td>
             </tr>
           ))}
-          <tr style={{borderTop:"2px solid rgba(13,148,136,.15)"}}>
-            <td style={{padding:"10px 12px",fontWeight:700,background:"rgba(13,148,136,.04)"}}>合計</td>
-            <td style={{padding:"10px 12px",fontFamily:"DM Mono,monospace",color:"var(--amber)",fontWeight:700,background:"rgba(13,148,136,.04)"}}>{eSum>0?fmt(eSum)+"円":"—"}</td>
-            <td style={{padding:"10px 12px",fontFamily:"DM Mono,monospace",fontWeight:700,background:"rgba(13,148,136,.04)"}}>{nSum>0?fmt(nSum)+"円":"—"}</td>
-            <td colSpan={2} style={{padding:"10px 12px",fontSize:"10px",color:"var(--ink3)",background:"rgba(13,148,136,.04)"}}>初年度目安: {fy>0?"〜"+fmt(fy)+"円":""}</td>
+          <tr style={{borderTop:"2px solid rgba(249,112,102,.2)"}}>
+            <td style={{padding:"10px 14px",fontWeight:700,background:"var(--coral-bg)"}}>合計</td>
+            <td style={{padding:"10px 14px",fontFamily:"DM Mono,monospace",color:"var(--coral)",fontWeight:700,background:"var(--coral-bg)"}}>{eSum>0?fmt(eSum)+"円":"—"}</td>
+            <td style={{padding:"10px 14px",fontFamily:"DM Mono,monospace",fontWeight:700,background:"var(--coral-bg)"}}>{nSum>0?fmt(nSum)+"円":"—"}</td>
+            <td colSpan={2} style={{padding:"10px 14px",fontSize:"10px",color:"var(--ink3)",background:"var(--coral-bg)"}}>初年度目安: {fy>0?"〜"+fmt(fy)+"円":""}</td>
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
   )
 }
@@ -1157,17 +1176,17 @@ function HeiganTab({ data }: { data: UniGroup[] }) {
   const unk = data.filter(u=>!sOnly.includes(u)&&!hOk.includes(u))
   return (
     <div>
-      {sOnly.length>0&&<div style={{borderRadius:"12px",padding:"14px 16px",marginBottom:"12px",background:"rgba(225,29,72,.05)",border:"1.5px solid rgba(225,29,72,.15)"}}>
+      {sOnly.length>0&&<div style={{borderRadius:"16px",padding:"16px 18px",marginBottom:"14px",background:"rgba(225,29,72,.05)",border:"1.5px solid rgba(225,29,72,.15)"}}>
         <div style={{fontSize:"13px",fontWeight:700,color:"#e11d48",marginBottom:"6px"}}>⚠️ 専願のみ — {sOnly.length}校</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:"5px"}}>{sOnly.map(u=><span key={u.name} style={{padding:"3px 9px",borderRadius:"5px",fontSize:"11px",fontWeight:600,background:"rgba(225,29,72,.08)",color:"#e11d48",border:"1px solid rgba(225,29,72,.18)"}}>🏫 {u.name}</span>)}</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>{sOnly.map(u=><span key={u.name} style={{padding:"4px 10px",borderRadius:"8px",fontSize:"11px",fontWeight:600,background:"rgba(225,29,72,.08)",color:"#e11d48",border:"1px solid rgba(225,29,72,.18)"}}>{u.name}</span>)}</div>
       </div>}
-      {hOk.length>0&&<div style={{borderRadius:"12px",padding:"14px 16px",marginBottom:"12px",background:"rgba(13,148,136,.05)",border:"1.5px solid rgba(13,148,136,.15)"}}>
+      {hOk.length>0&&<div style={{borderRadius:"16px",padding:"16px 18px",marginBottom:"14px",background:"rgba(13,148,136,.05)",border:"1.5px solid rgba(13,148,136,.15)"}}>
         <div style={{fontSize:"13px",fontWeight:700,color:"var(--teal2)",marginBottom:"6px"}}>✅ 併願可能 — {hOk.length}校</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:"5px"}}>{hOk.map(u=><span key={u.name} style={{padding:"3px 9px",borderRadius:"5px",fontSize:"11px",fontWeight:600,background:"rgba(13,148,136,.08)",color:"var(--teal2)",border:"1px solid rgba(13,148,136,.18)"}}>🏫 {u.name}</span>)}</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>{hOk.map(u=><span key={u.name} style={{padding:"4px 10px",borderRadius:"8px",fontSize:"11px",fontWeight:600,background:"rgba(13,148,136,.08)",color:"var(--teal2)",border:"1px solid rgba(13,148,136,.18)"}}>{u.name}</span>)}</div>
       </div>}
-      {unk.length>0&&<div style={{borderRadius:"12px",padding:"14px 16px",marginBottom:"12px",background:"var(--amber-bg)",border:"1.5px solid var(--amber-border)"}}>
+      {unk.length>0&&<div style={{borderRadius:"16px",padding:"16px 18px",marginBottom:"14px",background:"var(--amber-bg)",border:"1.5px solid var(--amber-border)"}}>
         <div style={{fontSize:"13px",fontWeight:700,color:"var(--amber)",marginBottom:"6px"}}>❓ 要確認 — {unk.length}校</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:"5px"}}>{unk.map(u=><span key={u.name} style={{padding:"3px 9px",borderRadius:"5px",fontSize:"11px",fontWeight:600,background:"var(--surface2)",color:"var(--ink3)"}}>🏫 {u.name}</span>)}</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>{unk.map(u=><span key={u.name} style={{padding:"4px 10px",borderRadius:"8px",fontSize:"11px",fontWeight:600,background:"var(--surface2)",color:"var(--ink3)"}}>{u.name}</span>)}</div>
       </div>}
     </div>
   )
@@ -1178,15 +1197,15 @@ function ParentTab({ data }: { data: UniGroup[] }) {
   let eSum=0; data.forEach(u=>{const c=parseCost(u.records[0]?.cost||"");eSum+=c.exam||0})
   return (
     <div>
-      <div style={{borderRadius:"12px",padding:"14px 16px",marginBottom:"12px",background:"var(--blue-bg)",border:"1.5px solid var(--blue-border)"}}>
+      <div style={{borderRadius:"16px",padding:"16px 18px",marginBottom:"14px",background:"var(--blue-bg)",border:"1.5px solid var(--blue-border)"}}>
         <div style={{fontSize:"13px",fontWeight:700,color:"var(--blue)",marginBottom:"6px"}}>👨‍👩‍👧 保護者の方へ</div>
         <div style={{fontSize:"12px",color:"var(--ink2)",lineHeight:1.7}}>総合型選抜は出願時期・選考内容が大学によって大きく異なります。早めの情報収集と、お子さんとの定期的な確認が合格への鍵です。</div>
       </div>
-      {sOnly.length>0&&<div style={{borderRadius:"12px",padding:"14px 16px",marginBottom:"12px",background:"rgba(225,29,72,.05)",border:"1.5px solid rgba(225,29,72,.15)"}}>
+      {sOnly.length>0&&<div style={{borderRadius:"16px",padding:"16px 18px",marginBottom:"14px",background:"rgba(225,29,72,.05)",border:"1.5px solid rgba(225,29,72,.15)"}}>
         <div style={{fontSize:"13px",fontWeight:700,color:"#e11d48",marginBottom:"6px"}}>⚠️ 専願のみ（{sOnly.length}校） — 重要</div>
         <div style={{fontSize:"12px",color:"var(--ink2)",lineHeight:1.7}}>{sOnly.map(u=>u.name).join("、")}は専願です。合格後に辞退すると高校の推薦枠に影響する可能性があります。</div>
       </div>}
-      {eSum>0&&<div style={{borderRadius:"12px",padding:"14px 16px",marginBottom:"12px",background:"var(--blue-bg)",border:"1.5px solid var(--blue-border)"}}>
+      {eSum>0&&<div style={{borderRadius:"16px",padding:"16px 18px",marginBottom:"14px",background:"var(--blue-bg)",border:"1.5px solid var(--blue-border)"}}>
         <div style={{fontSize:"13px",fontWeight:700,color:"var(--blue)",marginBottom:"6px"}}>💰 受験料目安: {fmt(eSum)}円（{data.length}校分）</div>
         <div style={{fontSize:"12px",color:"var(--ink2)",lineHeight:1.7}}>交通費・宿泊費・書類郵送費・参考書代は含まれていません。余裕を持った資金計画を。</div>
       </div>}
