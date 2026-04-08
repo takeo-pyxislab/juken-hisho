@@ -28,6 +28,7 @@ export async function middleware(request: NextRequest) {
   // ログイン不要のページ
   const publicPaths = ['/', '/login', '/signup', '/simulator']
   const isPublic = publicPaths.some(p => pathname === p || pathname.startsWith('/simulator'))
+    || pathname.startsWith('/guide')
     || pathname.startsWith('/api/universities')
     || pathname.startsWith('/api/university-names')
 
