@@ -1,7 +1,7 @@
-
-/* ══ ユニパス デザイントークン v2 ══ */
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
 
+/* ══ ユニパス デザイントークン v2 ══ */
 :root {
   --bg:#fafafa; --surface:#fff; --surface2:#f5f5f5; --surface3:#ebebeb;
   --border:#e5e5e5; --border2:#d4d4d4;
@@ -18,17 +18,6 @@
   --sh-lg:0 12px 40px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.05);
   --sh-md:0 6px 24px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.04);
   --r:16px; --r-lg:20px; --r-sm:10px;
-}
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: 'Zen Maru Gothic', 'Noto Sans JP', sans-serif;
-}
-.font-display { font-family: 'Zen Maru Gothic', sans-serif; }
-.font-mono { font-family: 'DM Mono', monospace; }
-@import "tailwindcss";
-
-:root {
   --background: #fafafa;
   --foreground: #18181b;
 }
@@ -36,12 +25,14 @@ body {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Zen Maru Gothic', 'Noto Sans JP', sans-serif;
+  --font-mono: 'DM Mono', monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--ink);
   font-family: 'Zen Maru Gothic', 'Noto Sans JP', sans-serif;
 }
+.font-display { font-family: 'Zen Maru Gothic', sans-serif; }
+.font-mono { font-family: 'DM Mono', monospace; }
