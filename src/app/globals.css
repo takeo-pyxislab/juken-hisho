@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
 
 /* ══ ユニパス デザイントークン v2 ══ */
 :root {
@@ -30,9 +29,9 @@
 }
 
 body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: 'Zen Maru Gothic', 'Noto Sans JP', sans-serif;
+  background: var(--bg) !important;
+  color: var(--ink) !important;
+  font-family: 'Zen Maru Gothic', 'Noto Sans JP', sans-serif !important;
 }
 .font-display { font-family: 'Zen Maru Gothic', sans-serif; }
 .font-mono { font-family: 'DM Mono', monospace; }
